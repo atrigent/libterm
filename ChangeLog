@@ -1,0 +1,2091 @@
+-- Sunday September 03, 2006 02:36:58 AM EDT --
+-- ok, THAT was a mistake :-/ --
+
+--- configure.ac.bkup	2006-09-03 02:36:50.000000000 -0400
++++ configure.ac	2006-09-03 02:36:53.000000000 -0400
+@@ -6,7 +6,6 @@
+ 
+ AC_PROG_CC
+ 
+-AC_INCLUDES_DEFAULT
+ AC_CHECK_HEADERS([sys/ioctl.h sys/types.h sys/stat.h unistd.h stdio.h pwd.h string.h stdlib.h errno.h libgen.h fcntl.h utmp.h time.h stdint.h])
+ 
+ AC_OUTPUT
+
+
+-- Sunday September 03, 2006 02:35:11 AM EDT --
+-- add AC_PROG_CC --
+
+--- configure.ac.bkup	2006-09-03 02:33:23.000000000 -0400
++++ configure.ac	2006-09-03 02:35:03.000000000 -0400
+@@ -2,9 +2,11 @@
+ 
+ AC_INIT([libterm], [devel])
+ AC_CONFIG_SRCDIR([init.c])
+-
+ AC_CONFIG_HEADERS([config.h])
+ 
++AC_PROG_CC
++
++AC_INCLUDES_DEFAULT
+ AC_CHECK_HEADERS([sys/ioctl.h sys/types.h sys/stat.h unistd.h stdio.h pwd.h string.h stdlib.h errno.h libgen.h fcntl.h utmp.h time.h stdint.h])
+ 
+ AC_OUTPUT
+
+
+-- Sunday September 03, 2006 02:30:23 AM EDT --
+-- all on one line? --
+
+--- configure.ac.bkup	2006-09-03 02:29:34.000000000 -0400
++++ configure.ac	2006-09-03 02:30:18.000000000 -0400
+@@ -5,21 +5,6 @@
+ 
+ AC_CONFIG_HEADERS([config.h])
+ 
+-AC_CHECK_HEADERS([
+- sys/ioctl.h
+- sys/types.h
+- sys/stat.h
+- unistd.h
+- stdio.h
+- pwd.h
+- string.h
+- stdlib.h
+- errno.h
+- libgen.h
+- fcntl.h
+- utmp.h
+- time.h
+- stdint.h
+-])
++AC_CHECK_HEADERS([sys/ioctl.h sys/types.h sys/stat.h unistd.h stdio.h pwd.h string.h stdlib.h errno.h libgen.h fcntl.h utmp.h time.h stdint.h])
+ 
+ AC_OUTPUT
+
+
+-- Sunday September 03, 2006 01:41:29 AM EDT --
+-- try quoting it... --
+
+--- configure.ac.bkup	2006-09-03 01:40:35.000000000 -0400
++++ configure.ac	2006-09-03 01:41:26.000000000 -0400
+@@ -5,7 +5,7 @@
+ 
+ AC_CONFIG_HEADERS([config.h])
+ 
+-AC_CHECK_HEADERS(
++AC_CHECK_HEADERS([
+  sys/ioctl.h
+  sys/types.h
+  sys/stat.h
+@@ -20,6 +20,6 @@
+  utmp.h
+  time.h
+  stdint.h
+-)
++])
+ 
+ AC_OUTPUT
+
+
+-- Sunday September 03, 2006 01:39:57 AM EDT --
+-- try this... --
+
+--- configure.ac.bkup	2006-09-03 01:39:30.000000000 -0400
++++ configure.ac	2006-09-03 01:39:51.000000000 -0400
+@@ -6,20 +6,20 @@
+ AC_CONFIG_HEADERS([config.h])
+ 
+ AC_CHECK_HEADERS(
+-	sys/ioctl.h
+-	sys/types.h
+-	sys/stat.h
+-	unistd.h
+-	stdio.h
+-	pwd.h
+-	string.h
+-	stdlib.h
+-	errno.h
+-	libgen.h
+-	fcntl.h
+-	utmp.h
+-	time.h
+-	stdint.h
++ sys/ioctl.h
++ sys/types.h
++ sys/stat.h
++ unistd.h
++ stdio.h
++ pwd.h
++ string.h
++ stdlib.h
++ errno.h
++ libgen.h
++ fcntl.h
++ utmp.h
++ time.h
++ stdint.h
+ )
+ 
+ AC_OUTPUT
+
+
+-- Sunday September 03, 2006 01:33:09 AM EDT --
+-- uhh... --
+
+--- configure.ac.bkup	2006-09-03 01:32:58.000000000 -0400
++++ configure.ac	2006-09-03 01:33:07.000000000 -0400
+@@ -6,8 +6,8 @@
+ AC_CONFIG_HEADERS([config.h])
+ 
+ AC_CHECK_HEADERS(
+-	sys/types.h
+ 	sys/ioctl.h
++	sys/types.h
+ 	sys/stat.h
+ 	unistd.h
+ 	stdio.h
+
+
+-- Sunday September 03, 2006 01:22:45 AM EDT --
+-- NEW FILE: first attempt at a configure script... --
+
+--- configure.ac.bkup	2006-09-02 17:22:12.000000000 -0400
++++ configure.ac	2006-09-03 01:22:36.000000000 -0400
+@@ -0,0 +1,25 @@
++# Process w/ autoconf
++
++AC_INIT([libterm], [devel])
++AC_CONFIG_SRCDIR([init.c])
++
++AC_CONFIG_HEADERS([config.h])
++
++AC_CHECK_HEADERS(
++	sys/types.h
++	sys/ioctl.h
++	sys/stat.h
++	unistd.h
++	stdio.h
++	pwd.h
++	string.h
++	stdlib.h
++	errno.h
++	libgen.h
++	fcntl.h
++	utmp.h
++	time.h
++	stdint.h
++)
++
++AC_OUTPUT
+
+
+-- Saturday September 02, 2006 04:56:51 PM EDT --
+-- change to new FATAL_ERR definition --
+
+--- init.c.bkup	2006-09-02 16:55:55.000000000 -0400
++++ init.c	2006-09-02 16:56:35.000000000 -0400
+@@ -24,4 +24,4 @@
+ 	    (errno == ENOENT || errno == ESRCH || errno == EBADF ||
+ 	     errno == EPERM)
+ 	   )) FIXABLE_LTM_ERR(EINVAL)
+-	else if(pwd_entry == -1) FATAL_ERR("getpwuid", getuid(), errno)
++	else if(pwd_entry == -1) FATAL_ERR("getpwuid", getuid())
+
+
+-- Saturday September 02, 2006 04:54:13 PM EDT --
+-- change to new FATAL_ERR and FIXABLE_SYS_ERR definition --
+
+--- process.c.bkup	2006-09-02 16:53:48.000000000 -0400
++++ process.c	2006-09-02 16:54:03.000000000 -0400
+@@ -19,5 +19,5 @@
+                    errno == ENAMETOOLONG ||
+                    errno == ENOENT ||
+                    errno == ENOEXEC ||
+-                   errno == ENOTDIR) FIXABLE_SYS_ERR("execl", path, errno)
+-		else FATAL_ERR("execl", path, errno)
++                   errno == ENOTDIR) FIXABLE_SYS_ERR("execl", path)
++		else FATAL_ERR("execl", path)
+
+
+-- Saturday September 02, 2006 04:53:36 PM EDT --
+-- change to new FATAL_ERR definition --
+
+--- unix98.c.bkup	2006-09-02 16:53:13.000000000 -0400
++++ unix98.c	2006-09-02 16:53:27.000000000 -0400
+@@ -9,10 +9,10 @@
+ 	master = fopen("/dev/ptmx", "r+");
+ 	/* This should always be successful - if not, there's nothing anyone
+ 	 * can do about it. */
+-	if(!master) FATAL_ERR("fopen", "/dev/ptmx", errno)
++	if(!master) FATAL_ERR("fopen", "/dev/ptmx")
+ 
+ 	err = ioctl(fileno(master), TIOCSPTLCK, &unlock);
+ 	/* all errors from ioctl are weird and unfixable */
+-	if(err == -1) FATAL_ERR("ioctl", "TIOCSPTLCK", errno)
++	if(err == -1) FATAL_ERR("ioctl", "TIOCSPTLCK")
+ 
+ 
+
+
+-- Saturday September 02, 2006 04:22:23 AM EDT --
+-- added macro for dev_t composition stuff... --
+
+--- ptydev.h.bkup	2006-09-01 23:43:22.000000000 -0400
++++ ptydev.h	2006-09-02 04:22:11.000000000 -0400
+@@ -1,13 +1,42 @@
+ #ifndef PTYDEV_H
+ #define PTYDEV_H
+ 
+-#define UNIX98_PTY (0)
+-#define BSD_PTY    (1)
+-#define FUNC_PTY   (2)
++#define UNIX98_PTY 0
++#define BSD_PTY    1
++#define FUNC_PTY   2
+ 
+ /* this should be enough... */
+ #define PTY_PATH_LEN 32
+ 
++/* From here to... */
++/* Since major is a function on SVR4, we can't use `ifndef major'.  */
++#if MAJOR_IN_MKDEV
++# include <sys/mkdev.h>
++# define HAVE_MAJOR
++#endif
++#if MAJOR_IN_SYSMACROS
++# include <sys/sysmacros.h>
++# define HAVE_MAJOR
++#endif
++#ifdef major			/* Might be defined in sys/types.h.  */
++# define HAVE_MAJOR
++#endif
++
++#ifndef HAVE_MAJOR
++# define major(dev)  (((dev) >> 8) & 0xff)
++# define minor(dev)  ((dev) & 0xff)
++# define makedev(maj, min)  (((maj) << 8) | (min))
++#endif
++#undef HAVE_MAJOR
++
++#if ! defined makedev && defined mkdev
++# define makedev(maj, min)  mkdev (maj, min)
++#endif
++/* ...here is taken from the GNU Coreutils project. URL:
++ * http://cvs.savannah.gnu.org/viewcvs/coreutils/src/system.h?rev=1.159&root=coreutils&view=markup
++ * Lines 72 to 94 
++ */
++
+ struct ptydev {
+ 	u1 type;
+ 	FILE * pty_master;
+
+
+-- Friday September 01, 2006 08:56:22 PM EDT --
+-- NEW FILE: started on node creator --
+
+--- trynode.c.bkup	2006-09-01 18:03:45.000000000 -0400
++++ trynode.c	2006-09-01 20:56:13.000000000 -0400
+@@ -0,0 +1,51 @@
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++#include <unistd.h>
++#include <string.h>
++
++#include "libterm.h>
++
++char * unix98_paths[] = {
++	"/dev/pty",
++	"/tmp/pts/",
++	"/tmp/pty",
++	"~/.pts/",
++	NULL
++};
++
++char * bsdpty_ptmx_paths[] = {
++	"/tmp/pt/",
++	"~/.pt/",
++	NULL
++};
++
++char * try_create(char * orig, char type, int major, int minor, char * paths[]) {
++	int i, len, err;
++	mode_t mknod_mode;
++	char * path
++
++	for(i = 0; paths[i]; i++) {
++		path = paths[i];
++		len = strlen(path);
++
++		if(path[len-1] == '/')
++			if(mkdir(path, 0) == -1) {
++				if(errno == EACCES ||
++				   errno == ENOENT ||
++				   errno == ENOTDIR) continue;
++				else if(errno == EEXIST);
++				else FATAL_ERR("mkdir", path)
++			}
++		
++		if(type == 'b')      mknod_mode = S_IFBLK;
++		else if(type == 'c') mknod_mode = S_IFCHR;
++		else FIXABLE_LTM_ERR(EINVAL)
++
++		
++	}
++}
++char * ptmx_try_create() {
++	char path[PTY_PATH_LEN];
++
++	
+
+
+-- Friday September 01, 2006 08:55:01 PM EDT --
+-- standardize pty path size --
+
+--- ptydev.h.bkup	2006-09-01 20:09:12.000000000 -0400
++++ ptydev.h	2006-09-01 20:54:54.000000000 -0400
+@@ -5,6 +5,9 @@
+ #define BSD_PTY    (1)
+ #define FUNC_PTY   (2)
+ 
++/* this should be enough... */
++#define PTY_PATH_LEN 32
++
+ struct ptydev {
+ 	u1 type;
+ 	FILE * pty_master;
+
+
+-- Wednesday August 30, 2006 03:01:01 AM EDT --
+-- fixed some stuff... --
+
+--- error.c.bkup	2006-08-29 18:27:53.000000000 -0400
++++ error.c	2006-08-30 03:00:54.000000000 -0400
+@@ -3,24 +3,30 @@
+ 
+ #include "libterm.h"
+ 
+-struct error_info curerr = {0, 0, 0};
++struct error_info curerr = {0, 0, 0, 0};
+ int always_dump = 0;
+-FILE * dump_destination = stderr;
++FILE * dump_dest = stderr;
+ 
+ void error_info_dump(struct error_info err, int recover) {
+ 	char * err_str;
+ 
+-	fprintf("libterm ");
++	fprintf(dump_dest, "libterm ");
+ 
+-	if(recover) fprintf("recoverable ");
+-	else        fprintf("unrecoverable ");
++	if(!recover) fprintf(dump_dest, "un");
++	fprintf(dump_dest, "recoverable ");
+ 
+-	fprintf("error:\n");
++	if(!err.sys_func) fprintf(dump_dest, "non-system ");
+ 
+-	fprintf("\tOriginating function: %s\n", err.func_name);
++	fprintf(dump_dest, "error:\n");
++
++	fprintf(dump_dest, "\tOriginating libterm function: %s\n", err.ltm_func);
++
++	if(err.sys_func)
++		fprintf(dump_dest, "\tOriginating system function: %s\n", err.sys_func);
+ 
+ 	err_str = strerror(err.err_no);
+-	fprintf("\tError: %s (%i numerical)\n", err_str, err.err_no);
++	fprintf(dump_dest, "\tError: %s (%i numerical)\n", err_str, err.err_no);
+ 
+-	fprintf("\tData: %s\n", err.data);
++	/* FIXME: this should use some sort of hex dumping function */
++	if(err.data) fprintf(dump_dest, "\tData: %s\n", err.data);
+ }
+
+
+-- Wednesday August 30, 2006 02:26:51 AM EDT --
+-- fix more documentation, change how FIXABLE_LTM_ERR sets curerr, make it call error_info_dump too --
+
+--- error.h.bkup	2006-08-29 19:28:27.000000000 -0400
++++ error.h	2006-08-30 02:26:49.000000000 -0400
+@@ -13,8 +13,8 @@
+  *      libterm function will describe the meaning of each errno value. In
+  *      addition, curerr will be set appropriately for more detailed information
+  *      on where the error occured.
+- * 2. Use FIXABLE_LTM_ERR to set curerr.sys_func to NULL, set errno, set
+- *    curerr.ltm_func to __func__, and return -1
++ * 2. Use FIXABLE_LTM_ERR to set curerr.sys_func to NULL, set errno and
++ *    curerr.err_no, set curerr.ltm_func to __func__, and return -1
+  *      This is used for errors which really originate from a libterm function
+  *      instead of a system call which a libterm function calls. This would look
+  *      exactly the same as error method #1 except that curerr.sys_func is set
+@@ -33,7 +33,7 @@
+  *           if(!errno) {
+  *                // oops! fatal error! red alert! close program ASAP!!!
+  *           }
+- *           else if(!curerr.func_name) {
++ *           else if(!curerr.sys_func) {
+  *                // fixable libterm error. use yer own error reporting
+  *                // thingee or try to fix it!!!
+  *           }
+@@ -73,8 +73,8 @@
+  */
+ #define FIXABLE_LTM_ERR(err) \
+ 	do { \
+-		curerr.sys_func = curerr.data = NULL; \
+-		curerr.ltm_func = __func__; \
++		curerr = {NULL, __func__, NULL, err}; \
++		if(always_dump) error_info_dump(curerr, LTM_TRUE); \
+ 		errno = err; \
+ 		return -1; \
+ 	} while(0);
+
+
+-- Tuesday August 29, 2006 06:24:24 PM EDT --
+-- new error_info struct member - ltm_func - libterm function the error happened in, renamed func_name to sys_func, added macro to use __FUNCTION__ if __func__ is not available (from gcc online docs), rewote some of the documentation comment, removed "err" arg from FIXABLE_SYS_ERR and FATAL_ERR - just use errno --
+
+--- error.h.bkup	2006-08-29 17:56:42.000000000 -0400
++++ error.h	2006-08-29 18:22:41.000000000 -0400
+@@ -13,11 +13,11 @@
+  *      libterm function will describe the meaning of each errno value. In
+  *      addition, curerr will be set appropriately for more detailed information
+  *      on where the error occured.
+- * 2. Use FIXABLE_LTM_ERR to set curerr.func_name to NULL, set errno, and
+- *    return -1
++ * 2. Use FIXABLE_LTM_ERR to set curerr.sys_func to NULL, set errno, set
++ *    curerr.ltm_func to __func__, and return -1
+  *      This is used for errors which really originate from a libterm function
+  *      instead of a system call which a libterm function calls. This would look
+- *      exactly the same as error method #1 except that curerr.func_name is set
++ *      exactly the same as error method #1 except that curerr.sys_func is set
+  *      to NULL because there's really no more information to be given.
+  * 3. Use FATAL_ERR to set curerr, set errno to 0, and return -1
+  *      This would be mainly for weird errors not seen very often. The
+@@ -49,12 +49,21 @@
+  *      so you don't have to partake in this elaborate ritual too often...
+  */
+ 
++/* taken from http://gcc.gnu.org/onlinedocs/gcc-4.1.1/gcc/Function-Names.html */
++#if __STDC_VERSION__ < 199901L
++# if __GNUC__ >= 2
++#  define __func__ __FUNCTION__
++# else
++#  define __func__ "<unknown>"
++# endif
++#endif
++
+ /* program should try to resolve or report the error
+  * used for system call errors
+  */
+-#define FIXABLE_SYS_ERR(name, data, err) \
++#define FIXABLE_SYS_ERR(name, data) \
+ 	do { \
+-		curerr = {name, data, err}; \
++		curerr = {name, __func__, data, errno}; \
+ 		if(always_dump) error_info_dump(curerr, LTM_TRUE); \
+ 		return -1; \
+ 	} while(0);
+@@ -64,7 +73,8 @@
+  */
+ #define FIXABLE_LTM_ERR(err) \
+ 	do { \
+-		curerr.func_name = NULL; \
++		curerr.sys_func = curerr.data = NULL; \
++		curerr.ltm_func = __func__; \
+ 		errno = err; \
+ 		return -1; \
+ 	} while(0);
+@@ -72,16 +82,17 @@
+ /* program should not try to resolve or report the error
+  * used for system call errors
+  */
+-#define FATAL_ERR(name, data, err) \
++#define FATAL_ERR(name, data) \
+ 	do { \
+-		curerr = {name, data, err}; \
++		curerr = {name, __func__, data, errno}; \
+ 		error_info_dump(curerr, LTM_FALSE); \
+ 		errno = 0; \
+ 		return -1; \
+ 	} while(0);
+ 
+ struct error_info {
+-	char * func_name;
++	char * sys_func;
++	char * ltm_func;
+ 	char * data;
+ 	int err_no;
+ };
+
+
+-- Tuesday August 29, 2006 05:56:38 PM EDT --
+-- continue alloc_unix98_pty... --
+
+--- unix98.c.bkup	2006-08-29 16:15:03.000000000 -0400
++++ unix98.c	2006-08-29 17:56:30.000000000 -0400
+@@ -3,11 +3,16 @@
+ 
+ int alloc_unix98_pty() {
+ 	FILE *master, *slave;
+-	char slave_path;
+-	int unlock = 0;
++	char slave_path[32]; /* big enough */
++	int unlock = 0, err;
+ 
+ 	master = fopen("/dev/ptmx", "r+");
++	/* This should always be successful - if not, there's nothing anyone
++	 * can do about it. */
++	if(!master) FATAL_ERR("fopen", "/dev/ptmx", errno)
+ 
+-	ioctl(fileno(master), TIOCSPTLCK, &unlock);
++	err = ioctl(fileno(master), TIOCSPTLCK, &unlock);
++	/* all errors from ioctl are weird and unfixable */
++	if(err == -1) FATAL_ERR("ioctl", "TIOCSPTLCK", errno)
+ 
+ 
+
+
+-- Monday August 28, 2006 03:45:58 AM EDT --
+-- started to make it base-independent --
+
+--- util.c.bkup	2006-08-27 23:32:26.000000000 -0400
++++ util.c	2006-08-28 03:45:57.000000000 -0400
+@@ -1,14 +1,14 @@
+ #include "libterm.h"
+ 
+-s4 num_len(u8 num) {
+-	u8 place = 10;
+-	u4 num_chrs = 1;
++s2 num_len(u8 num, u1 base) {
++	u8 place = base;
++	u1 num_chrs = 1;
+ 	
+ 	while(num >= place) {
+ 		if(num_chrs > 19) return -1;
+ 		
+ 		num_chrs++;
+-		place *= 10;
++		place *= base;
+ 	}
+ 
+ 	return num_chrs;
+
+
+-- Sunday August 27, 2006 11:13:31 PM EDT --
+-- let the input num be a u8 also --
+
+--- util.c.bkup	2006-08-27 23:13:08.000000000 -0400
++++ util.c	2006-08-27 23:13:20.000000000 -0400
+@@ -1,6 +1,6 @@
+ #include "libterm.h"
+ 
+-s4 num_len(int num) {
++s4 num_len(u8 num) {
+ 	u8 place = 10;
+ 	u4 num_chrs = 1;
+ 	
+
+
+-- Sunday August 27, 2006 11:11:45 PM EDT --
+-- fix leetle bug... --
+
+--- util.c.bkup	2006-08-27 23:11:16.000000000 -0400
++++ util.c	2006-08-27 23:11:41.000000000 -0400
+@@ -4,7 +4,7 @@
+ 	u8 place = 10;
+ 	u4 num_chrs = 1;
+ 	
+-	while(num > place) {
++	while(num >= place) {
+ 		if(num_chrs > 19) return -1;
+ 		
+ 		num_chrs++;
+
+
+-- Sunday August 27, 2006 11:08:10 PM EDT --
+-- oop ack... --
+
+--- util.c.bkup	2006-08-27 23:07:56.000000000 -0400
++++ util.c	2006-08-27 23:08:08.000000000 -0400
+@@ -1,8 +1,8 @@
+ #include "libterm.h"
+ 
+-s32 num_len(int num) {
+-	u64 place = 10;
+-	u32 num_chrs = 1;
++s4 num_len(int num) {
++	u8 place = 10;
++	u4 num_chrs = 1;
+ 	
+ 	while(num > place) {
+ 		if(num_chrs > 19) return -1;
+
+
+-- Sunday August 27, 2006 11:07:25 PM EDT --
+-- stdio.h (for ptydev.h) --
+
+--- libterm.h.bkup	2006-08-27 23:07:04.000000000 -0400
++++ libterm.h	2006-08-27 23:07:17.000000000 -0400
+@@ -1,6 +1,7 @@
+ #ifndef LIBTERM_H
+ #define LIBTERM_H
+ 
++#include <stdio.h>
+ #include <stdint.h>
+ #include <errno.h>
+ 
+
+
+-- Sunday August 27, 2006 11:06:01 PM EDT --
+-- libterm header --
+
+--- util.c.bkup	2006-08-27 23:05:38.000000000 -0400
++++ util.c	2006-08-27 23:05:59.000000000 -0400
+@@ -1,3 +1,5 @@
++#include "libterm.h"
++
+ s32 num_len(int num) {
+ 	u64 place = 10;
+ 	u32 num_chrs = 1;
+
+
+-- Sunday August 27, 2006 11:05:13 PM EDT --
+-- NEW FILE: time for a utilities file! (the main is there for debugging - to be removed shortly) --
+
+--- util.c.bkup	2006-08-27 22:18:40.000000000 -0400
++++ util.c	2006-08-27 23:04:35.000000000 -0400
+@@ -0,0 +1,17 @@
++s32 num_len(int num) {
++	u64 place = 10;
++	u32 num_chrs = 1;
++	
++	while(num > place) {
++		if(num_chrs > 19) return -1;
++		
++		num_chrs++;
++		place *= 10;
++	}
++
++	return num_chrs;
++}
++
++int main() {
++	return 0;
++}
+
+
+-- Sunday August 27, 2006 10:18:25 PM EDT --
+-- NEW FILE: started writing alloc_unix98_pty --
+
+--- unix98.c.bkup	2006-08-27 19:34:52.000000000 -0400
++++ unix98.c	2006-08-27 22:18:02.000000000 -0400
+@@ -0,0 +1,13 @@
++#include <sys/ioctl.h>
++#include <stdio.h>
++
++int alloc_unix98_pty() {
++	FILE *master, *slave;
++	char slave_path;
++	int unlock = 0;
++
++	master = fopen("/dev/ptmx", "r+");
++
++	ioctl(fileno(master), TIOCSPTLCK, &unlock);
++
++
+
+
+-- Sunday August 27, 2006 06:14:18 PM EDT --
+-- some random stuff, and added more documentation to the comment (I think it needed to be longer, don't you?) --
+
+--- error.h.bkup	2006-08-27 17:47:13.000000000 -0400
++++ error.h	2006-08-27 18:13:58.000000000 -0400
+@@ -5,7 +5,7 @@
+  * If a system call that libterm calls returns an error, there are currently three
+  * means in which these errors are communicated to the program using libterm:
+  *
+- * 1. Use FIXABLE_SYS_ERR to set curerr, leave errno along, and return -1
++ * 1. Use FIXABLE_SYS_ERR to set curerr, leave errno alone, and return -1
+  *      This is used when an error is returned by a system call which libterm
+  *      uses, but the application using libterm could be at fault. This way it
+  *      seems as if the error was actually generated by the libterm function,
+@@ -17,14 +17,36 @@
+  *    return -1
+  *      This is used for errors which really originate from a libterm function
+  *      instead of a system call which a libterm function calls. This would look
+- *      exactly the same as error method #1 except that curerr.name is set to
+- *      NULL because there's really no more information to be given.
++ *      exactly the same as error method #1 except that curerr.func_name is set
++ *      to NULL because there's really no more information to be given.
+  * 3. Use FATAL_ERR to set curerr, set errno to 0, and return -1
+  *      This would be mainly for weird errors not seen very often. The
+  *      application should not try to fix errors reported using this method. The
+  *      libterm function returns -1 and sets errno to zero so that the
+  *      application would be able to tell this type of error apart from a
+  *      normal error.
++ *
++ *      Here's roughly what a libterm function call should look like (if it
++ *      returns errors):
++ *
++ *      if(ltm_j_random_libterm_function(blorgh, zblat) == -1) {
++ *           if(!errno) {
++ *                // oops! fatal error! red alert! close program ASAP!!!
++ *           }
++ *           else if(!curerr.func_name) {
++ *                // fixable libterm error. use yer own error reporting
++ *                // thingee or try to fix it!!!
++ *           }
++ *           else {
++ *                // fixable system error. usually the only option here
++ *                // is to use your own error reporting mechanism, because
++ *                // there are too damn many to try to fix all of them...
++ *                // (do try to fix some though!!!)
++ *           }
++ *      }
++ *
++ *      Luckily, you won't have to call very many libterm functions yourself,
++ *      so you don't have to partake in this elaborate ritual too often...
+  */
+ 
+ /* program should try to resolve or report the error
+
+
+-- Sunday August 27, 2006 05:47:05 PM EDT --
+-- more work on error handling for getpwuid --
+
+--- init.c.bkup	2006-08-27 17:24:55.000000000 -0400
++++ init.c	2006-08-27 17:46:56.000000000 -0400
+@@ -6,16 +6,22 @@
+ #include "libterm.h"
+ 
+ /* Return values:
+- * EINVAL - current effective UID is not a valid user id
++ * EINVAL - current UID is not a valid user id
+  */
+ int ltm_init() {
+ 	struct passwd * pwd_entry;
+ 
+ 	pwd_entry = getpwuid(getuid());
+ 	/* I hear that many different things might be returned on a uid not
+-	 * found, depending on the UNIX system. This could cause problems.
+-	 * If anyone else finds that their system returns something other
+-	 * than NULL, let me know.
++	 * found, depending on the UNIX system. This would cause problems.
++	 * I've put in some of the possible errno values noted in the getpwuid
++	 * manpage, but it's probably not all of them. If anyone finds that
++	 * their system returns anything other than the values handled here,
++	 * let me know.
+ 	 */
+-	if(!pwd_entry) FIXABLE_LTM_ERR(EINVAL)
+-	else if(pwd_entry == -1) 
++	if(!pwd_entry ||
++	   (pwd_entry == -1 && 
++	    (errno == ENOENT || errno == ESRCH || errno == EBADF ||
++	     errno == EPERM)
++	   )) FIXABLE_LTM_ERR(EINVAL)
++	else if(pwd_entry == -1) FATAL_ERR("getpwuid", getuid(), errno)
+
+
+-- Sunday August 27, 2006 05:24:24 PM EDT --
+-- decided not to make ELOOP and ETXTBSY fixable errors --
+
+--- process.c.bkup	2006-08-27 17:23:40.000000000 -0400
++++ process.c	2006-08-27 17:24:09.000000000 -0400
+@@ -5,7 +5,7 @@
+ #include "libterm.h"
+ 
+ /* Return values:
+- * EACCES, ENAMETOOLONG, ENOENT, ELOOP, ENOEXEC, ENOTDIR, ETXTBSY - see meaning
++ * EACCES, ENAMETOOLONG, ENOENT, ENOEXEC, ENOTDIR - see meaning
+  *     of these errors at execve man page      
+  */
+ int spawn(char * path) {
+@@ -18,8 +18,6 @@
+ 		if(errno == EACCES ||
+                    errno == ENAMETOOLONG ||
+                    errno == ENOENT ||
+-                   errno == ELOOP ||
+                    errno == ENOEXEC ||
+-                   errno == ENOTDIR ||
+-                   errno == ETXTBSY) FIXABLE_SYS_ERR("execl", path, errno)
++                   errno == ENOTDIR) FIXABLE_SYS_ERR("execl", path, errno)
+ 		else FATAL_ERR("execl", path, errno)
+
+
+-- Sunday August 27, 2006 02:02:10 AM EDT --
+-- remove access() call --
+
+--- process.c.bkup	2006-08-27 00:43:23.000000000 -0400
++++ process.c	2006-08-27 02:02:05.000000000 -0400
+@@ -5,18 +5,21 @@
+ #include "libterm.h"
+ 
+ /* Return values:
+- * EACCES - 
++ * EACCES, ENAMETOOLONG, ENOENT, ELOOP, ENOEXEC, ENOTDIR, ETXTBSY - see meaning
++ *     of these errors at execve man page      
+  */
+ int spawn(char * path) {
+ 	pid_t pid;
+ 
+-	if(access(path, X_OK) == -1) {
+-		if(errno == EACCES ||
+-		   errno == ENOENT ||
+-		   errno == ENAMETOOLONG) FIXABLE_SYS_ERR("access", path, errno)
+-		else FATAL_ERR("access", path, errno)
+-	}
+-
+ 	pid = fork();
+ 	if(!pid) {
+ 		execl(path, basename(path));
++
++		if(errno == EACCES ||
++                   errno == ENAMETOOLONG ||
++                   errno == ENOENT ||
++                   errno == ELOOP ||
++                   errno == ENOEXEC ||
++                   errno == ENOTDIR ||
++                   errno == ETXTBSY) FIXABLE_SYS_ERR("execl", path, errno)
++		else FATAL_ERR("execl", path, errno)
+
+
+-- Saturday August 26, 2006 05:28:49 PM EDT --
+-- not that this really matters, but... --
+
+--- ltmint.h.bkup	2006-08-26 17:28:37.000000000 -0400
++++ ltmint.h	2006-08-26 17:28:42.000000000 -0400
+@@ -1,5 +1,5 @@
+-#ifndef LTMSTDINT_H
+-#define LTMSTDINT_H
++#ifndef LTMINT_H
++#define LTMINT_H
+ 
+ typedef uint64_t u8;
+ typedef int64_t  s8;
+
+
+-- Saturday August 26, 2006 05:24:22 PM EDT --
+-- change libterm.h accordingly --
+
+--- libterm.h.bkup	2006-08-26 17:24:10.000000000 -0400
++++ libterm.h	2006-08-26 17:24:15.000000000 -0400
+@@ -7,7 +7,7 @@
+ #define LTM_TRUE  (1)
+ #define LTM_FALSE (0)
+ 
+-#include "ltmstdint.h"
++#include "ltmint.h"
+ #include "error.h"
+ #include "ptydev.h"
+ 
+
+
+-- Saturday August 26, 2006 05:23:26 PM EDT --
+-- it's not standard int, it's ltm int! --
+
+ltmstdint.h moved/renamed to ltmint.h
+
+
+-- Saturday August 26, 2006 05:22:20 PM EDT --
+-- one-time header --
+
+--- ltmstdint.h.bkup	2006-08-26 17:21:24.000000000 -0400
++++ ltmstdint.h	2006-08-26 17:22:15.000000000 -0400
+@@ -1,3 +1,6 @@
++#ifndef LTMSTDINT_H
++#define LTMSTDINT_H
++
+ typedef uint64_t u8;
+ typedef int64_t  s8;
+ typedef uint32_t u4;
+@@ -6,3 +9,5 @@
+ typedef int16_t  s2;
+ typedef uint8_t  u1;
+ typedef int8_t   s1;
++
++#endif
+
+
+-- Saturday August 26, 2006 05:13:28 PM EDT --
+-- one-time header --
+
+--- error.h.bkup	2006-08-26 17:12:43.000000000 -0400
++++ error.h	2006-08-26 17:13:25.000000000 -0400
+@@ -1,3 +1,6 @@
++#ifndef ERROR_H
++#define ERROR_H
++
+ /* Error reporting policy in libterm:
+  * If a system call that libterm calls returns an error, there are currently three
+  * means in which these errors are communicated to the program using libterm:
+@@ -63,3 +66,5 @@
+ 
+ extern struct error_info curerr;
+ extern int always_dump;
++
++#endif
+
+
+-- Saturday August 26, 2006 05:12:39 PM EDT --
+-- one-time header --
+
+--- ptydev.h.bkup	2006-08-26 17:12:02.000000000 -0400
++++ ptydev.h	2006-08-26 17:12:34.000000000 -0400
+@@ -1,3 +1,6 @@
++#ifndef PTYDEV_H
++#define PTYDEV_H
++
+ #define UNIX98_PTY (0)
+ #define BSD_PTY    (1)
+ #define FUNC_PTY   (2)
+@@ -6,4 +9,6 @@
+ 	u1 type;
+ 	FILE * pty_master;
+ 	FILE * pty_slave;
+-};	
++};
++
++#endif
+
+
+-- Saturday August 26, 2006 05:11:57 PM EDT --
+-- one-time header --
+
+--- libterm.h.bkup	2006-08-26 17:11:08.000000000 -0400
++++ libterm.h	2006-08-26 17:11:51.000000000 -0400
+@@ -1,3 +1,6 @@
++#ifndef LIBTERM_H
++#define LIBTERM_H
++
+ #include <stdint.h>
+ #include <errno.h>
+ 
+@@ -7,3 +10,5 @@
+ #include "ltmstdint.h"
+ #include "error.h"
+ #include "ptydev.h"
++
++#endif
+
+
+-- Saturday August 26, 2006 05:10:17 PM EDT --
+-- include ptydev.h --
+
+--- libterm.h.bkup	2006-08-26 17:09:43.000000000 -0400
++++ libterm.h	2006-08-26 17:10:13.000000000 -0400
+@@ -4,4 +4,6 @@
+ #define LTM_TRUE  (1)
+ #define LTM_FALSE (0)
+ 
++#include "ltmstdint.h"
+ #include "error.h"
++#include "ptydev.h"
+
+
+-- Saturday August 26, 2006 05:09:25 PM EDT --
+-- NEW FILE: ...and into here --
+
+--- ltmstdint.h.bkup	2006-08-26 17:09:17.000000000 -0400
++++ ltmstdint.h	2006-08-26 17:09:21.000000000 -0400
+@@ -0,0 +1,8 @@
++typedef uint64_t u8;
++typedef int64_t  s8;
++typedef uint32_t u4;
++typedef int32_t  s4;
++typedef uint16_t u2;
++typedef int16_t  s2;
++typedef uint8_t  u1;
++typedef int8_t   s1;
+
+
+-- Saturday August 26, 2006 05:09:09 PM EDT --
+-- move these out of here... --
+
+--- libterm.h.bkup	2006-08-26 17:08:47.000000000 -0400
++++ libterm.h	2006-08-26 17:09:02.000000000 -0400
+@@ -5,12 +5,3 @@
+ #define LTM_FALSE (0)
+ 
+ #include "error.h"
+-
+-typedef uint64_t u8;
+-typedef int64_t  s8;
+-typedef uint32_t u4;
+-typedef int32_t  s4;
+-typedef uint16_t u2;
+-typedef int16_t  s2;
+-typedef uint8_t  u1;
+-typedef int8_t   s1;
+
+
+-- Saturday August 26, 2006 05:07:13 PM EDT --
+-- NEW FILE: this will probably grow in the future, but for now... --
+
+--- ptydev.h.bkup	2006-08-26 16:58:15.000000000 -0400
++++ ptydev.h	2006-08-26 17:06:56.000000000 -0400
+@@ -0,0 +1,9 @@
++#define UNIX98_PTY (0)
++#define BSD_PTY    (1)
++#define FUNC_PTY   (2)
++
++struct ptydev {
++	u1 type;
++	FILE * pty_master;
++	FILE * pty_slave;
++};	
+
+
+-- Saturday August 26, 2006 04:56:13 PM EDT --
+-- switched to a more appropriate name --
+
+cycle_bsd_ptys.c moved/renamed to bsd.c
+
+
+-- Saturday August 26, 2006 04:29:02 PM EDT --
+-- "I give up, BSD PTYs don't need TIOCSPTLCK", and "moved around to support integration into the rest of libterm" --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-26 16:10:09.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-26 16:28:23.000000000 -0400
+@@ -6,10 +6,35 @@
+ 
+ #include "libterm.h"
+ 
+-int try_next_bsd_pty(char *, int *);
++static int next_bsd_pty(char * ident, int * init) {
++	if(*init) {
++		*init = 0;
++		
++		ident[0] = 'p';
++		ident[1] = '0';
++		
++		return LTM_TRUE;
++	}
++
++	if(ident[1] == 'f') {
++		if(ident[0] == 'z') ident[0] = 'a';
++		else if(ident[0] == 'e') return LTM_FALSE;
++		else ident[0]++;
+ 
+-int main() {
+-	int lock = 1, init = 1, tiocsptlck = TIOCSPTLCK;
++		ident[1] = '0';
++	}
++	else if(ident[1] == '9') ident[1] = 'a';
++	else ident[1]++;
++
++	return LTM_TRUE;
++}
++
++/* FIXME: This needs to be edited when we have
++ * a general infrastructure for trying different
++ * PTY types.
++ */
++int find_unused_bsd_pty() {
++	int init = 1;
+ 	FILE *pty_file, *tty_file;
+ 	char tty_path[11], pty_path[11], tty_spc[2];
+ 	
+@@ -17,7 +42,7 @@
+ 	strcpy(pty_path, "/dev/pty");
+ 	pty_path[10] = tty_path[10] = 0;
+ 
+-	while(try_next_bsd_pty(tty_spc, &init)) {
++	while(next_bsd_pty(tty_spc, &init)) {
+ 		pty_path[8] = tty_path[8] = tty_spc[0];
+ 		pty_path[9] = tty_path[9] = tty_spc[1];
+ 
+@@ -31,7 +56,6 @@
+ 				printf("Could not open pty slave %s: %s\n",
+ 						tty_path, strerror(errno));
+ 			else {
+-				//ioctl(fileno(pty_file), TIOCSPTLCK, &lock);
+ 				fclose(tty_file);
+ 			}
+ 			fclose(pty_file);
+@@ -40,26 +64,3 @@
+ 
+ 	return 0;
+ }
+-
+-int try_next_bsd_pty(char * ident, int * init) {
+-	if(*init) {
+-		*init = 0;
+-		
+-		ident[0] = 'p';
+-		ident[1] = '0';
+-		
+-		return LTM_TRUE;
+-	}
+-
+-	if(ident[1] == 'f') {
+-		if(ident[0] == 'z') ident[0] = 'a';
+-		else if(ident[0] == 'e') return LTM_FALSE;
+-		else ident[0]++;
+-
+-		ident[1] = '0';
+-	}
+-	else if(ident[1] == '9') ident[1] = 'a';
+-	else ident[1]++;
+-
+-	return LTM_TRUE;
+-}
+
+
+-- Saturday August 26, 2006 01:30:47 AM EDT --
+-- if anyone ever asks me, yes it does make me happier to do it this way! --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-26 01:30:05.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-26 01:30:28.000000000 -0400
+@@ -6,7 +6,7 @@
+ 
+ #include "libterm.h"
+ 
+-int try_next_bsd_pty(char[], int *);
++int try_next_bsd_pty(char *, int *);
+ 
+ int main() {
+ 	int lock = 1, init = 1, tiocsptlck = TIOCSPTLCK;
+@@ -41,7 +41,7 @@
+ 	return 0;
+ }
+ 
+-int try_next_bsd_pty(char ident[], int * init) {
++int try_next_bsd_pty(char * ident, int * init) {
+ 	if(*init) {
+ 		*init = 0;
+ 		
+
+
+-- Saturday August 26, 2006 01:02:25 AM EDT --
+-- gotta love prototypes... --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-26 01:02:16.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-26 01:02:21.000000000 -0400
+@@ -6,7 +6,7 @@
+ 
+ #include "libterm.h"
+ 
+-int try_next_bsd_pty(char[], int);
++int try_next_bsd_pty(char[], int *);
+ 
+ int main() {
+ 	int lock = 1, init = 1, tiocsptlck = TIOCSPTLCK;
+
+
+-- Saturday August 26, 2006 01:00:35 AM EDT --
+-- is that a cool system or what??!!?? --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-26 00:56:19.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-26 01:00:28.000000000 -0400
+@@ -9,8 +9,7 @@
+ int try_next_bsd_pty(char[], int);
+ 
+ int main() {
+-	int lock = 1;
+-	int tiocsptlck = TIOCSPTLCK;
++	int lock = 1, init = 1, tiocsptlck = TIOCSPTLCK;
+ 	FILE *pty_file, *tty_file;
+ 	char tty_path[11], pty_path[11], tty_spc[2];
+ 	
+@@ -18,7 +17,7 @@
+ 	strcpy(pty_path, "/dev/pty");
+ 	pty_path[10] = tty_path[10] = 0;
+ 
+-	for(try_next_bsd_pty(tty_spc, 1); tty_spc[0]; try_next_bsd_pty(tty_spc, 0)) {
++	while(try_next_bsd_pty(tty_spc, &init)) {
+ 		pty_path[8] = tty_path[8] = tty_spc[0];
+ 		pty_path[9] = tty_path[9] = tty_spc[1];
+ 
+@@ -42,19 +41,19 @@
+ 	return 0;
+ }
+ 
+-int try_next_bsd_pty(char ident[], int init) {
+-	if(init) {
++int try_next_bsd_pty(char ident[], int * init) {
++	if(*init) {
++		*init = 0;
++		
+ 		ident[0] = 'p';
+ 		ident[1] = '0';
+-		return 0;
++		
++		return LTM_TRUE;
+ 	}
+ 
+ 	if(ident[1] == 'f') {
+ 		if(ident[0] == 'z') ident[0] = 'a';
+-		else if(ident[0] == 'e') {
+-			ident[0] = 0;
+-			return 0;
+-		}
++		else if(ident[0] == 'e') return LTM_FALSE;
+ 		else ident[0]++;
+ 
+ 		ident[1] = '0';
+@@ -62,5 +61,5 @@
+ 	else if(ident[1] == '9') ident[1] = 'a';
+ 	else ident[1]++;
+ 
+-	return 0;
++	return LTM_TRUE;
+ }
+
+
+-- Friday August 25, 2006 03:39:02 AM EDT --
+-- oops again --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-25 03:38:47.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-25 03:38:59.000000000 -0400
+@@ -55,7 +55,7 @@
+ 			ident[0] = 0;
+ 			return 0;
+ 		}
+-		else [0]++;
++		else ident[0]++;
+ 
+ 		ident[1] = '0';
+ 	}
+
+
+-- Friday August 25, 2006 03:38:34 AM EDT --
+-- oops --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-25 03:38:23.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-25 03:38:31.000000000 -0400
+@@ -6,7 +6,7 @@
+ 
+ #include "libterm.h"
+ 
+-int try_next_bsd_pty(char **);
++int try_next_bsd_pty(char[], int);
+ 
+ int main() {
+ 	int lock = 1;
+
+
+-- Friday August 25, 2006 03:37:58 AM EDT --
+-- make tty_spc an array too --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-25 03:33:40.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-25 03:37:49.000000000 -0400
+@@ -12,15 +12,13 @@
+ 	int lock = 1;
+ 	int tiocsptlck = TIOCSPTLCK;
+ 	FILE *pty_file, *tty_file;
+-	char tty_path[11]; /* strlen("/dev/ttyp0") + 1 */
+-	char pty_path[11]; /* strlen("/dev/ptyp0") + 1 */
+-	char * tty_spc = 0;
++	char tty_path[11], pty_path[11], tty_spc[2];
+ 	
+ 	strcpy(tty_path, "/dev/tty");
+ 	strcpy(pty_path, "/dev/pty");
+ 	pty_path[10] = tty_path[10] = 0;
+ 
+-	for(try_next_bsd_pty(&tty_spc); tty_spc; try_next_bsd_pty(&tty_spc)) {
++	for(try_next_bsd_pty(tty_spc, 1); tty_spc[0]; try_next_bsd_pty(tty_spc, 0)) {
+ 		pty_path[8] = tty_path[8] = tty_spc[0];
+ 		pty_path[9] = tty_path[9] = tty_spc[1];
+ 
+@@ -41,33 +39,28 @@
+ 		}
+ 	}
+ 
+-	free(tty_spc);
+ 	return 0;
+ }
+ 
+-int try_next_bsd_pty(char ** ident) {
+-	char * d_ptr = *ident;
+-	
+-	if(!d_ptr) {
+-		*ident = strdup("p0");
+-		//if(!*ident) FATAL_ERR("strdup", "p0", errno)
+-		if(!*ident) { printf("Failed to strdup\n"); return -1; }
++int try_next_bsd_pty(char ident[], int init) {
++	if(init) {
++		ident[0] = 'p';
++		ident[1] = '0';
+ 		return 0;
+ 	}
+ 
+-	if(d_ptr[1] == 'f') {
+-		if(d_ptr[0] == 'z') d_ptr[0] = 'a';
+-		else if(d_ptr[0] == 'e') {
+-			free(d_ptr);
+-			*ident = 0;
++	if(ident[1] == 'f') {
++		if(ident[0] == 'z') ident[0] = 'a';
++		else if(ident[0] == 'e') {
++			ident[0] = 0;
+ 			return 0;
+ 		}
+-		else d_ptr[0]++;
++		else [0]++;
+ 
+-		d_ptr[1] = '0';
++		ident[1] = '0';
+ 	}
+-	else if(d_ptr[1] == '9') d_ptr[1] = 'a';
+-	else d_ptr[1]++;
++	else if(ident[1] == '9') ident[1] = 'a';
++	else ident[1]++;
+ 
+ 	return 0;
+ }
+
+
+-- Friday August 25, 2006 03:33:39 AM EDT --
+-- changed some debugging stuff --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-25 03:24:48.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-25 03:33:31.000000000 -0400
+@@ -10,6 +10,7 @@
+ 
+ int main() {
+ 	int lock = 1;
++	int tiocsptlck = TIOCSPTLCK;
+ 	FILE *pty_file, *tty_file;
+ 	char tty_path[11]; /* strlen("/dev/ttyp0") + 1 */
+ 	char pty_path[11]; /* strlen("/dev/ptyp0") + 1 */
+@@ -22,7 +23,7 @@
+ 	for(try_next_bsd_pty(&tty_spc); tty_spc; try_next_bsd_pty(&tty_spc)) {
+ 		pty_path[8] = tty_path[8] = tty_spc[0];
+ 		pty_path[9] = tty_path[9] = tty_spc[1];
+-		printf("%s\n", pty_path);
++
+ 		pty_file = fopen(pty_path, "r+");
+ 		if(!pty_file)
+ 			printf("Could not open pty master %s: %s\n",
+
+
+-- Thursday August 24, 2006 03:31:26 AM EDT --
+-- converted to a for loop, removed unused lable --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-24 03:28:30.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-24 03:31:15.000000000 -0400
+@@ -15,13 +15,11 @@
+ 	char pty_path[11]; /* strlen("/dev/ptyp0") + 1 */
+ 	char * tty_spc = 0;
+ 	
+-	try_next_bsd_pty(&tty_spc);
+-
+ 	strcpy(tty_path, "/dev/tty");
+ 	strcpy(pty_path, "/dev/pty");
+ 	pty_path[10] = tty_path[10] = 0;
+ 
+-	while(tty_spc) {
++	for(try_next_bsd_pty(&tty_spc); tty_spc; try_next_bsd_pty(&tty_spc)) {
+ 		pty_path[8] = tty_path[8] = tty_spc[0];
+ 		pty_path[9] = tty_path[9] = tty_spc[1];
+ 		printf("%s\n", pty_path);
+@@ -40,10 +38,8 @@
+ 			}
+ 			fclose(pty_file);
+ 		}
+-		try_next_bsd_pty(&tty_spc);
+ 	}
+ 
+-end:
+ 	free(tty_spc);
+ 	return 0;
+ }
+
+
+-- Thursday August 24, 2006 03:27:29 AM EDT --
+-- don't do it on every loop iteration --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-24 03:26:59.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-24 03:27:14.000000000 -0400
+@@ -19,11 +19,11 @@
+ 
+ 	strcpy(tty_path, "/dev/tty");
+ 	strcpy(pty_path, "/dev/pty");
++	pty_path[10] = tty_path[10] = 0;
+ 
+ 	while(tty_spc) {
+ 		pty_path[8] = tty_path[8] = tty_spc[0];
+ 		pty_path[9] = tty_path[9] = tty_spc[1];
+-		pty_path[10] = tty_path[10] = 0;
+ 		printf("%s\n", pty_path);
+ 		pty_file = fopen(pty_path, "r+");
+ 		if(!pty_file)
+
+
+-- Thursday August 24, 2006 03:26:31 AM EDT --
+-- make sure the null byte is there --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-24 03:26:02.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-24 03:26:26.000000000 -0400
+@@ -23,6 +23,7 @@
+ 	while(tty_spc) {
+ 		pty_path[8] = tty_path[8] = tty_spc[0];
+ 		pty_path[9] = tty_path[9] = tty_spc[1];
++		pty_path[10] = tty_path[10] = 0;
+ 		printf("%s\n", pty_path);
+ 		pty_file = fopen(pty_path, "r+");
+ 		if(!pty_file)
+
+
+-- Thursday August 24, 2006 03:25:32 AM EDT --
+-- alright fine, I guess arrays are appropriate here... --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-24 03:24:30.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-24 03:25:22.000000000 -0400
+@@ -11,8 +11,8 @@
+ int main() {
+ 	int lock = 1;
+ 	FILE *pty_file, *tty_file;
+-	char * tty_path = malloc(11); /* strlen("/dev/ttyp0") + 1 */
+-	char * pty_path = malloc(11); /* strlen("/dev/ptyp0") + 1 */
++	char tty_path[11]; /* strlen("/dev/ttyp0") + 1 */
++	char pty_path[11]; /* strlen("/dev/ptyp0") + 1 */
+ 	char * tty_spc = 0;
+ 	
+ 	try_next_bsd_pty(&tty_spc);
+@@ -44,8 +44,6 @@
+ 
+ end:
+ 	free(tty_spc);
+-	free(tty_path);
+-	free(pty_path);
+ 	return 0;
+ }
+ 
+
+
+-- Thursday August 24, 2006 03:19:51 AM EDT --
+-- relocated the ending code to a more logical place --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-24 03:18:30.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-24 03:19:43.000000000 -0400
+@@ -59,14 +59,13 @@
+ 		return 0;
+ 	}
+ 
+-	if(d_ptr[0] == 'e' && d_ptr[1] == 'f') {
+-		free(d_ptr);
+-		*ident = 0;
+-		return 0;
+-	}
+-	
+ 	if(d_ptr[1] == 'f') {
+ 		if(d_ptr[0] == 'z') d_ptr[0] = 'a';
++		else if(d_ptr[0] == 'e') {
++			free(d_ptr);
++			*ident = 0;
++			return 0;
++		}
+ 		else d_ptr[0]++;
+ 
+ 		d_ptr[1] = '0';
+
+
+-- Tuesday August 15, 2006 08:30:55 PM EDT --
+-- try it without the ioctl... --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-15 20:30:42.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-15 20:30:50.000000000 -0400
+@@ -34,7 +34,7 @@
+ 				printf("Could not open pty slave %s: %s\n",
+ 						tty_path, strerror(errno));
+ 			else {
+-				ioctl(fileno(pty_file), TIOCSPTLCK, &lock);
++				//ioctl(fileno(pty_file), TIOCSPTLCK, &lock);
+ 				fclose(tty_file);
+ 			}
+ 			fclose(pty_file);
+
+
+-- Monday August 14, 2006 10:43:03 PM EDT --
+-- revert... --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 22:42:55.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 22:43:00.000000000 -0400
+@@ -9,7 +9,7 @@
+ int try_next_bsd_pty(char **);
+ 
+ int main() {
+-	int lock = 0;
++	int lock = 1;
+ 	FILE *pty_file, *tty_file;
+ 	char * tty_path = malloc(11); /* strlen("/dev/ttyp0") + 1 */
+ 	char * pty_path = malloc(11); /* strlen("/dev/ptyp0") + 1 */
+
+
+-- Monday August 14, 2006 10:42:17 PM EDT --
+-- another test... --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 22:42:09.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 22:42:13.000000000 -0400
+@@ -9,7 +9,7 @@
+ int try_next_bsd_pty(char **);
+ 
+ int main() {
+-	int lock = 1;
++	int lock = 0;
+ 	FILE *pty_file, *tty_file;
+ 	char * tty_path = malloc(11); /* strlen("/dev/ttyp0") + 1 */
+ 	char * pty_path = malloc(11); /* strlen("/dev/ptyp0") + 1 */
+
+
+-- Monday August 14, 2006 08:34:34 PM EDT --
+-- reorganization --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 20:27:38.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 20:34:29.000000000 -0400
+@@ -33,8 +33,10 @@
+ 			if(!tty_file)
+ 				printf("Could not open pty slave %s: %s\n",
+ 						tty_path, strerror(errno));
+-			else fclose(tty_file);
+-			ioctl(fileno(pty_file), TIOCSPTLCK, &lock);
++			else {
++				ioctl(fileno(pty_file), TIOCSPTLCK, &lock);
++				fclose(tty_file);
++			}
+ 			fclose(pty_file);
+ 		}
+ 		try_next_bsd_pty(&tty_spc);
+
+
+-- Monday August 14, 2006 08:20:26 PM EDT --
+-- alright, I /think/ I've got it... --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 20:03:09.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 20:20:19.000000000 -0400
+@@ -9,7 +9,7 @@
+ int try_next_bsd_pty(char **);
+ 
+ int main() {
+-	int unlock;
++	int lock = 1;
+ 	FILE *pty_file, *tty_file;
+ 	char * tty_path = malloc(11); /* strlen("/dev/ttyp0") + 1 */
+ 	char * pty_path = malloc(11); /* strlen("/dev/ptyp0") + 1 */
+@@ -29,15 +29,12 @@
+ 			printf("Could not open pty master %s: %s\n",
+ 					pty_path, strerror(errno));
+ 		else {
+-			unlock = 0;
+-			//ioctl(fileno(pty_file), TIOCSPTLCK, &unlock);
+ 			tty_file = fopen(tty_path, "r+");
+ 			if(!tty_file)
+ 				printf("Could not open pty slave %s: %s\n",
+ 						tty_path, strerror(errno));
+ 			else fclose(tty_file);
+-			unlock = 1;
+-			ioctl(fileno(pty_file), TIOCSPTLCK, &unlock);
++			ioctl(fileno(pty_file), TIOCSPTLCK, &lock);
+ 			fclose(pty_file);
+ 		}
+ 		try_next_bsd_pty(&tty_spc);
+
+
+-- Monday August 14, 2006 06:38:13 PM EDT --
+-- fun with locking! --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 18:36:42.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 18:38:08.000000000 -0400
+@@ -9,7 +9,7 @@
+ int try_next_bsd_pty(char **);
+ 
+ int main() {
+-	int unlock = 0;
++	int unlock;
+ 	FILE *pty_file, *tty_file;
+ 	char * tty_path = malloc(11); /* strlen("/dev/ttyp0") + 1 */
+ 	char * pty_path = malloc(11); /* strlen("/dev/ptyp0") + 1 */
+@@ -29,12 +29,15 @@
+ 			printf("Could not open pty master %s: %s\n",
+ 					pty_path, strerror(errno));
+ 		else {
++			unlock = 0;
+ 			//ioctl(fileno(pty_file), TIOCSPTLCK, &unlock);
+ 			tty_file = fopen(tty_path, "r+");
+ 			if(!tty_file)
+ 				printf("Could not open pty slave %s: %s\n",
+ 						tty_path, strerror(errno));
+ 			else fclose(tty_file);
++			unlock = 1;
++			ioctl(fileno(pty_file), TIOCSPTLCK, &unlock);
+ 			fclose(pty_file);
+ 		}
+ 		try_next_bsd_pty(&tty_spc);
+
+
+-- Monday August 14, 2006 06:36:29 PM EDT --
+-- just a test... --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 18:36:05.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 18:36:25.000000000 -0400
+@@ -29,7 +29,7 @@
+ 			printf("Could not open pty master %s: %s\n",
+ 					pty_path, strerror(errno));
+ 		else {
+-			ioctl(fileno(pty_file), TIOCSPTLCK, &unlock);
++			//ioctl(fileno(pty_file), TIOCSPTLCK, &unlock);
+ 			tty_file = fopen(tty_path, "r+");
+ 			if(!tty_file)
+ 				printf("Could not open pty slave %s: %s\n",
+
+
+-- Monday August 14, 2006 06:34:58 PM EDT --
+-- hehe... --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 18:34:15.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 18:34:57.000000000 -0400
+@@ -10,7 +10,7 @@
+ 
+ int main() {
+ 	int unlock = 0;
+-	FILE * pty_file, tty_file;
++	FILE *pty_file, *tty_file;
+ 	char * tty_path = malloc(11); /* strlen("/dev/ttyp0") + 1 */
+ 	char * pty_path = malloc(11); /* strlen("/dev/ptyp0") + 1 */
+ 	char * tty_spc = 0;
+
+
+-- Monday August 14, 2006 06:33:59 PM EDT --
+-- try to open the slave --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 18:29:09.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 18:33:53.000000000 -0400
+@@ -2,13 +2,15 @@
+ #include <string.h>
+ #include <stdlib.h>
+ #include <errno.h>
++#include <sys/ioctl.h>
+ 
+ #include "libterm.h"
+ 
+ int try_next_bsd_pty(char **);
+ 
+ int main() {
+-	FILE * pty_file;
++	int unlock = 0;
++	FILE * pty_file, tty_file;
+ 	char * tty_path = malloc(11); /* strlen("/dev/ttyp0") + 1 */
+ 	char * pty_path = malloc(11); /* strlen("/dev/ptyp0") + 1 */
+ 	char * tty_spc = 0;
+@@ -26,7 +28,15 @@
+ 		if(!pty_file)
+ 			printf("Could not open pty master %s: %s\n",
+ 					pty_path, strerror(errno));
+-		else fclose(pty_file);
++		else {
++			ioctl(fileno(pty_file), TIOCSPTLCK, &unlock);
++			tty_file = fopen(tty_path, "r+");
++			if(!tty_file)
++				printf("Could not open pty slave %s: %s\n",
++						tty_path, strerror(errno));
++			else fclose(tty_file);
++			fclose(pty_file);
++		}
+ 		try_next_bsd_pty(&tty_spc);
+ 	}
+ 
+
+
+-- Monday August 14, 2006 06:15:38 PM EDT --
+-- /dev/pty* are the masters, dumbass --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 18:14:28.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 18:15:29.000000000 -0400
+@@ -8,7 +8,7 @@
+ int try_next_bsd_pty(char **);
+ 
+ int main() {
+-	FILE * tty_file;
++	FILE * pty_file;
+ 	char * tty_path = malloc(11); /* strlen("/dev/ttyp0") + 1 */
+ 	char * pty_path = malloc(11); /* strlen("/dev/ptyp0") + 1 */
+ 	char * tty_spc = 0;
+@@ -21,12 +21,12 @@
+ 	while(tty_spc) {
+ 		pty_path[8] = tty_path[8] = tty_spc[0];
+ 		pty_path[9] = tty_path[9] = tty_spc[1];
+-		printf("%s\n", tty_path);
+-		tty_file = fopen(tty_path, "r+");
+-		if(!tty_file)
++		printf("%s\n", pty_path);
++		pty_file = fopen(pty_path, "r+");
++		if(!pty_file)
+ 			printf("Could not open pty master %s: %s\n",
+-					tty_path, strerror(errno));
+-		else fclose(tty_file);
++					pty_path, strerror(errno));
++		else fclose(pty_file);
+ 		try_next_bsd_pty(&tty_spc);
+ 	}
+ 
+
+
+-- Monday August 14, 2006 05:50:49 PM EDT --
+-- avoid segfault --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 17:50:25.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 17:50:46.000000000 -0400
+@@ -26,7 +26,7 @@
+ 		if(!tty_file)
+ 			printf("Could not open pty master %s: %s\n",
+ 					tty_path, strerror(errno));
+-		fclose(tty_file);
++		else fclose(tty_file);
+ 		try_next_bsd_pty(&tty_spc);
+ 	}
+ 
+
+
+-- Monday August 14, 2006 05:49:29 PM EDT --
+-- comment that out for now... --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 17:48:53.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 17:49:25.000000000 -0400
+@@ -42,7 +42,8 @@
+ 	
+ 	if(!d_ptr) {
+ 		*ident = strdup("p0");
+-		if(!*ident) FATAL_ERR("strdup", "p0", errno)
++		//if(!*ident) FATAL_ERR("strdup", "p0", errno)
++		if(!*ident) { printf("Failed to strdup\n"); return -1; }
+ 		return 0;
+ 	}
+ 
+
+
+-- Monday August 14, 2006 05:48:31 PM EDT --
+-- suppose I should've finished writing that, hmm? --
+
+--- error.c.bkup	2006-08-14 17:46:44.000000000 -0400
++++ error.c	2006-08-14 17:48:17.000000000 -0400
+@@ -19,5 +19,8 @@
+ 
+ 	fprintf("\tOriginating function: %s\n", err.func_name);
+ 
+-	err_str = 
+-	fprintf("\tError: %s (%i numerical)\n", strerror
++	err_str = strerror(err.err_no);
++	fprintf("\tError: %s (%i numerical)\n", err_str, err.err_no);
++
++	fprintf("\tData: %s\n", err.data);
++}
+
+
+-- Monday August 14, 2006 05:44:30 PM EDT --
+-- include the libterm header --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 17:44:12.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 17:44:26.000000000 -0400
+@@ -3,6 +3,8 @@
+ #include <stdlib.h>
+ #include <errno.h>
+ 
++#include "libterm.h"
++
+ int try_next_bsd_pty(char **);
+ 
+ int main() {
+
+
+-- Monday August 14, 2006 05:43:37 PM EDT --
+-- fixed some typos --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 17:42:53.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 17:43:32.000000000 -0400
+@@ -1,6 +1,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <stdlib.h>
++#include <errno.h>
+ 
+ int try_next_bsd_pty(char **);
+ 
+@@ -20,7 +21,7 @@
+ 		pty_path[9] = tty_path[9] = tty_spc[1];
+ 		printf("%s\n", tty_path);
+ 		tty_file = fopen(tty_path, "r+");
+-		if(!tty_fd)
++		if(!tty_file)
+ 			printf("Could not open pty master %s: %s\n",
+ 					tty_path, strerror(errno));
+ 		fclose(tty_file);
+
+
+-- Monday August 14, 2006 05:42:46 PM EDT --
+-- finished making it open the master and report errors --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 17:37:39.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 17:42:34.000000000 -0400
+@@ -5,29 +5,32 @@
+ int try_next_bsd_pty(char **);
+ 
+ int main() {
+-	int tty_fd;
+-	char * tty_file = malloc(11); /* strlen("/dev/ttyp0") + 1 */
+-	char * pty_file = malloc(11); /* strlen("/dev/ptyp0") + 1 */
++	FILE * tty_file;
++	char * tty_path = malloc(11); /* strlen("/dev/ttyp0") + 1 */
++	char * pty_path = malloc(11); /* strlen("/dev/ptyp0") + 1 */
+ 	char * tty_spc = 0;
+ 	
+ 	try_next_bsd_pty(&tty_spc);
+ 
+-	strcpy(tty_file, "/dev/tty");
+-	strcpy(pty_file, "/dev/pty");
++	strcpy(tty_path, "/dev/tty");
++	strcpy(pty_path, "/dev/pty");
+ 
+ 	while(tty_spc) {
+-		pty_file[8] = tty_file[8] = tty_spc[0];
+-		pty_file[9] = tty_file[9] = tty_spc[1];
+-		printf("%s\n", tty_file);
+-		tty_fd = fopen(tty_file, "r+");
+-		if(
++		pty_path[8] = tty_path[8] = tty_spc[0];
++		pty_path[9] = tty_path[9] = tty_spc[1];
++		printf("%s\n", tty_path);
++		tty_file = fopen(tty_path, "r+");
++		if(!tty_fd)
++			printf("Could not open pty master %s: %s\n",
++					tty_path, strerror(errno));
++		fclose(tty_file);
+ 		try_next_bsd_pty(&tty_spc);
+ 	}
+ 
+ end:
+-	if(tty_spc) free(tty_spc);
+-	free(tty_file);
+-	free(pty_file);
++	free(tty_spc);
++	free(tty_path);
++	free(pty_path);
+ 	return 0;
+ }
+ 
+
+
+-- Monday August 14, 2006 04:01:12 PM EDT --
+-- started to make it actually find a usable pty --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 15:39:25.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 16:01:08.000000000 -0400
+@@ -2,18 +2,32 @@
+ #include <string.h>
+ #include <stdlib.h>
+ 
+-void try_next_bsd_pty(char **);
++int try_next_bsd_pty(char **);
+ 
+ int main() {
++	int tty_fd;
++	char * tty_file = malloc(11); /* strlen("/dev/ttyp0") + 1 */
++	char * pty_file = malloc(11); /* strlen("/dev/ptyp0") + 1 */
+ 	char * tty_spc = 0;
+ 	
+ 	try_next_bsd_pty(&tty_spc);
+ 
++	strcpy(tty_file, "/dev/tty");
++	strcpy(pty_file, "/dev/pty");
++
+ 	while(tty_spc) {
+-		printf("/dev/tty%s\n", tty_spc);
++		pty_file[8] = tty_file[8] = tty_spc[0];
++		pty_file[9] = tty_file[9] = tty_spc[1];
++		printf("%s\n", tty_file);
++		tty_fd = fopen(tty_file, "r+");
++		if(
+ 		try_next_bsd_pty(&tty_spc);
+ 	}
+ 
++end:
++	if(tty_spc) free(tty_spc);
++	free(tty_file);
++	free(pty_file);
+ 	return 0;
+ }
+ 
+
+
+-- Monday August 14, 2006 03:04:23 PM EDT --
+-- added missing return value --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 15:04:09.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 15:04:19.000000000 -0400
+@@ -23,7 +23,7 @@
+ 	if(!d_ptr) {
+ 		*ident = strdup("p0");
+ 		if(!*ident) FATAL_ERR("strdup", "p0", errno)
+-		return;
++		return 0;
+ 	}
+ 
+ 	if(d_ptr[0] == 'e' && d_ptr[1] == 'f') {
+
+
+-- Monday August 14, 2006 03:03:41 PM EDT --
+-- changed error macro --
+
+--- cycle_bsd_ptys.c.bkup	2006-08-14 15:03:07.000000000 -0400
++++ cycle_bsd_ptys.c	2006-08-14 15:03:35.000000000 -0400
+@@ -22,7 +22,7 @@
+ 	
+ 	if(!d_ptr) {
+ 		*ident = strdup("p0");
+-		if(!*ident) SET_CURERR("strdup", "p0", errno)
++		if(!*ident) FATAL_ERR("strdup", "p0", errno)
+ 		return;
+ 	}
+ 
+
+
+-- Monday August 14, 2006 02:58:55 PM EDT --
+-- changed macro calls --
+
+--- process.c.bkup	2006-08-14 14:58:22.000000000 -0400
++++ process.c	2006-08-14 14:58:50.000000000 -0400
+@@ -13,8 +13,8 @@
+ 	if(access(path, X_OK) == -1) {
+ 		if(errno == EACCES ||
+ 		   errno == ENOENT ||
+-		   errno == ENAMETOOLONG) SET_CURERR_ONLY("access", path, errno)
+-		else SET_CURERR("access", path, errno)
++		   errno == ENAMETOOLONG) FIXABLE_SYS_ERR("access", path, errno)
++		else FATAL_ERR("access", path, errno)
+ 	}
+ 
+ 	pid = fork();
+
+
+-- Monday August 14, 2006 02:55:30 PM EDT --
+-- add missing backslash --
+
+--- error.h.bkup	2006-08-14 14:55:17.000000000 -0400
++++ error.h	2006-08-14 14:55:26.000000000 -0400
+@@ -50,7 +50,7 @@
+ #define FATAL_ERR(name, data, err) \
+ 	do { \
+ 		curerr = {name, data, err}; \
+-		error_info_dump(curerr, LTM_FALSE);
++		error_info_dump(curerr, LTM_FALSE); \
+ 		errno = 0; \
+ 		return -1; \
+ 	} while(0);
+
+
+-- Monday August 14, 2006 02:54:41 PM EDT --
+-- changed macro call, use the real UID --
+
+--- init.c.bkup	2006-08-14 14:54:02.000000000 -0400
++++ init.c	2006-08-14 14:54:29.000000000 -0400
+@@ -11,11 +11,11 @@
+ int ltm_init() {
+ 	struct passwd * pwd_entry;
+ 
+-	pwd_entry = getpwuid(geteuid());
++	pwd_entry = getpwuid(getuid());
+ 	/* I hear that many different things might be returned on a uid not
+ 	 * found, depending on the UNIX system. This could cause problems.
+ 	 * If anyone else finds that their system returns something other
+ 	 * than NULL, let me know.
+ 	 */
+-	if(!pwd_entry) SET_ERRNO(EINVAL)
++	if(!pwd_entry) FIXABLE_LTM_ERR(EINVAL)
+ 	else if(pwd_entry == -1) 
+
+
+-- Monday August 14, 2006 02:50:07 PM EDT --
+-- renamed error macros --
+
+--- error.h.bkup	2006-08-14 14:46:37.000000000 -0400
++++ error.h	2006-08-14 14:49:59.000000000 -0400
+@@ -2,55 +2,56 @@
+  * If a system call that libterm calls returns an error, there are currently three
+  * means in which these errors are communicated to the program using libterm:
+  *
+- * 1. Use SET_CURERR_ONLY to set curerr, leave errno along, and return -1
+- * 	This is used when an error is returned by a system call which libterm
+- * 	uses, but the application using libterm could be at fault. This way it
+- * 	seems as if the error was actually generated by the libterm function,
+- * 	not the underlying system call. In this case, the documentation for the
+- * 	libterm function will describe the meaning of each errno value. In
+- * 	addition, curerr will be set appropriately for more detailed information
+- * 	on where the error occured.
+- * 2. Use SET_CURERR to set curerr, set errno to 0, and return -1
+- * 	This would be mainly for weird errors not seen very often. The
+- * 	application should not try to fix errors reported using this method. The
+- * 	libterm function returns -1 and sets errno to zero so that the
+- * 	application would be able to tell this type of error apart from a
+- * 	normal error.
+- * 3. Use SET_ERRNO to set curerr.func_name to NULL, set errno, and return -1
+- * 	This is used for errors which really originate from a libterm function
+- * 	instead of a system call which a libterm function calls. This would look
+- * 	exactly the same as error method #1 except that curerr.name is set to
+- * 	NULL because there's really no more information to be given.
++ * 1. Use FIXABLE_SYS_ERR to set curerr, leave errno along, and return -1
++ *      This is used when an error is returned by a system call which libterm
++ *      uses, but the application using libterm could be at fault. This way it
++ *      seems as if the error was actually generated by the libterm function,
++ *      not the underlying system call. In this case, the documentation for the
++ *      libterm function will describe the meaning of each errno value. In
++ *      addition, curerr will be set appropriately for more detailed information
++ *      on where the error occured.
++ * 2. Use FIXABLE_LTM_ERR to set curerr.func_name to NULL, set errno, and
++ *    return -1
++ *      This is used for errors which really originate from a libterm function
++ *      instead of a system call which a libterm function calls. This would look
++ *      exactly the same as error method #1 except that curerr.name is set to
++ *      NULL because there's really no more information to be given.
++ * 3. Use FATAL_ERR to set curerr, set errno to 0, and return -1
++ *      This would be mainly for weird errors not seen very often. The
++ *      application should not try to fix errors reported using this method. The
++ *      libterm function returns -1 and sets errno to zero so that the
++ *      application would be able to tell this type of error apart from a
++ *      normal error.
+  */
+ 
+ /* program should try to resolve or report the error
+  * used for system call errors
+  */
+-#define SET_CURERR_ONLY(name, data, err) \
++#define FIXABLE_SYS_ERR(name, data, err) \
+ 	do { \
+ 		curerr = {name, data, err}; \
+ 		if(always_dump) error_info_dump(curerr, LTM_TRUE); \
+ 		return -1; \
+ 	} while(0);
+ 
+-/* program should not try to resolve or report the error
+- * used for system call errors
++/* program should try to resolve or report the error
++ * used for errors set by a libterm function
+  */
+-#define SET_CURERR(name, data, err) \
++#define FIXABLE_LTM_ERR(err) \
+ 	do { \
+-		curerr = {name, data, err}; \
+-		error_info_dump(curerr, LTM_FALSE);
+-		errno = 0; \
++		curerr.func_name = NULL; \
++		errno = err; \
+ 		return -1; \
+ 	} while(0);
+ 
+-/* program should try to resolve or report the error
+- * used for errors set by a libterm function
++/* program should not try to resolve or report the error
++ * used for system call errors
+  */
+-#define SET_ERRNO(err) \
++#define FATAL_ERR(name, data, err) \
+ 	do { \
+-		curerr.func_name = NULL; \
+-		errno = err; \
++		curerr = {name, data, err}; \
++		error_info_dump(curerr, LTM_FALSE);
++		errno = 0; \
+ 		return -1; \
+ 	} while(0);
+ 
+
+

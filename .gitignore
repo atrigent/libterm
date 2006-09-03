@@ -1,0 +1,6 @@
+configure
+autom4te.cache/*
+autoscan-2.59.log
+config.h
+config.status
+config.log

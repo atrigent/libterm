@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# command line arguments to date (used to timestamp changes)
+DATEARGS="+%A %B %d, %G %r %Z"
+
+if [ "$1" = "" -a "$2" = "" ]; then
+	echo "clmv requires two arguments - the original filename and the new filename.";
+	exit 1;
+fi
+
+if [ ! -f "$1" ]; then
+	echo "$1 does not exist!";
+	exit 1;
+fi
+
+mv $1 $2;
+
+echo -n "Enter why you moved/renamed this file: ";
+read -a DESC;
+
+if [ ! -f ChangeLog ]; then touch ChangeLog; fi
+cp ChangeLog ChangeLog.cpy;
+
+echo "-- `date "$DATEARGS"` --
+-- ${DESC[@]} --
+
+$1 moved/renamed to $2
+
+" > ChangeLog;
+
+cat ChangeLog.cpy >> ChangeLog;
+rm ChangeLog.cpy;
