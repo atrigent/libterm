@@ -43,7 +43,7 @@ int main() {
 	int fd, count;
 	char * tmp;
 
-	fd = open("/var/log/wtmp.1", O_RDONLY);
+	fd = open("/var/log/wtmp", O_RDONLY);
 	if(fd == -1) {
 		printf("Could not open utmp/wtmp: %s\n", strerror(errno));
 		return 1;
