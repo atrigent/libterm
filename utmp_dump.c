@@ -56,13 +56,10 @@ int main() {
 		if(tmp) printf("%s\n", tmp);
 		else printf("%i\n", utmp.ut_type);
 		printf("\tut_pid:      %i\n", utmp.ut_pid);
-		/* assuming UT_LINESIZE is 12 */
-		printf("\tut_line:     %.12s\n", utmp.ut_line);
+		printf("\tut_line:     %.*s\n", UT_LINESIZE, utmp.ut_line);
 		printf("\tut_id:       %.4s\n", utmp.ut_id);
-		/* assuming UT_NAMESIZE is 32 */
-		printf("\tut_user:     %.32s\n", utmp.ut_user);
-		/* assuming UT_HOSTSIZE is 256 */
-		printf("\tut_host:     %.256s\n", utmp.ut_host);
+		printf("\tut_user:     %.*s\n", UT_NAMESIZE, utmp.ut_user);
+		printf("\tut_host:     %.*s\n", UT_HOSTSIZE, utmp.ut_host);
 		
 		printf("\tut_exit:\n");
 		printf("\t\te_termination:  %i\n", utmp.ut_exit.e_termination);
@@ -75,15 +72,17 @@ int main() {
 		printf("\t\ttv_usec:        %i\n", utmp.ut_tv.tv_usec);
 
 		v6addr = utmp.ut_addr_v6;
-		printf("\tut_addr_v6:  %x:%x:%x:%x:%x:%x:%x:%x\n",
-				v6addr[0] >> 16,
-				v6addr[0] & 0xffff,
-				v6addr[1] >> 16,
-				v6addr[1] & 0xffff,
+		printf("\tut_addr_v6:  %x:%x:%x:%x:%x:%x:%u.%u.%u.%u\n",
+				v6addr[3] >> 16,
+				v6addr[3] & 0xffff
 				v6addr[2] >> 16,
 				v6addr[2] & 0xffff,
-				v6addr[3] >> 16,
-				v6addr[3] & 0xffff);
+				v6addr[1] >> 16,
+				v6addr[1] & 0xffff,
+				v6addr[0] >> 24,
+				(v6addr[0] >> 16) & 0xff,
+				(v6addr[0] >> 8) & 0xff,
+				v6addr[0] & 0xff);
 	}
 	
 	return 0;
