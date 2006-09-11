@@ -1,3 +1,99 @@
+-- Sunday September 10, 2006 11:04:44 PM EDT --
+-- more work done on try_create (still not done) --
+
+--- trynode.c.bkup	2006-09-10 21:50:57.000000000 -0400
++++ trynode.c	2006-09-10 23:04:35.000000000 -0400
+@@ -3,6 +3,7 @@
+ #include <fcntl.h>
+ #include <unistd.h>
+ #include <string.h>
++#include <stdio.h>
+ 
+ #include "libterm.h"
+ 
+@@ -21,28 +22,37 @@
+ };
+ 
+ char * try_create(char * orig, char type, dev_t device, char * paths[]) {
+-	int i, len, err;
+-	mode_t mknod_mode;
+-	char * path
++	int i, len, created;
++	mode_t mode;
++	struct stat stat;
++	char path[PTY_PATH_LEN];
+ 
+ 	for(i = 0; paths[i]; i++) {
+-		path = paths[i];
+-		len = strlen(path);
++		len = strlen(paths[i]);
+ 
+-		if(path[len-1] == '/')
+-			if(mkdir(path, 0) == -1) {
++		if(paths[i][len-1] == '/') {
++			if(mkdir(paths[i], 0) == -1) {
+ 				if(errno == EACCES ||
+ 				   errno == ENOENT ||
+ 				   errno == ENOTDIR) continue;
+ 				else if(errno == EEXIST);
+-				else FATAL_ERR("mkdir", path)
++				else FATAL_ERR("mkdir", paths[i])
+ 			}
++
++			created = LTM_TRUE;
++		}
++		else created = LTM_FALSE;
+ 		
+-		if(type == 'b')      mknod_mode = S_IFBLK;
+-		else if(type == 'c') mknod_mode = S_IFCHR;
++		mode = S_IRUSR|S_IWUSR;
++		if(type == 'b')      mode |= S_IFBLK;
++		else if(type == 'c') mode |= S_IFCHR;
+ 		else FIXABLE_LTM_ERR(EINVAL)
+ 
+-		
++		sprintf(path, "%s%s", paths[i], orig);
++
++		if(mknod(path, mode, device) == -1) {
++			if(errno == EEXIST) {
++
+ 	}
+ }
+ char * ptmx_try_create() {
+
+
+-- Sunday September 10, 2006 09:46:44 PM EDT --
+-- use dev_t instead of two arguments... --
+
+--- trynode.c.bkup	2006-09-10 21:21:06.000000000 -0400
++++ trynode.c	2006-09-10 21:46:27.000000000 -0400
+@@ -20,7 +20,7 @@
+ 	NULL
+ };
+ 
+-char * try_create(char * orig, char type, int major, int minor, char * paths[]) {
++char * try_create(char * orig, char type, dev_t device, char * paths[]) {
+ 	int i, len, err;
+ 	mode_t mknod_mode;
+ 	char * path
+
+
+-- Sunday September 10, 2006 09:21:05 PM EDT --
+-- typo --
+
+--- trynode.c.bkup	2006-09-10 21:20:50.000000000 -0400
++++ trynode.c	2006-09-10 21:20:58.000000000 -0400
+@@ -4,7 +4,7 @@
+ #include <unistd.h>
+ #include <string.h>
+ 
+-#include "libterm.h>
++#include "libterm.h"
+ 
+ char * unix98_paths[] = {
+ 	"/dev/pty",
+
+
 -- Sunday September 03, 2006 02:36:58 AM EDT --
 -- ok, THAT was a mistake :-/ --
 
