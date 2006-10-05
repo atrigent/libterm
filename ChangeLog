@@ -1,3 +1,242 @@
+-- Thursday October 05, 2006 10:39:06 AM EDT --
+-- filetype checker thingee --
+
+--- util.c.bkup	2006-10-05 10:11:47.000000000 -0400
++++ util.c	2006-10-05 10:39:00.000000000 -0400
+@@ -1,5 +1,14 @@
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <unistd.h>
++
+ #include "libterm.h"
+ 
++/*
++ * Until I write an integer overflow checker, this is good enough.
++ * Will act strangely if you give it anything of the max length for
++ * that base.
++ */
+ s2 num_len(u8 num, u1 base) {
+ 	u8 place = base;
+ 	s2 num_chrs = 0;
+@@ -8,13 +17,43 @@
+ 		num -= num % place;
+ 		place *= base;
+ 		num_chrs++;
+-		
+ 	}
+ 
+ 	return num_chrs;
+ }
+ 
+-int main() {
+-	num_len(10000000000000000000ULL, 10);
++int file_check_type(u1 * path, u1 * type, dev_t * dev) {
++	struct stat stat;
++
++	if(stat(path, &stat) == -1) {
++		if(errno == ENOENT ||
++		   errno == EACCES ||
++		   errno == ENOTDIR ||
++		   errno == ENAMETOOLONG ||
++		   errno == ELOOP) FIXABLE_LTM_ERR("stat", path)
++		 else FATAL_ERR("stat", path)
++	}
++
++	if(stat.st_mode & S_IFIFO) *type = 'p';
++	else if(stat.st_mode & S_IFCHR) *type = 'c';
++	else if(stat.st_mode & S_IFDIR) *type = 'd';
++	else if(stat.st_mode & S_IFBLK) *type = 'b';
++	else if(stat.st_mode & S_IFREG) *type = '-';
++	else if(stat.st_mode & S_IFLNK) *type = 'l';
++	else if(stat.st_mode & S_IFSOCK) *type = 's';
++	else *type = '?';
++
++	*dev = stat.st_rdev;
++
+ 	return 0;
+ }
++
++int is_chrdev(u1 * path, dev_t inpdev) {
++	u1 type;
++	dev_t dev;
++
++	if(file_check_type(path, &type, &dev) == -1) return -1;
++
++	if(type == 'c' && dev == inpdev) return 1;
++	else return 0;
++}
+
+
+-- Thursday October 05, 2006 09:49:06 AM EDT --
+-- fix warnings... --
+
+--- util.c.bkup	2006-10-05 09:48:57.000000000 -0400
++++ util.c	2006-10-05 09:49:03.000000000 -0400
+@@ -15,6 +15,6 @@
+ }
+ 
+ int main() {
+-	num_len(10000000000000000000, 10);
++	num_len(10000000000000000000ULL, 10);
+ 	return 0;
+ }
+
+
+-- Thursday October 05, 2006 09:48:39 AM EDT --
+-- little test... --
+
+--- util.c.bkup	2006-10-05 09:48:17.000000000 -0400
++++ util.c	2006-10-05 09:48:35.000000000 -0400
+@@ -15,5 +15,6 @@
+ }
+ 
+ int main() {
++	num_len(10000000000000000000, 10);
+ 	return 0;
+ }
+
+
+-- Thursday October 05, 2006 09:37:08 AM EDT --
+-- ok, we're doing this RIGHT this time... --
+
+--- util.c.bkup	2006-10-05 09:34:11.000000000 -0400
++++ util.c	2006-10-05 09:37:02.000000000 -0400
+@@ -1,14 +1,14 @@
+ #include "libterm.h"
+ 
+-s2 num_len(u8 num, u1 base, u1 getmax) {
++s2 num_len(u8 num, u1 base) {
+ 	u8 place = base;
+-	s2 num_chrs = 1, max;
++	s2 num_chrs = 0;
+ 	
+-	if(getmax) max = num_len(-1ULL, base, LTM_FALSE);
+-	
+-	while(num >= place && num_chrs < max) {
+-		num_chrs++;
++	while(num) {
++		num -= num % place;
+ 		place *= base;
++		num_chrs++;
++		
+ 	}
+ 
+ 	return num_chrs;
+
+
+-- Tuesday October 03, 2006 11:04:44 PM EDT --
+-- gah --
+
+--- util.c.bkup	2006-10-03 21:51:21.000000000 -0400
++++ util.c	2006-10-03 23:04:41.000000000 -0400
+@@ -1,10 +1,12 @@
+ #include "libterm.h"
+ 
+-s2 num_len(u8 num, u1 base) {
++s2 num_len(u8 num, u1 base, u1 getmax) {
+ 	u8 place = base;
+-	s2 num_chrs = 1, max = num_len(-1ULL, base);
++	s2 num_chrs = 1, max;
+ 	
+-	while(num >= place && num_chrs > max) {
++	if(getmax) max = num_len(-1ULL, base, LTM_FALSE);
++	
++	while(num >= place && num_chrs < max) {
+ 		num_chrs++;
+ 		place *= base;
+ 	}
+
+
+-- Tuesday October 03, 2006 09:50:24 PM EDT --
+-- more attempts --
+
+--- util.c.bkup	2006-10-03 21:48:22.000000000 -0400
++++ util.c	2006-10-03 21:50:19.000000000 -0400
+@@ -2,9 +2,9 @@
+ 
+ s2 num_len(u8 num, u1 base) {
+ 	u8 place = base;
+-	u1 num_chrs = 1;
++	s2 num_chrs = 1, max = num_len(-1ULL, base);
+ 	
+-	while(num >= place) {
++	while(num >= place && num_chrs > max) {
+ 		num_chrs++;
+ 		place *= base;
+ 	}
+
+
+-- Tuesday October 03, 2006 09:44:44 PM EDT --
+-- attempt... --
+
+--- util.c.bkup	2006-10-03 21:37:13.000000000 -0400
++++ util.c	2006-10-03 21:44:41.000000000 -0400
+@@ -5,8 +5,6 @@
+ 	u1 num_chrs = 1;
+ 	
+ 	while(num >= place) {
+-		if(num_chrs > 19) return -1;
+-		
+ 		num_chrs++;
+ 		place *= base;
+ 	}
+
+
+-- Tuesday October 03, 2006 09:27:02 PM EDT --
+-- start of error handling for mknod... --
+
+--- trynode.c.bkup	2006-10-03 21:23:48.000000000 -0400
++++ trynode.c	2006-10-03 21:26:52.000000000 -0400
+@@ -51,7 +51,10 @@
+ 		sprintf(path, "%s%s", paths[i], orig);
+ 
+ 		if(mknod(path, mode, device) == -1) {
+-			if(errno == EEXIST)
++			if(errno == EACCES ||
++			   errno == ENOENT ||
++			   errno == ENOTDIR) continue;
++			else if(errno == EEXIST && 
+ 
+ 	}
+ }
+
+
+-- Tuesday October 03, 2006 09:22:57 PM EDT --
+-- use mode for mkdir too --
+
+--- trynode.c.bkup	2006-10-03 21:15:40.000000000 -0400
++++ trynode.c	2006-10-03 21:22:49.000000000 -0400
+@@ -29,9 +29,10 @@
+ 
+ 	for(i = 0; paths[i]; i++) {
+ 		len = strlen(paths[i]);
++		mode = S_IRUSR | S_IWUSR;
+ 
+ 		if(paths[i][len-1] == '/') {
+-			if(mkdir(paths[i], 0) == -1) {
++			if(mkdir(paths[i], mode) == -1) {
+ 				if(errno == EACCES ||
+ 				   errno == ENOENT ||
+ 				   errno == ENOTDIR) continue;
+@@ -43,7 +44,6 @@
+ 		}
+ 		else created = LTM_FALSE;
+ 		
+-		mode = S_IRUSR|S_IWUSR;
+ 		if(type == 'b')      mode |= S_IFBLK;
+ 		else if(type == 'c') mode |= S_IFCHR;
+ 		else FIXABLE_LTM_ERR(EINVAL)
+@@ -51,7 +51,7 @@
+ 		sprintf(path, "%s%s", paths[i], orig);
+ 
+ 		if(mknod(path, mode, device) == -1) {
+-			if(errno == EEXIST) {
++			if(errno == EEXIST)
+ 
+ 	}
+ }
+
+
 -- Sunday September 10, 2006 11:04:44 PM EDT --
 -- more work done on try_create (still not done) --
 

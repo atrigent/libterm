@@ -29,9 +29,10 @@ char * try_create(char * orig, char type, dev_t device, char * paths[]) {
 
 	for(i = 0; paths[i]; i++) {
 		len = strlen(paths[i]);
+		mode = S_IRUSR | S_IWUSR;
 
 		if(paths[i][len-1] == '/') {
-			if(mkdir(paths[i], 0) == -1) {
+			if(mkdir(paths[i], mode) == -1) {
 				if(errno == EACCES ||
 				   errno == ENOENT ||
 				   errno == ENOTDIR) continue;
@@ -43,7 +44,6 @@ char * try_create(char * orig, char type, dev_t device, char * paths[]) {
 		}
 		else created = LTM_FALSE;
 		
-		mode = S_IRUSR|S_IWUSR;
 		if(type == 'b')      mode |= S_IFBLK;
 		else if(type == 'c') mode |= S_IFCHR;
 		else FIXABLE_LTM_ERR(EINVAL)
@@ -51,7 +51,10 @@ char * try_create(char * orig, char type, dev_t device, char * paths[]) {
 		sprintf(path, "%s%s", paths[i], orig);
 
 		if(mknod(path, mode, device) == -1) {
-			if(errno == EEXIST) {
+			if(errno == EACCES ||
+			   errno == ENOENT ||
+			   errno == ENOTDIR) continue;
+			else if(errno == EEXIST && 
 
 	}
 }
