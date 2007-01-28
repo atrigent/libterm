@@ -4,46 +4,43 @@
 
 #include "libterm.h"
 
-/*
- * Until I write an integer overflow checker, this is good enough.
- * Will act strangely if you give it anything of the max length for
- * that base.
- */
-s2 num_len(u8 num, u1 base) {
-	u8 place = base;
-	s2 num_chrs = 0;
+s2 numlen(u8 num, u1 base) {
+	u8 place, placemax = -1ULL/base;
+	s2 chrs;
 	
-	while(num) {
-		num -= num % place;
-		place *= base;
-		num_chrs++;
+	for(place = 1, chrs = 0; num; chrs++) {
+		if(place > placemax) num = 0;
+		else {
+			place *= base;
+			num -= num % place;
+		}
 	}
 
-	return num_chrs;
+	return chrs;
 }
 
 int file_check_type(u1 * path, u1 * type, dev_t * dev) {
-	struct stat stat;
+	struct stat statbuf;
 
-	if(stat(path, &stat) == -1) {
+	if(stat(path, &statbuf) == -1) {
 		if(errno == ENOENT ||
 		   errno == EACCES ||
 		   errno == ENOTDIR ||
 		   errno == ENAMETOOLONG ||
-		   errno == ELOOP) FIXABLE_LTM_ERR("stat", path)
-		 else FATAL_ERR("stat", path)
+		   errno == ELOOP) FIXABLE_SYS_ERR("stat", path)
+		else FATAL_ERR("stat", path)
 	}
 
-	if(stat.st_mode & S_IFIFO) *type = 'p';
-	else if(stat.st_mode & S_IFCHR) *type = 'c';
-	else if(stat.st_mode & S_IFDIR) *type = 'd';
-	else if(stat.st_mode & S_IFBLK) *type = 'b';
-	else if(stat.st_mode & S_IFREG) *type = '-';
-	else if(stat.st_mode & S_IFLNK) *type = 'l';
-	else if(stat.st_mode & S_IFSOCK) *type = 's';
+	if(statbuf.st_mode & S_IFIFO) *type = 'p';
+	else if(statbuf.st_mode & S_IFCHR) *type = 'c';
+	else if(statbuf.st_mode & S_IFDIR) *type = 'd';
+	else if(statbuf.st_mode & S_IFBLK) *type = 'b';
+	else if(statbuf.st_mode & S_IFREG) *type = '-';
+	else if(statbuf.st_mode & S_IFLNK) *type = 'l';
+	else if(statbuf.st_mode & S_IFSOCK) *type = 's';
 	else *type = '?';
 
-	*dev = stat.st_rdev;
+	*dev = statbuf.st_rdev;
 
 	return 0;
 }
