@@ -74,7 +74,7 @@ int main() {
 		v6addr = utmp.ut_addr_v6;
 		printf("\tut_addr_v6:  %x:%x:%x:%x:%x:%x:%u.%u.%u.%u\n",
 				v6addr[3] >> 16,
-				v6addr[3] & 0xffff
+				v6addr[3] & 0xffff,
 				v6addr[2] >> 16,
 				v6addr[2] & 0xffff,
 				v6addr[1] >> 16,
