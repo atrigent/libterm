@@ -5,3 +5,4 @@ config.h
 config.status
 config.log
 a.out
+utmp_dump
