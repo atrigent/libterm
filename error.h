@@ -65,9 +65,9 @@
  * EINVAL - As far as I can tell, this would only happen if there's an internal
  *          problem. This usually means that one of the arguments to a function
  *          is invalid.
- * ETXTBSY- Why would libterm ever even try to open something that could ever
- *          in a million years be an executable file? Something is wrong if
- *          we get this error.
+ * ETXTBSY- Why would libterm ever even try to open something with write access
+ *          that could ever in a million years be an executable file? Something
+ *          is wrong if we get this error.
  * ENOMEM - Program should close as soon as possible, I'm not going to try to
  *          write some sort of smart memory reclaiming mechanism.
  * EMFILE - libterm really shouldn't open that many things, unless you're
