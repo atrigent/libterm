@@ -1,6 +1,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "libterm.h"
 
@@ -53,4 +54,13 @@ int is_chrdev(u1 * path, dev_t inpdev) {
 
 	if(type == 'c' && dev == inpdev) return 1;
 	else return 0;
+}
+
+char * get_tmp_dir() {
+	char * tmpdir;
+
+	tmpdir = getenv("TMPDIR");
+	if(!tmpdir) tmpdir = "/tmp";
+
+	return tmpdir;
 }
