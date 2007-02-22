@@ -84,6 +84,8 @@ int try_create(char * orig, char type, dev_t device, char * paths[], char * path
 
 		break;
 	}
+
+	return LTM_TRUE;
 }
 
 int ptmx_try_create(char * path) {

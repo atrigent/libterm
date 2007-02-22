@@ -1,3 +1,19 @@
+-- Thursday February 22, 2007 02:11:36 AM EST --
+-- need a return value... --
+
+--- trynode.c.bkup	2007-02-22 02:11:14.000000000 -0500
++++ trynode.c	2007-02-22 02:11:31.000000000 -0500
+@@ -84,6 +84,8 @@
+ 
+ 		break;
+ 	}
++
++	return LTM_TRUE;
+ }
+ 
+ int ptmx_try_create(char * path) {
+
+
 -- Thursday February 22, 2007 02:06:53 AM EST --
 -- ok, I THINK this should work.... --
 
