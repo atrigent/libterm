@@ -114,7 +114,7 @@
  *       more in the future?
  *   /var/log/{u,w}tmp? (recording logins)
  *   I'll probably use mkstemp or some such thing to make a file buffer
- *   The shell
+ *   The shell (ex: /bin/bash, /bin/sh, etc)
  *
  * As you can see, there isn't much to mess up here. Taking these names into
  * account, here is my verdict for the remaining errors:
@@ -124,7 +124,7 @@
  *          most of the paths we're using are very short? No, not really.
  *          I think this should be a fatal error.
  * ENOTDIR- This means that some component of the path is not a directory.
- *          Again, there isn't much chance of that happening with out limited
+ *          Again, there isn't much chance of that happening with our limited
  *          set of paths. Fatal.
  * EISDIR - This means that the last component of the path is a directory and
  *          it shouldn't be. Again, it seems very unlikely that this will
