@@ -1,3 +1,805 @@
+-- Thursday February 22, 2007 02:06:53 AM EST --
+-- ok, I THINK this should work.... --
+
+--- trynode.c.bkup	2007-02-21 20:32:14.000000000 -0500
++++ trynode.c	2007-02-22 02:06:44.000000000 -0500
+@@ -9,12 +9,12 @@
+ 
+ char * unix98_paths[] = {
+ 	"/dev/pty",
+-	"/tmp/pty",
++	"/tmp/pts/",
+ 	"~/.pts/",
+ 	NULL
+ };
+ 
+-char * bsdpty_ptmx_paths[] = {
++char * bsd_ptmx_paths[] = {
+ 	"/dev/",
+ 	"/tmp/pt/",
+ 	"~/.pt/",
+@@ -40,7 +40,7 @@
+  * Also, if a particular element of paths ends with a /, trynode will attempt
+  * to create a directory with that name.
+  */
+-int try_create(char * orig, char type, dev_t device, char * paths[], char ** path) {
++int try_create(char * orig, char type, dev_t device, char * paths[], char * path) {
+ 	int i, created;
+ 	mode_t mode;
+ 	struct stat stat;
+@@ -63,7 +63,7 @@
+ 		else if(type == 'c') mode |= S_IFCHR;
+ 		else FIXABLE_LTM_ERR(EINVAL)
+ 
+-		sprintf(*path, "%s%s", paths[i], orig);
++		sprintf(path, "%s%s", paths[i], orig);
+ 
+ 		if(mknod(path, mode, device) == -1) {
+ 			if(errno == EACCES ||
+@@ -81,14 +81,16 @@
+ 				FATAL_ERR("mknod", path)
+ 			}
+ 		}
++
++		break;
+ 	}
+ }
+ 
+-int ptmx_try_create(char ** path) {
+-	return try_create("ptmx", 'c', makedev(PTMX_MAJOR, PTMX_MINOR), bsdpty_ptmx_paths, path);
++int ptmx_try_create(char * path) {
++	return try_create("ptmx", 'c', makedev(PTMX_MAJOR, PTMX_MINOR), bsd_ptmx_paths, path);
+ }
+ 
+-int unix98_slave_try_create(u4 num, char ** path) {
++int unix98_slave_try_create(u4 num, char * path) {
+ 	char orig[PTY_PATH_LEN];
+ 
+ 	sprintf(orig, "%u", num);
+@@ -96,18 +98,18 @@
+ 	return try_create(orig, 'c', makedev(136 + num/256, num % 256), unix98_paths, path);
+ }
+ 
+-int bsdpty_slave_try_create(u1 chr, u1 num, char ** path) {
++int bsd_slave_try_create(u1 chr, u1 num, char * path) {
+ 	char orig[PTY_PATH_LEN];
+ 
+ 	sprintf(orig, "tty%c%x", chr, num);
+ 
+-	return try_create(orig, 'c', makedev(3, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsdpty_ptmx_paths, path);
++	return try_create(orig, 'c', makedev(3, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsd_ptmx_paths, path);
+ }
+ 
+-int bsdpty_master_try_create(u1 chr, u1 num, char ** path) {
++int bsd_master_try_create(u1 chr, u1 num, char * path) {
+ 	char orig[PTY_PATH_LEN];
+ 
+ 	sprintf(orig, "pty%c%x", chr, num);
+ 
+-	return try_create(orig, 'c', makedev(2, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsdpty_ptmx_paths, path);
++	return try_create(orig, 'c', makedev(2, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsd_ptmx_paths, path);
+ }
+
+
+-- Wednesday February 21, 2007 08:47:55 PM EST --
+-- add get_tmp_dir function --
+
+--- util.c.bkup	2007-02-21 20:40:10.000000000 -0500
++++ util.c	2007-02-21 20:47:43.000000000 -0500
+@@ -1,6 +1,7 @@
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <unistd.h>
++#include <stdlib.h>
+ 
+ #include "libterm.h"
+ 
+@@ -54,3 +55,12 @@
+ 	if(type == 'c' && dev == inpdev) return 1;
+ 	else return 0;
+ }
++
++char * get_tmp_dir() {
++	char * tmpdir;
++
++	tmpdir = getenv("TMPDIR");
++	if(!tmpdir) tmpdir = "/tmp";
++
++	return tmpdir;
++}
+
+
+-- Wednesday February 21, 2007 08:29:14 PM EST --
+-- little fixes --
+
+--- error.h.bkup	2007-02-21 20:28:32.000000000 -0500
++++ error.h	2007-02-21 20:29:11.000000000 -0500
+@@ -114,7 +114,7 @@
+  *       more in the future?
+  *   /var/log/{u,w}tmp? (recording logins)
+  *   I'll probably use mkstemp or some such thing to make a file buffer
+- *   The shell
++ *   The shell (ex: /bin/bash, /bin/sh, etc)
+  *
+  * As you can see, there isn't much to mess up here. Taking these names into
+  * account, here is my verdict for the remaining errors:
+@@ -124,7 +124,7 @@
+  *          most of the paths we're using are very short? No, not really.
+  *          I think this should be a fatal error.
+  * ENOTDIR- This means that some component of the path is not a directory.
+- *          Again, there isn't much chance of that happening with out limited
++ *          Again, there isn't much chance of that happening with our limited
+  *          set of paths. Fatal.
+  * EISDIR - This means that the last component of the path is a directory and
+  *          it shouldn't be. Again, it seems very unlikely that this will
+
+
+-- Wednesday February 21, 2007 04:03:44 AM EST --
+-- changed return types to int - need to return error codes --
+
+--- trynode.c.bkup	2007-02-21 01:17:26.000000000 -0500
++++ trynode.c	2007-02-21 04:03:39.000000000 -0500
+@@ -31,11 +31,16 @@
+  * So here's how this works:
+  * The function loops through each string in paths and tries appending orig to
+  * it to create the full node file path. It then tries creating the node. If it
+- * can't, it goes to the next element in the paths array. Note that the strings
+- * in the paths array can contain part of what will become the basename of the
+- * final path - orig is appended to each element of paths no questions asked.
++ * can't, it goes to the next element in the paths array.
++ *
++ * Note that the strings in the paths array can contain part of what will
++ * become the basename of the final path - orig is appended to each element of
++ * paths no questions asked.
++ *
++ * Also, if a particular element of paths ends with a /, trynode will attempt
++ * to create a directory with that name.
+  */
+-void try_create(char * orig, char type, dev_t device, char * paths[], char ** path) {
++int try_create(char * orig, char type, dev_t device, char * paths[], char ** path) {
+ 	int i, created;
+ 	mode_t mode;
+ 	struct stat stat;
+@@ -79,30 +84,30 @@
+ 	}
+ }
+ 
+-void ptmx_try_create(char ** path) {
+-	try_create("ptmx", 'c', makedev(PTMX_MAJOR, PTMX_MINOR), bsdpty_ptmx_paths, path);
++int ptmx_try_create(char ** path) {
++	return try_create("ptmx", 'c', makedev(PTMX_MAJOR, PTMX_MINOR), bsdpty_ptmx_paths, path);
+ }
+ 
+-void unix98_slave_try_create(u4 num, char ** path) {
++int unix98_slave_try_create(u4 num, char ** path) {
+ 	char orig[PTY_PATH_LEN];
+ 
+ 	sprintf(orig, "%u", num);
+ 
+-	try_create(orig, 'c', makedev(136 + num/256, num % 256), unix98_paths, path);
++	return try_create(orig, 'c', makedev(136 + num/256, num % 256), unix98_paths, path);
+ }
+ 
+-void bsdpty_slave_try_create(u1 chr, u1 num, char ** path) {
++int bsdpty_slave_try_create(u1 chr, u1 num, char ** path) {
+ 	char orig[PTY_PATH_LEN];
+ 
+ 	sprintf(orig, "tty%c%x", chr, num);
+ 
+-	try_create(orig, 'c', makedev(3, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsdpty_ptmx_paths, path);
++	return try_create(orig, 'c', makedev(3, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsdpty_ptmx_paths, path);
+ }
+ 
+-void bsdpty_master_try_create(u1 chr, u1 num, char ** path) {
++int bsdpty_master_try_create(u1 chr, u1 num, char ** path) {
+ 	char orig[PTY_PATH_LEN];
+ 
+ 	sprintf(orig, "pty%c%x", chr, num);
+ 
+-	try_create(orig, 'c', makedev(2, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsdpty_ptmx_paths, path);
++	return try_create(orig, 'c', makedev(2, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsdpty_ptmx_paths, path);
+ }
+
+
+-- Wednesday February 21, 2007 01:16:39 AM EST --
+-- add a comment describing the trynode interface --
+
+--- trynode.c.bkup	2007-02-20 20:41:13.000000000 -0500
++++ trynode.c	2007-02-21 01:16:29.000000000 -0500
+@@ -21,6 +21,20 @@
+ 	NULL
+ };
+ 
++/* Arguments:
++ * orig - the basename of the node file to try and create
++ * type - 'c' (for making a character device) or 'b' (for making a block device)
++ * device - device major and minor info - created using the makedev() macro
++ * paths - see full description
++ * path - the return argument
++ *
++ * So here's how this works:
++ * The function loops through each string in paths and tries appending orig to
++ * it to create the full node file path. It then tries creating the node. If it
++ * can't, it goes to the next element in the paths array. Note that the strings
++ * in the paths array can contain part of what will become the basename of the
++ * final path - orig is appended to each element of paths no questions asked.
++ */
+ void try_create(char * orig, char type, dev_t device, char * paths[], char ** path) {
+ 	int i, created;
+ 	mode_t mode;
+
+
+-- Saturday February 03, 2007 12:26:32 AM EST --
+-- clarify --
+
+--- error.h.bkup	2007-02-02 23:58:02.000000000 -0500
++++ error.h	2007-02-03 00:26:21.000000000 -0500
+@@ -65,9 +65,9 @@
+  * EINVAL - As far as I can tell, this would only happen if there's an internal
+  *          problem. This usually means that one of the arguments to a function
+  *          is invalid.
+- * ETXTBSY- Why would libterm ever even try to open something that could ever
+- *          in a million years be an executable file? Something is wrong if
+- *          we get this error.
++ * ETXTBSY- Why would libterm ever even try to open something with write access
++ *          that could ever in a million years be an executable file? Something
++ *          is wrong if we get this error.
+  * ENOMEM - Program should close as soon as possible, I'm not going to try to
+  *          write some sort of smart memory reclaiming mechanism.
+  * EMFILE - libterm really shouldn't open that many things, unless you're
+
+
+-- Sunday November 12, 2006 12:43:34 AM EST --
+-- added one more high-level function --
+
+--- trynode.c.bkup	2006-11-12 00:31:39.000000000 -0500
++++ trynode.c	2006-11-12 00:43:25.000000000 -0500
+@@ -64,6 +64,14 @@
+ 	try_create("ptmx", 'c', makedev(PTMX_MAJOR, PTMX_MINOR), bsdpty_ptmx_paths, path);
+ }
+ 
++void unix98_slave_try_create(u4 num, char ** path) {
++	char orig[PTY_PATH_LEN];
++
++	sprintf(orig, "%u", num);
++
++	try_create(orig, 'c', makedev(136 + num/256, num % 256), unix98_paths, path);
++}
++
+ void bsdpty_slave_try_create(u1 chr, u1 num, char ** path) {
+ 	char orig[PTY_PATH_LEN];
+ 
+
+
+-- Sunday November 12, 2006 12:31:18 AM EST --
+-- finished? added higher-level functions --
+
+--- trynode.c.bkup	2006-11-11 22:48:08.000000000 -0500
++++ trynode.c	2006-11-12 00:31:10.000000000 -0500
+@@ -9,23 +9,22 @@
+ 
+ char * unix98_paths[] = {
+ 	"/dev/pty",
+-	"/tmp/pts/",
+ 	"/tmp/pty",
+ 	"~/.pts/",
+ 	NULL
+ };
+ 
+ char * bsdpty_ptmx_paths[] = {
++	"/dev/",
+ 	"/tmp/pt/",
+ 	"~/.pt/",
+ 	NULL
+ };
+ 
+-char * try_create(char * orig, char type, dev_t device, char * paths[]) {
++void try_create(char * orig, char type, dev_t device, char * paths[], char ** path) {
+ 	int i, len, created;
+ 	mode_t mode;
+ 	struct stat stat;
+-	char path[PTY_PATH_LEN];
+ 
+ 	for(i = 0; paths[i]; i++) {
+ 		len = strlen(paths[i]);
+@@ -47,16 +46,36 @@
+ 		else if(type == 'c') mode |= S_IFCHR;
+ 		else FIXABLE_LTM_ERR(EINVAL)
+ 
+-		sprintf(path, "%s%s", paths[i], orig);
++		sprintf(*path, "%s%s", paths[i], orig);
+ 
+ 		if(mknod(path, mode, device) == -1) {
+ 			if(errno == EACCES ||
+ 			   errno == ENOENT) continue;
+-			else if(errno == EEXIST && 
+-
++			else if(errno == EEXIST) {
++				if(is_chrdev(path, device)) break;
++				else continue;
++			}
++			else FATAL_ERR("mknod", path)
++		}
+ 	}
+ }
+-char * ptmx_try_create() {
+-	char path[PTY_PATH_LEN];
+ 
+-	
++void ptmx_try_create(char ** path) {
++	try_create("ptmx", 'c', makedev(PTMX_MAJOR, PTMX_MINOR), bsdpty_ptmx_paths, path);
++}
++
++void bsdpty_slave_try_create(u1 chr, u1 num, char ** path) {
++	char orig[PTY_PATH_LEN];
++
++	sprintf(orig, "tty%c%x", chr, num);
++
++	try_create(orig, 'c', makedev(3, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsdpty_ptmx_paths, path);
++}
++
++void bsdpty_master_try_create(u1 chr, u1 num, char ** path) {
++	char orig[PTY_PATH_LEN];
++
++	sprintf(orig, "pty%c%x", chr, num);
++
++	try_create(orig, 'c', makedev(2, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsdpty_ptmx_paths, path);
++}
+
+
+-- Saturday November 11, 2006 10:21:22 PM EST --
+-- if the user's shell is unusable, there's not much we can do, ya? --
+
+--- process.c.bkup	2006-11-11 21:59:02.000000000 -0500
++++ process.c	2006-11-11 22:20:55.000000000 -0500
+@@ -4,10 +4,6 @@
+ 
+ #include "libterm.h"
+ 
+-/* Return values:
+- * EACCES, ENAMETOOLONG, ENOENT, ENOEXEC, ENOTDIR - see meaning
+- *     of these errors at execve man page      
+- */
+ int spawn(char * path) {
+ 	pid_t pid;
+ 
+@@ -15,9 +11,4 @@
+ 	if(!pid) {
+ 		execl(path, basename(path));
+ 
+-		if(errno == EACCES ||
+-                   errno == ENAMETOOLONG ||
+-                   errno == ENOENT ||
+-                   errno == ENOEXEC ||
+-                   errno == ENOTDIR) FIXABLE_SYS_ERR("execl", path)
+-		else FATAL_ERR("execl", path)
++		FATAL_ERR("execl", path)
+
+
+-- Saturday November 11, 2006 09:59:01 PM EST --
+-- added the shell --
+
+--- error.h.bkup	2006-11-11 21:58:25.000000000 -0500
++++ error.h	2006-11-11 21:58:57.000000000 -0500
+@@ -114,6 +114,7 @@
+  *       more in the future?
+  *   /var/log/{u,w}tmp? (recording logins)
+  *   I'll probably use mkstemp or some such thing to make a file buffer
++ *   The shell
+  *
+  * As you can see, there isn't much to mess up here. Taking these names into
+  * account, here is my verdict for the remaining errors:
+
+
+-- Saturday November 11, 2006 09:57:42 PM EST --
+-- change error handling to fit new policy --
+
+--- trynode.c.bkup	2006-11-11 21:56:33.000000000 -0500
++++ trynode.c	2006-11-11 21:57:32.000000000 -0500
+@@ -34,8 +34,7 @@
+ 		if(paths[i][len-1] == '/') {
+ 			if(mkdir(paths[i], mode) == -1) {
+ 				if(errno == EACCES ||
+-				   errno == ENOENT ||
+-				   errno == ENOTDIR) continue;
++				   errno == ENOENT) continue;
+ 				else if(errno == EEXIST);
+ 				else FATAL_ERR("mkdir", paths[i])
+ 			}
+@@ -52,10 +51,7 @@
+ 
+ 		if(mknod(path, mode, device) == -1) {
+ 			if(errno == EACCES ||
+-			   errno == ENOENT ||
+-			   errno == ENOTDIR ||
+-			   errno == ELOOP ||
+-			   errno == EISDIR) continue;
++			   errno == ENOENT) continue;
+ 			else if(errno == EEXIST && 
+ 
+ 	}
+
+
+-- Saturday November 11, 2006 09:44:27 PM EST --
+-- aadded another BIG comment --
+
+--- error.h.bkup	2006-11-11 18:24:37.000000000 -0500
++++ error.h	2006-11-11 21:44:16.000000000 -0500
+@@ -49,6 +49,87 @@
+  *      so you don't have to partake in this elaborate ritual too often...
+  */
+ 
++/* Ok, I think it's high time I had a definitive policy on what errors use what
++ * error handling method. Here's a list of the most common errors (note that
++ * most of these are not really very common, but they are relative to the
++ * REALLY obscure ones).
++ *
++ * This first group here I'm thinking will always use FATAL_ERR. This is because
++ * they would either only be returned if there was an internal problem with
++ * libterm or they are so broad that the problem would affect other programs
++ * anyway and should be fixed. Detailed analysis:
++ *
++ * EFAULT - I don't know how this is used, since programs usually just segfault
++ *          with a bad address, but whatever. If this happens, it's obviously
++ *          because of an internal error or because the compiler is screwed up.
++ * EINVAL - As far as I can tell, this would only happen if there's an internal
++ *          problem. This usually means that one of the arguments to a function
++ *          is invalid.
++ * ETXTBSY- Why would libterm ever even try to open something that could ever
++ *          in a million years be an executable file? Something is wrong if
++ *          we get this error.
++ * ENOMEM - Program should close as soon as possible, I'm not going to try to
++ *          write some sort of smart memory reclaiming mechanism.
++ * EMFILE - libterm really shouldn't open that many things, unless you're
++ *          managing a LOT of terminals with it... Also, libterm isn't
++ *          responsible for the program using it. The user should raise their
++ *          max open files per process setting.
++ * ENFILE - libterm isn't responsible for the actions of the other programs
++ *          on the system. The user should raise their max open files setting.
++ * EPERM  - This should always be fatal. It means we can't do something that
++ *          we're trying to do, and we'll never be able to do it (ex: making
++ *          device nodes).
++ *
++ * I think these should definitely not be fatal:
++ *
++ * EACCES - VERY common error. This should definitely not be fatal.
++ * ENOENT - Also a VERY common error.
++ *
++ * I think these ones should be fatal or not depending on the situation:
++ *
++ * EEXIST - A lot of the time, when we're trying to make a file and it already
++ *          exists and is the right type, this is not a bad error at all. In
++ *          other places, however, it can be bad. Thus, it depends.
++ * ENOSPC - Very broad problem. However, in the case of a file buffer,
++ *          libterm should probably not die. It should probably give a message
++ *          to the user saying that the buffer will start being truncated at
++ *          the top or is falling back to memory buffering.
++ * EROFS  - VERY broad problem. In the case of a file buffer, again libterm
++ *          should tell the user that buffering is not possible or is falling
++ *          back to memory buffering.
++ *
++ * I'm not sure about these ones. To figure out if they should be fatal or not,
++ * let's look at the sort of files libterm will likely be interacting with:
++ *   pty master/slave files:
++ *     /dev/ptmx
++ *     /dev/tty[char][num]
++ *     /dev/pty[char][num]
++ *     used by trynode (see trynode.c):
++ *       /dev/pty[num]
++ *       /tmp/pts/[num]
++ *       /tmp/pty[num]
++ *       ~/.pts/[num]
++ *       /tmp/pt/[num]
++ *       ~/.pt/[num]
++ *       more in the future?
++ *   /var/log/{u,w}tmp? (recording logins)
++ *   I'll probably use mkstemp or some such thing to make a file buffer
++ *
++ * As you can see, there isn't much to mess up here. Taking these names into
++ * account, here is my verdict for the remaining errors:
++ *
++ * ELOOP  - This error happens when too many levels of symlinks have to be
++ *          dereferenced. Is it very likely that this will happen, seeing as
++ *          most of the paths we're using are very short? No, not really.
++ *          I think this should be a fatal error.
++ * ENOTDIR- This means that some component of the path is not a directory.
++ *          Again, there isn't much chance of that happening with out limited
++ *          set of paths. Fatal.
++ * EISDIR - This means that the last component of the path is a directory and
++ *          it shouldn't be. Again, it seems very unlikely that this will
++ *          happen on a properly configured system. Fatal.
++ */
++
+ /* taken from http://gcc.gnu.org/onlinedocs/gcc-4.1.1/gcc/Function-Names.html */
+ #if __STDC_VERSION__ < 199901L
+ # if __GNUC__ >= 2
+
+
+-- Saturday November 11, 2006 06:23:56 PM EST --
+-- more work... --
+
+--- trynode.c.bkup	2006-11-11 18:02:50.000000000 -0500
++++ trynode.c	2006-11-11 18:23:48.000000000 -0500
+@@ -53,7 +53,9 @@
+ 		if(mknod(path, mode, device) == -1) {
+ 			if(errno == EACCES ||
+ 			   errno == ENOENT ||
+-			   errno == ENOTDIR) continue;
++			   errno == ENOTDIR ||
++			   errno == ELOOP ||
++			   errno == EISDIR) continue;
+ 			else if(errno == EEXIST && 
+ 
+ 	}
+
+
+-- Thursday October 26, 2006 10:53:18 AM EDT --
+-- distinguish between the arg and the member --
+
+--- error.h.bkup	2006-10-26 10:52:44.000000000 -0400
++++ error.h	2006-10-26 10:53:05.000000000 -0400
+@@ -61,11 +61,11 @@
+ /* program should try to resolve or report the error
+  * used for system call errors
+  */
+-#define FIXABLE_SYS_ERR(name, data) \
++#define FIXABLE_SYS_ERR(name, _data) \
+ 	do { \
+ 		curerr.sys_func = name; \
+ 		curerr.ltm_func = __func__; \
+-		curerr.data = data; \
++		curerr.data = _data; \
+ 		curerr.err_no = errno; \
+ 		if(always_dump) error_info_dump(curerr, LTM_TRUE); \
+ 		return -1; \
+@@ -88,11 +88,11 @@
+ /* program should not try to resolve or report the error
+  * used for system call errors
+  */
+-#define FATAL_ERR(name, data) \
++#define FATAL_ERR(name, _data) \
+ 	do { \
+ 		curerr.sys_func = name; \
+ 		curerr.ltm_func = __func__; \
+-		curerr.data = data; \
++		curerr.data = _data; \
+ 		curerr.err_no = errno; \
+ 		error_info_dump(curerr, LTM_FALSE); \
+ 		errno = 0; \
+
+
+-- Thursday October 26, 2006 10:51:49 AM EDT --
+-- changed to assigning each value individually --
+
+--- error.h.bkup	2006-10-26 10:49:03.000000000 -0400
++++ error.h	2006-10-26 10:51:32.000000000 -0400
+@@ -63,7 +63,10 @@
+  */
+ #define FIXABLE_SYS_ERR(name, data) \
+ 	do { \
+-		curerr = {name, __func__, data, errno}; \
++		curerr.sys_func = name; \
++		curerr.ltm_func = __func__; \
++		curerr.data = data; \
++		curerr.err_no = errno; \
+ 		if(always_dump) error_info_dump(curerr, LTM_TRUE); \
+ 		return -1; \
+ 	} while(0);
+@@ -73,7 +76,10 @@
+  */
+ #define FIXABLE_LTM_ERR(err) \
+ 	do { \
+-		curerr = {NULL, __func__, NULL, err}; \
++		curerr.sys_func = NULL; \
++		curerr.ltm_func = __func__; \
++		curerr.data = NULL; \
++		curerr.err_no = err; \
+ 		if(always_dump) error_info_dump(curerr, LTM_TRUE); \
+ 		errno = err; \
+ 		return -1; \
+@@ -84,7 +90,10 @@
+  */
+ #define FATAL_ERR(name, data) \
+ 	do { \
+-		curerr = {name, __func__, data, errno}; \
++		curerr.sys_func = name; \
++		curerr.ltm_func = __func__; \
++		curerr.data = data; \
++		curerr.err_no = errno; \
+ 		error_info_dump(curerr, LTM_FALSE); \
+ 		errno = 0; \
+ 		return -1; \
+
+
+-- Friday October 13, 2006 11:14:01 PM EDT --
+-- it WORKS this time, I swear! (no really, I actually worked on it separately :) --
+
+--- util.c.bkup	2006-10-13 23:11:35.000000000 -0400
++++ util.c	2006-10-13 23:13:41.000000000 -0400
+@@ -4,30 +4,21 @@
+ 
+ #include "libterm.h"
+ 
+-/*
+- * Until I write an integer overflow checker, this is good enough.
+- * Will act strangely if you give it anything of the max length for
+- * that base.
+- */
+-s2 num_len(u8 num, u1 base) {
+-	u8 place = base, placemax = -1ULL/base;
+-	s2 num_chrs = 0;
++s2 numlen(u8 num, u1 base) {
++	u8 place, placemax = -1ULL/base;
++	s2 chrs;
+ 	
+-	while(num) {
+-		if(place > placemax) {
+-			num = 0;
+-			num_chrs++; /* since the loop won't be iterating again... */
+-		}
++	for(place = 1, chrs = 0; num; chrs++) {
++		if(place > placemax) num = 0;
+ 		else {
+-			num -= num % place;
+ 			place *= base;
++			num -= num % place;
+ 		}
+-		num_chrs++;
+ 	}
+ 
+-	return num_chrs;
++	return chrs;
+ }
+-/*
++
+ int file_check_type(u1 * path, u1 * type, dev_t * dev) {
+ 	struct stat statbuf;
+ 
+@@ -63,8 +54,3 @@
+ 	if(type == 'c' && dev == inpdev) return 1;
+ 	else return 0;
+ }
+-*/
+-int main() {
+-	num_len(10000000000000000000, 10);
+-	return 0;
+-}
+
+
+-- Wednesday October 11, 2006 08:00:28 PM EDT --
+-- this WORKS NOW!!! (I think) --
+
+--- util.c.bkup	2006-10-11 19:59:33.000000000 -0400
++++ util.c	2006-10-11 20:00:13.000000000 -0400
+@@ -14,7 +14,10 @@
+ 	s2 num_chrs = 0;
+ 	
+ 	while(num) {
+-		if(place > placemax) num = 0;
++		if(place > placemax) {
++			num = 0;
++			num_chrs++; /* since the loop won't be iterating again... */
++		}
+ 		else {
+ 			num -= num % place;
+ 			place *= base;
+
+
+-- Wednesday October 11, 2006 07:53:33 PM EDT --
+-- one last try... --
+
+--- util.c.bkup	2006-10-11 19:51:55.000000000 -0400
++++ util.c	2006-10-11 19:53:31.000000000 -0400
+@@ -10,11 +10,11 @@
+  * that base.
+  */
+ s2 num_len(u8 num, u1 base) {
+-	u8 place = base, placemax = (-1ULL/base)+1;
++	u8 place = base, placemax = -1ULL/base;
+ 	s2 num_chrs = 0;
+ 	
+ 	while(num) {
+-		if(place == placemax) num = 0;
++		if(place > placemax) num = 0;
+ 		else {
+ 			num -= num % place;
+ 			place *= base;
+
+
+-- Wednesday October 11, 2006 07:31:58 PM EDT --
+-- neither does that! --
+
+--- util.c.bkup	2006-10-11 19:31:35.000000000 -0400
++++ util.c	2006-10-11 19:31:53.000000000 -0400
+@@ -33,7 +33,7 @@
+ 		   errno == EACCES ||
+ 		   errno == ENOTDIR ||
+ 		   errno == ENAMETOOLONG ||
+-		   errno == ELOOP) FIXABLE_LTM_ERR("stat", path)
++		   errno == ELOOP) FIXABLE_SYS_ERR("stat", path)
+ 		 else FATAL_ERR("stat", path)
+ 	}
+ 
+
+
+-- Wednesday October 11, 2006 07:31:19 PM EDT --
+-- this doesn't count! --
+
+--- util.c.bkup	2006-10-11 19:30:00.000000000 -0400
++++ util.c	2006-10-11 19:31:14.000000000 -0400
+@@ -26,9 +26,9 @@
+ }
+ 
+ int file_check_type(u1 * path, u1 * type, dev_t * dev) {
+-	struct stat stat;
++	struct stat statbuf;
+ 
+-	if(stat(path, &stat) == -1) {
++	if(stat(path, &statbuf) == -1) {
+ 		if(errno == ENOENT ||
+ 		   errno == EACCES ||
+ 		   errno == ENOTDIR ||
+@@ -37,16 +37,16 @@
+ 		 else FATAL_ERR("stat", path)
+ 	}
+ 
+-	if(stat.st_mode & S_IFIFO) *type = 'p';
+-	else if(stat.st_mode & S_IFCHR) *type = 'c';
+-	else if(stat.st_mode & S_IFDIR) *type = 'd';
+-	else if(stat.st_mode & S_IFBLK) *type = 'b';
+-	else if(stat.st_mode & S_IFREG) *type = '-';
+-	else if(stat.st_mode & S_IFLNK) *type = 'l';
+-	else if(stat.st_mode & S_IFSOCK) *type = 's';
++	if(statbuf.st_mode & S_IFIFO) *type = 'p';
++	else if(statbuf.st_mode & S_IFCHR) *type = 'c';
++	else if(statbuf.st_mode & S_IFDIR) *type = 'd';
++	else if(statbuf.st_mode & S_IFBLK) *type = 'b';
++	else if(statbuf.st_mode & S_IFREG) *type = '-';
++	else if(statbuf.st_mode & S_IFLNK) *type = 'l';
++	else if(statbuf.st_mode & S_IFSOCK) *type = 's';
+ 	else *type = '?';
+ 
+-	*dev = stat.st_rdev;
++	*dev = statbuf.st_rdev;
+ 
+ 	return 0;
+ }
+
+
+-- Wednesday October 11, 2006 07:29:22 PM EDT --
+-- I will SHOOT someone if this doesn't work. --
+
+--- util.c.bkup	2006-10-11 19:21:32.000000000 -0400
++++ util.c	2006-10-11 19:29:11.000000000 -0400
+@@ -10,12 +10,15 @@
+  * that base.
+  */
+ s2 num_len(u8 num, u1 base) {
+-	u8 place = base;
++	u8 place = base, placemax = (-1ULL/base)+1;
+ 	s2 num_chrs = 0;
+ 	
+ 	while(num) {
+-		num -= num % place;
+-		place *= base;
++		if(place == placemax) num = 0;
++		else {
++			num -= num % place;
++			place *= base;
++		}
+ 		num_chrs++;
+ 	}
+ 
+@@ -57,3 +60,7 @@
+ 	if(type == 'c' && dev == inpdev) return 1;
+ 	else return 0;
+ }
++
++int main() {
++	return 0;
++}
+
+
 -- Thursday October 05, 2006 10:39:06 AM EDT --
 -- filetype checker thingee --
 
