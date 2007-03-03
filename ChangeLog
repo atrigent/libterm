@@ -1,3 +1,27 @@
+-- Friday March 02, 2007 11:05:18 PM EST --
+-- finish ltm_init, but it won't work until I write ltm_init_with_shell.... --
+
+--- init.c.bkup	2007-03-02 22:36:32.000000000 -0500
++++ init.c	2007-03-02 23:04:55.000000000 -0500
+@@ -6,7 +6,8 @@
+ #include "libterm.h"
+ 
+ /* Return values:
+- * EINVAL - current UID is not a valid user id
++ * EINVAL - current UID is not a valid user id - try using ltm_init_with_shell
++ * to avoid having to access the passwd database
+  */
+ int ltm_init() {
+ 	struct passwd * pwd_entry;
+@@ -25,3 +26,6 @@
+ 	     errno == EPERM)
+ 	   )) FIXABLE_LTM_ERR(EINVAL)
+ 	else if(pwd_entry == -1) FATAL_ERR("getpwuid", getuid())
++
++	return ltm_init_with_shell(pwd_entry->pw_shell);
++}
+
+
 -- Friday March 02, 2007 10:27:49 PM EST --
 -- failure condition --
 

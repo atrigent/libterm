@@ -6,7 +6,8 @@
 #include "libterm.h"
 
 /* Return values:
- * EINVAL - current UID is not a valid user id
+ * EINVAL - current UID is not a valid user id - try using ltm_init_with_shell
+ * to avoid having to access the passwd database
  */
 int ltm_init() {
 	struct passwd * pwd_entry;
@@ -25,3 +26,6 @@ int ltm_init() {
 	     errno == EPERM)
 	   )) FIXABLE_LTM_ERR(EINVAL)
 	else if(pwd_entry == -1) FATAL_ERR("getpwuid", getuid())
+
+	return ltm_init_with_shell(pwd_entry->pw_shell);
+}
