@@ -1,3 +1,18 @@
+-- Friday March 02, 2007 10:27:49 PM EST --
+-- failure condition --
+
+--- trynode.c.bkup	2007-03-02 22:27:09.000000000 -0500
++++ trynode.c	2007-03-02 22:27:45.000000000 -0500
+@@ -85,6 +85,7 @@
+ 		break;
+ 	}
+ 
++	if(!paths[i]) return LTM_FALSE;
+ 	return LTM_TRUE;
+ }
+ 
+
+
 -- Thursday February 22, 2007 02:11:36 AM EST --
 -- need a return value... --
 

@@ -85,6 +85,7 @@ int try_create(char * orig, char type, dev_t device, char * paths[], char * path
 		break;
 	}
 
+	if(!paths[i]) return LTM_FALSE;
 	return LTM_TRUE;
 }
 
