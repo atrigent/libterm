@@ -1,3 +1,99 @@
+-- Thursday March 22, 2007 12:58:16 PM EDT --
+-- "finished" ltm_init_with_shell --
+
+--- init.c.bkup	2007-03-22 12:49:14.000000000 -0400
++++ init.c	2007-03-22 12:58:05.000000000 -0400
+@@ -1,12 +1,25 @@
+ #include <sys/types.h>
+ #include <unistd.h>
++#include <stdlib.h>
+ #include <stdio.h>
+ #include <pwd.h>
+ 
+ #include "libterm.h"
+ 
++int next_desc = 0;
++struct ltm_term_desc * descriptors = 0; /* no such struct yet... */
++
+ int ltm_init_with_shell(char * shell) {
+-	spawn(shell);
++	pid_t pid;
++	
++	pid = spawn(shell);
++
++	descriptors = realloc(descriptors, ++next_desc * sizeof(struct ltm_term_desc));
++
++	/* probably fill in the struct here */
++
++	return next_desc-1;
++}
+ 
+ /* Return values:
+  * EINVAL - current UID is not a valid user id - try using ltm_init_with_shell
+
+
+-- Thursday March 22, 2007 12:49:10 PM EDT --
+-- possibly finished spawn --
+
+--- process.c.bkup	2007-03-22 12:47:16.000000000 -0400
++++ process.c	2007-03-22 12:49:01.000000000 -0400
+@@ -19,4 +19,8 @@
+ 		execl(path, basename(path));
+ 
+ 		FATAL_ERR("execl", path) /* if we get here, execl failed */
++	}
++	else if(pid == -1) FATAL_ERR("fork", NULL);
+ 
++	return pid;
++}
+
+
+-- Thursday March 22, 2007 12:01:29 PM EDT --
+-- add some fd stuff to spawn... --
+
+--- process.c.bkup	2007-03-22 11:54:13.000000000 -0400
++++ process.c	2007-03-22 12:01:19.000000000 -0400
+@@ -4,11 +4,19 @@
+ 
+ #include "libterm.h"
+ 
+-int spawn(char * path) {
++/* Start a program (the shell) using a different I/O source */
++int spawn(char * path, int io_fd) {
+ 	pid_t pid;
+ 
+ 	pid = fork();
+ 	if(!pid) {
++		dup2(io_fd, 0);
++		dup2(io_fd, 1);
++		dup2(io_fd, 2);
++		
++		if(io_fd > 2) close(io_fd);
++
+ 		execl(path, basename(path));
+ 
+-		FATAL_ERR("execl", path)
++		FATAL_ERR("execl", path) /* if we get here, execl failed */
++
+
+
+-- Thursday March 22, 2007 11:54:09 AM EDT --
+-- pitiful start for ltm_init_with_shell function --
+
+--- init.c.bkup	2007-03-22 11:50:02.000000000 -0400
++++ init.c	2007-03-22 11:53:49.000000000 -0400
+@@ -5,6 +5,9 @@
+ 
+ #include "libterm.h"
+ 
++int ltm_init_with_shell(char * shell) {
++	spawn(shell);
++
+ /* Return values:
+  * EINVAL - current UID is not a valid user id - try using ltm_init_with_shell
+  * to avoid having to access the passwd database
+
+
 -- Friday March 02, 2007 11:05:18 PM EST --
 -- finish ltm_init, but it won't work until I write ltm_init_with_shell.... --
 

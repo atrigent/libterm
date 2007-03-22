@@ -1,9 +1,25 @@
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <pwd.h>
 
 #include "libterm.h"
+
+int next_desc = 0;
+struct ltm_term_desc * descriptors = 0; /* no such struct yet... */
+
+int ltm_init_with_shell(char * shell) {
+	pid_t pid;
+	
+	pid = spawn(shell);
+
+	descriptors = realloc(descriptors, ++next_desc * sizeof(struct ltm_term_desc));
+
+	/* probably fill in the struct here */
+
+	return next_desc-1;
+}
 
 /* Return values:
  * EINVAL - current UID is not a valid user id - try using ltm_init_with_shell
