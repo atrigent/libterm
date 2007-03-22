@@ -1,0 +1,153 @@
+libterm: a library for providing a terminal, but none of the actual interface. that would be defined by the program that uses it.
+
+STUFF I NEED TO DO:
+figure out what all those weird things in terminfo files do
+what's the best way to use bsd ttys?
+read some source code
+experiment
+
+use my own integer typedef header:
+typedef unsigned long long u8;
+typedef signed long long   s8;
+typedef unsigned int       u4;
+typedef signed int         s4;
+typedef unsigned short     u2;
+typedef signed short       s2;
+typedef unsigned char      u1;
+typedef signed char        s1;
+
+STRUCTURES:
+
+struct point {
+	u2 x;
+	u2 y;
+};
+
+struct attr {
+	
+
+Some perspective stuff:
+a context type
+ltm_context_t
+	maybe - this would be a struct, you would set a bunch of callbacks, eg:
+ltm_cb_update_char(struct point pt, struct attr attribs, char * chr)
+	this would update only one characters
+		pt - x and y coords for where the char is
+		attribs - attributes for the character
+		chr - the character (it's a string because it could be unicode
+ltm_cb_update_subline(struct point startpt, struct point endpt, struct attr * attribs, char * str)
+	this would update a series of characters on the same line
+		startpt - x and y coords of the start of the region to be updated
+		endpt - x and y coords of the end of the region to be updated
+		attribs - an array of attributes
+		str - the string
+ltm_cb_update_line(int linenum, struct attr * attribs, char * str)
+	this would update an entire line
+		linenum - the line which is to be updated
+		attribs - an array of attributes
+		str - the new text of the line
+ltm_cb_update_lines(struct linesspec lines, struct attr * attribs, char * str)
+	this would update a series of contiguous lines
+		lines - a structure w/ the start line and the number of lines
+		attribs - array of attributes
+		str - string for the new lines (including newlines)
+ltm_cb_update_screen(struct attr * attribs, char * str)
+	this would update the entire screen if, for example, the screen is scrolled or a full-screen app starts
+		attribs - array of attributes
+		str - new text for the entire screen (including newlines)
+ltm_cb_set_titles
+	this would be called in response to the ^[]n;string^G with n being 0-2 escape codes. if the program does not supply this callback, it will simply be ignored
+etc
+
+a "terminal server":
+this would allow terminal emulators to detach from their terminal devices without having everything running on the terminal quit. maybe create a socket in /tmp, like x11 does? this would allow for remote terminaling, woot! :) I don't know how this would relate to ssh though, hmm.
+
+orders:
+if we need to update a single character, the order is:
+	char
+	subline
+	line
+	lines
+	screen
+if we need to update a series of characters, the order is:
+	subline
+	line
+	lines
+	screen
+if we need to update an entire line, the order is:
+	line
+	subline
+	lines
+	screen
+if we need to update multiple lines, the order is:
+	lines
+	screen
+if we need to update the entire screen, screen is used
+
+in order to communicate to the code using libterm what the attributes (bold, bgcolor, fgcolor, etc) there needs to be a protocal. Several ways to do this:
+	1. Have the various update callbacks pass a single set of attribute data and call the callbacks for each section of the text that has a different set of attributes
+		Pros: Easy to use by client of libterm
+		Cons: Probably pretty slow as it would require a lot of function calls and returns
+	2. Have the various update callbacks pass an array of attribute data with location data relative to the start of the part of the screen that will be updated (ones that only update a single line will always have the row number as 0, for example - this would allow you to simply add to the current location)
+
+I'm thinking that all stuff will begin with ltm_ for LibTerM
+
+general functions:
+ltm_init()
+	would do the whole pipe, dup2, fork, exec thing using shell stored in /etc/passwd
+ltm_init_with_shell("/bin/bash")
+	would do the whole pipe, dup2, fork, exec thing
+ltm_update_window_dimensions(lines, cols)
+	for example: 50, 50
+ltm_user_input_feed_to_program(user_input)
+	this would include newlines...
+
+scrollback buffer stuff:
+would start out with a default memory buffer. default size would be unlimited? 100? what?
+ltm_buffer_off()
+	if, for example, the gui being used automatically buffers text fields
+ltm_buffer_use_file("/tmp/kfhsldf")
+	store the buffer in a specific file
+ltm_buffer_use_file_descriptor(mkstemp("tmp-XXXXXX"))
+	store the buffer in a pre-opened file stream
+ltm_buffer_use_memory()	
+	store the buffer in memory (fast but very limited in terms of space)
+ltm_buffer_set_size(0 /* or 50 or whatever */)
+	set max number of lines to store in buffer, 0 would be unlimited. it would probably be problematic to say how many lines because lines are variable-length. I'm thinking you couldn't do unlimited when it's set to "memory" because memory would run out too fast.
+
+libterm could (no questions asked) store all of the lines that are on the screen currently in memory (lines * cols bytes?) this would make it easy (err...) to do full-screen stuff
+
+I/O
+libterm would have a pipe(?) going with the shell or whatever is running under it. I don't know how it would work when a child process is in front... I guess child processes inherit FDs... :-/. 
+The program would (for example with X) respond to KeyPress events and call ltm_user_input_feed_to_program() and libterm would possibly buffer(?) characters (depending on if ICANON is set?) and output it to the program through the pipe when appropriate. libterm will call the line updating callback if ECHO is set. when a program outputs something, libterm will read it. libc's output buffering will already have happened. taking into account terminal driver buffering (again depending on ICANON?) there may be more buffering, then it will be printed to screen or something similar. No, I don't think ICANON does output buffering; just input.
+Side note - from linux kernel devices.txt file (all character devices):
+	Major 2 - old-style PTY master devices (use Unix98 ones, though I may implement support for these)
+	Major 3 - old-style PTY slave devices (use Unix98 ones, though I may implement support for these)
+	Major 4 - virtual terminals/ttys/consoles (also has serial ports starting at minor 63)
+	Major 5 - alternate TTY devices - /dev/{tty,console,ptmx,cua*}
+	Major 6 - virtual terminals/ttys/console entire contents - /dev/vcs*
+	Majors 128-135 - Unix98 PTY masters - accessed through /dev/ptmx
+	Majors 136-143 - Unix98 PTY slaves
+
+The fact that this is actually trying to emulate a terminal is a problem because I don't know how to interact with terminal devices. I think this is the process (the Unix98 model):
+1. open /dev/ptmx in O_RDWR
+2. do the TIOCGPTN ioctl on it to get the pty number
+3. unlock the slave device (do the TIOCSPTLCK ioctl with a POINTER TO ZERO!!!!)
+4. open the slave device (eg, /dev/pts/1) with the pty number you just got in O_RDWR|O_NOCTTY mode
+5. give the program 3 different FDs (duplicates of the slave device): 0 (stdin), 1 (stdout), and 2 (stderr)
+	I think the difference between stdout and stderr (line buffered and not buffered respectively) is dictated by libc. I might have to dup2(1, 2) to get 2 that's the same as 1 - another open might just return 1
+6. read output from program/write input to program using your open /dev/ptmx FD
+7. close the /dev/ptmx FD when done. this would probably eliminate the slave device too, so be sure to do this at the same time as closing the client program (right before). Actually, you would probably just wait for the client program to exit and do it after.
+
+Client<->libterm communication
+liblibterm - convenience library for client programs to take advantage of libterm unique features. functions (starting with lltm_):
+lltm_is_libterm() return 0 if not, 1 is yes
+	would output "liblibterm_communication_with_libterm_query_are_you_libterm?"
+	it has to be really long to ensure that it would never be output by some program just printing normally. when libterm detects this, it would NOT print it, would return to program: "libterm_response_to_liblibterm_libterm_at_your_service"
+	problem - if the host is not libterm, this will simply get printed. something (a little kludgy) that I could do is print the request string without a newline, fflush(), and if don't get a response IMMEDIATELY print a \r (goes back to beginning of line) and clear the line (print strlen(request) spaces and go back again). a test for this is in cleartest.c. there would have to be NOTHING ELSE ON THE LINE when this happens or else it will be eliminated. ok this works, but I don't know how to implement the timeout. The only way I can think of is with threads... SIGNALS!!!! I can use signals. Or can I? look at timeouttest.c. I set a signal handler to run when the program recieves SIGALRM, but I don't know how to stop the input read from the signal handler. I guess I would need to use threads.
+
+I could also use some kind of exotic escape code prefix that isn't used anywhere else (maybe a triple-ESC or something) then the request. This wouldn't be echoed (maybe?).
+
+OR I could give the process I'm starting an extra FD (FD 3 maybe) which the program would write to and would recieve a response. I don't think this would break any program as FDs have to be assigned, they are never program defined (except with dup2, but if someone duplicated to fd3 the original one will simply be closed).
+
+I could also set an environment variable (LIBTERM probably) or set the TERM variable.
