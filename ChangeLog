@@ -1,3 +1,19 @@
+-- Thursday March 22, 2007 05:36:12 PM EDT --
+-- missing semicolon --
+
+--- bsd.c.bkup	2007-03-22 17:36:04.000000000 -0400
++++ bsd.c	2007-03-22 17:36:08.000000000 -0400
+@@ -51,7 +51,7 @@
+ 
+ 			return 1;
+ 		}
+-	} while(next_bsd_pty(tty_spc))
++	} while(next_bsd_pty(tty_spc));
+ 
+ 	return 0;
+ }
+
+
 -- Thursday March 22, 2007 05:33:03 PM EDT --
 -- hopefully make these functions more sane, also connect them to the outside world --
 

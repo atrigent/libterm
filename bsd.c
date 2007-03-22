@@ -51,7 +51,7 @@ int find_unused_bsd_pty(FILE ** master, FILE ** slave) {
 
 			return 1;
 		}
-	} while(next_bsd_pty(tty_spc))
+	} while(next_bsd_pty(tty_spc));
 
 	return 0;
 }
