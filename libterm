@@ -30,6 +30,24 @@ Some perspective stuff:
 a context type
 ltm_context_t
 	maybe - this would be a struct, you would set a bunch of callbacks, eg:
+ltm_cb_set_titles
+	this would be called in response to the ^[]n;string^G with n being 0-2 escape codes. if the program does not supply this callback, it will simply be ignored
+ltm_cb_update_areas
+	this would be called with an argument that is an array of ranges on the screen that need to be updated when the screen is updated. The program would then look up those ranges in the libterm-maintaned screen matrix and change its own screen accordingly
+ltm_cb_reload_screen
+	re-read the entire screen, for example if something BIG was pasted in, the program went into full-screen mode, the screen was scrolled, etc.
+ltm_cb_add_line
+	an extra line has been added to the screen. This might include an implicit one-line scroll if the entire screen has already been filled, would also probably include an implicit cursor advance
+ltm_cb_add_char
+	one character has been added (for example, if the user has typed a character), would include an implicit cursor advance
+ltm_cb_beep
+	beep! (in response to the \a character)
+	should this in in the form of an argument to the update/reload callbacks? This might ensure that I'm using as few callbacks as possible and that the beep happened RIGHT when the update happened instead of a split-second later... maybe this should only be used if the \a was the only character printed?
+etc
+
+In order for those update functions (update, reload, add, etc) to work without passing updated text through an argument (which I don't want to do), there has to be a globally accessible screen matrix. In order to avoid having to deal with variable length UTF-8 characters, I'm thinking that the matrix will be a matrix of UTF-32 values. It doesn't seem like this will take too much memory (for example, I'm currently running konsole at 140x51. 140*51 is 7140 bytes, which times 4 is 28560 bytes. that over 1024 is about 27 KB, which isn't really that much...)
+
+NOTE: FROM HERE TO ...
 ltm_cb_update_char(struct point pt, struct attr attribs, char * chr)
 	this would update only one characters
 		pt - x and y coords for where the char is
@@ -55,12 +73,6 @@ ltm_cb_update_screen(struct attr * attribs, char * str)
 	this would update the entire screen if, for example, the screen is scrolled or a full-screen app starts
 		attribs - array of attributes
 		str - new text for the entire screen (including newlines)
-ltm_cb_set_titles
-	this would be called in response to the ^[]n;string^G with n being 0-2 escape codes. if the program does not supply this callback, it will simply be ignored
-etc
-
-a "terminal server":
-this would allow terminal emulators to detach from their terminal devices without having everything running on the terminal quit. maybe create a socket in /tmp, like x11 does? this would allow for remote terminaling, woot! :) I don't know how this would relate to ssh though, hmm.
 
 orders:
 if we need to update a single character, the order is:
@@ -83,6 +95,10 @@ if we need to update multiple lines, the order is:
 	lines
 	screen
 if we need to update the entire screen, screen is used
+... HERE HAS BEEN DISCARDED!!!
+
+a "terminal server":
+this would allow terminal emulators to detach from their terminal devices without having everything running on the terminal quit. maybe create a socket in /tmp, like x11 does? this would allow for remote terminaling, woot! :) I don't know how this would relate to ssh though, hmm.
 
 in order to communicate to the code using libterm what the attributes (bold, bgcolor, fgcolor, etc) there needs to be a protocal. Several ways to do this:
 	1. Have the various update callbacks pass a single set of attribute data and call the callbacks for each section of the text that has a different set of attributes
