@@ -1,3 +1,40 @@
+-- Thursday March 22, 2007 08:57:07 PM EDT --
+-- finished alloc_unix98_pty --
+
+--- unix98.c.bkup	2007-03-22 20:49:28.000000000 -0400
++++ unix98.c	2007-03-22 20:56:09.000000000 -0400
+@@ -1,10 +1,10 @@
+ #include <sys/ioctl.h>
+ #include <stdio.h>
+ 
+-int alloc_unix98_pty() {
++int alloc_unix98_pty(FILE ** omaster, FILE ** oslave) {
+ 	FILE *master, *slave;
+ 	char slave_path[32]; /* big enough */
+-	int unlock = 0, err;
++	int unlock = 0, err, pty_num;
+ 
+ 	master = fopen("/dev/ptmx", "r+");
+ 	/* This should always be successful - if not, there's nothing anyone
+@@ -15,4 +15,16 @@
+ 	/* all errors from ioctl are weird and unfixable */
+ 	if(err == -1) FATAL_ERR("ioctl", "TIOCSPTLCK")
+ 
++	err = ioctl(fileno(master), TIOCGPTN, &pty_num);
++	if(err == -1) FATAL_ERR("ioctl", "TIOCGPTN")
+ 
++	sprintf(slave_path, "/dev/pts/%u", pty_num);
++
++	slave = fopen(slave_path, "r+");
++	if(!master) FATAL_ERR("fopen", slave_path)
++
++	*omaster = master;
++	*oslave = slave;
++
++	return 0;
++}
+
+
 -- Thursday March 22, 2007 05:36:12 PM EDT --
 -- missing semicolon --
 
