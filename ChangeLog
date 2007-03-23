@@ -1,3 +1,17 @@
+-- Thursday March 22, 2007 08:59:08 PM EDT --
+-- if we get here, we've succeeded --
+
+--- unix98.c.bkup	2007-03-22 20:58:49.000000000 -0400
++++ unix98.c	2007-03-22 20:59:01.000000000 -0400
+@@ -26,5 +26,5 @@
+ 	*omaster = master;
+ 	*oslave = slave;
+ 
+-	return 0;
++	return 1;
+ }
+
+
 -- Thursday March 22, 2007 08:57:07 PM EDT --
 -- finished alloc_unix98_pty --
 

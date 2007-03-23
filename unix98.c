@@ -26,5 +26,5 @@ int alloc_unix98_pty(FILE ** omaster, FILE ** oslave) {
 	*omaster = master;
 	*oslave = slave;
 
-	return 0;
+	return 1;
 }
