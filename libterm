@@ -6,6 +6,10 @@ what's the best way to use bsd ttys?
 read some source code
 experiment
 
+Useful links
+http://www.gnu.org/software/libc/manual/html_node/Job-Control.html
+	detailed descriptions of sessions and process groups
+
 use my own integer typedef header:
 typedef unsigned long long u8;
 typedef signed long long   s8;
