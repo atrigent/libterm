@@ -1,3 +1,250 @@
+-- Thursday April 12, 2007 03:04:45 AM EDT --
+-- try the standards compliant one (posix_openpt) one first --
+
+--- funcpty.c.bkup	2007-04-12 02:58:26.000000000 -0400
++++ funcpty.c	2007-04-12 03:04:31.000000000 -0400
+@@ -3,15 +3,15 @@
+ /* need to change these once I have a configure script... */
+ 
+ #if defined(HAVE_UNIX98_FUNCS)
+-# if defined(HAVE_GETPT)
+-#  define _XOPEN_SOURCE
+-# elif defined(HAVE_POSIX_OPENPT)
++# if defined(HAVE_POSIX_OPENPT)
+ #  define _XOPEN_SOURCE 600
+ #  include <fcntl.h>
+-# else
++# elif !defined(HAVE_GETPT)
+ #  include <sys/types.h>
+ #  include <sys/stat.h>
+ #  include <fcntl.h>
++# endif
++# if !defined(HAVE_POSIX_OPENPTY)
+ #  define _XOPEN_SOURCE
+ # endif
+ # include <stdlib.h>
+@@ -28,12 +28,12 @@
+ 
+ #if defined(HAVE_OPENPTY) || defined(HAVE_UNIX98_FUNCS)
+ # if defined(HAVE_UNIX98_FUNCS)
+-#  if defined(HAVE_GETPT)
+-	master_fd = getpt();
+-	if(master_fd == -1) return 0;
+-#  elif defined(HAVE_POSIX_OPENPT)
++#  if defined(HAVE_POSIX_OPENPT)
+ 	master_fd = posix_openpt(O_RDWR|O_NOCTTY);
+ 	if(master_fd == -1) return 0;
++#  elif defined(HAVE_GETPT)
++	master_fd = getpt();
++	if(master_fd == -1) return 0;
+ #  else
+ 	master_fd = open("/dev/ptmx", O_RDWR|O_NOCTTY);
+ 	if(master_fd == -1) return 0;
+
+
+-- Thursday April 12, 2007 02:51:10 AM EDT --
+-- replace HAVE_LIBUTIL with HAVE_OPENPTY --
+
+--- funcpty.c.bkup	2007-04-12 02:50:23.000000000 -0400
++++ funcpty.c	2007-04-12 02:51:02.000000000 -0400
+@@ -15,7 +15,7 @@
+ #  define _XOPEN_SOURCE
+ # endif
+ # include <stdlib.h>
+-#elif defined(HAVE_LIBUTIL)
++#elif defined(HAVE_OPENPTY)
+ # include <pty.h>
+ #endif
+ 
+@@ -26,7 +26,7 @@
+ 	char * pts_name;
+ #endif
+ 
+-#if defined(HAVE_LIBUTIL) || defined(HAVE_UNIX98_FUNCS)
++#if defined(HAVE_OPENPTY) || defined(HAVE_UNIX98_FUNCS)
+ # if defined(HAVE_UNIX98_FUNCS)
+ #  if defined(HAVE_GETPT)
+ 	master_fd = getpt();
+
+
+-- Thursday April 12, 2007 02:49:42 AM EDT --
+-- finally finish this damned thing (I think) --
+
+--- funcpty.c.bkup	2007-04-11 23:22:25.000000000 -0400
++++ funcpty.c	2007-04-12 02:49:33.000000000 -0400
+@@ -1,18 +1,71 @@
+ #include <stdio.h>
+-#ifdef USE_LIBUTIL
++
++/* need to change these once I have a configure script... */
++
++#if defined(HAVE_UNIX98_FUNCS)
++# if defined(HAVE_GETPT)
++#  define _XOPEN_SOURCE
++# elif defined(HAVE_POSIX_OPENPT)
++#  define _XOPEN_SOURCE 600
++#  include <fcntl.h>
++# else
++#  include <sys/types.h>
++#  include <sys/stat.h>
++#  include <fcntl.h>
++#  define _XOPEN_SOURCE
++# endif
++# include <stdlib.h>
++#elif defined(HAVE_LIBUTIL)
+ # include <pty.h>
+-# include <utmp.h>
+ #endif
+ 
+-#ifdef USE_LIBUTIL
+-int alloc_libutil_pty(FILE ** omaster, FILE ** oslave) {
++int alloc_func_pty(FILE ** omaster, FILE ** oslave) {
+ 	FILE *master, *slave;
+ 	int master_fd, slave_fd, err;
++#if defined(HAVE_UNIX98_FUNCS)
++	char * pts_name;
++#endif
++
++#if defined(HAVE_LIBUTIL) || defined(HAVE_UNIX98_FUNCS)
++# if defined(HAVE_UNIX98_FUNCS)
++#  if defined(HAVE_GETPT)
++	master_fd = getpt();
++	if(master_fd == -1) return 0;
++#  elif defined(HAVE_POSIX_OPENPT)
++	master_fd = posix_openpt(O_RDWR|O_NOCTTY);
++	if(master_fd == -1) return 0;
++#  else
++	master_fd = open("/dev/ptmx", O_RDWR|O_NOCTTY);
++	if(master_fd == -1) return 0;
++#  endif
++	if(grantpt(master_fd) == -1) return 0;
+ 
+-	err = openpty(&master_fd, &slave_fd, NULL, NULL, NULL);
+-	if(err == -1) return 0; /* this means that no free ttys were found */
++	if(unlockpt(master_fd) == -1) return 0;
+ 
++	pts_name = ptsname(master_fd);
++	if(!pts_name) return 0;
++
++	slave_fd = open(pts_name, O_RDWR|O_NOCTTY);
++	if(slave_fd == -1) return 0;
++# else
++	if(openpty(&master_fd, &slave_fd, NULL, NULL, NULL) == -1) return 0;
++# endif
+ 	master = fdopen(master_fd, "r+");
+-	if(!master) 
++	if(!master) return 0; /* don't really know what to do here, since
++			       * the error could be "fatal" (i.e. shouldn't
++			       * ever happen), but I also don't want to take
++			       * away the opportunity to try other terminal
++			       * types.
++			       */
++
++	slave = fdopen(slave_fd, "r+");
++	if(!slave) return 0;
++
++	*omaster = master;
++	*oslave = slave;
+ 
++	return 1;
++#else
++	return 0;
+ #endif
++}
+
+
+-- Friday April 06, 2007 08:49:59 PM EDT --
+-- remove the printfs --
+
+--- bsd.c.bkup	2007-04-06 17:41:07.000000000 -0400
++++ bsd.c	2007-04-06 20:49:46.000000000 -0400
+@@ -27,6 +27,7 @@
+ int find_unused_bsd_pty(FILE ** master, FILE ** slave) {
+ 	FILE *pty_file, *tty_file;
+ 	char tty_path[11], pty_path[11], tty_spc[2] = "p0";
++	int unlock = 0;
+ 
+ 	strcpy(tty_path, "/dev/tty");
+ 	strcpy(pty_path, "/dev/pty");
+@@ -37,14 +38,16 @@
+ 		pty_path[9] = tty_path[9] = tty_spc[1];
+ 
+ 		pty_file = fopen(pty_path, "r+");
+-		if(!pty_file)
+-			printf("Could not open pty master %s: %s\n",
+-					pty_path, strerror(errno));
++		if(!pty_file) continue; /* open failed, go try next one */
+ 		else {
++			/* This doesn't appear to actually be necessary
++			 * (according to the Linux kernel source), but let's do
++			 * it anyway.
++			 */
++			if(ioctl(fileno(pty_file), TIOCSPTLCK, &unlock) == -1)
++				continue;
+ 			tty_file = fopen(tty_path, "r+");
+-			if(!tty_file)
+-				printf("Could not open pty slave %s: %s\n",
+-						tty_path, strerror(errno));
++			if(!tty_file) continue;
+ 
+ 			*master = pty_file;
+ 			*slave = tty_file;
+
+
+-- Tuesday April 03, 2007 12:44:53 AM EDT --
+-- change some funcpty stuff --
+
+--- funcpty.c.bkup	2007-04-02 19:27:39.000000000 -0400
++++ funcpty.c	2007-04-03 00:44:47.000000000 -0400
+@@ -1,2 +1,18 @@
+-int alloc_function_pty(FILE ** omaster, FILE ** oslave) {
+-	
++#include <stdio.h>
++#ifdef USE_LIBUTIL
++# include <pty.h>
++# include <utmp.h>
++#endif
++
++#ifdef USE_LIBUTIL
++int alloc_libutil_pty(FILE ** omaster, FILE ** oslave) {
++	FILE *master, *slave;
++	int master_fd, slave_fd, err;
++
++	err = openpty(&master_fd, &slave_fd, NULL, NULL, NULL);
++	if(err == -1) return 0; /* this means that no free ttys were found */
++
++	master = fdopen(master_fd, "r+");
++	if(!master) 
++
++#endif
+
+
+-- Monday April 02, 2007 07:27:08 PM EDT --
+-- add another comment --
+
+--- init.c.bkup	2007-04-02 19:25:34.000000000 -0400
++++ init.c	2007-04-02 19:27:04.000000000 -0400
+@@ -11,6 +11,8 @@
+ 
+ int ltm_init_with_shell(char * shell) {
+ 	pid_t pid;
++
++	/* get the slave FD here... */
+ 	
+ 	pid = spawn(shell);
+ 
+
+
+-- Friday March 23, 2007 02:07:58 AM EDT --
+-- NEW FILE: need to finish this... --
+
+--- funcpty.c.bkup	2007-03-22 23:03:04.000000000 -0400
++++ funcpty.c	2007-03-23 02:07:53.000000000 -0400
+@@ -0,0 +1,2 @@
++int alloc_function_pty(FILE ** omaster, FILE ** oslave) {
++	
+
+
 -- Thursday March 22, 2007 08:59:08 PM EDT --
 -- if we get here, we've succeeded --
 

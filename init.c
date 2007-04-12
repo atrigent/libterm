@@ -11,6 +11,8 @@ struct ltm_term_desc * descriptors = 0; /* no such struct yet... */
 
 int ltm_init_with_shell(char * shell) {
 	pid_t pid;
+
+	/* get the slave FD here... */
 	
 	pid = spawn(shell);
 

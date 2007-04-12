@@ -27,6 +27,7 @@ static int next_bsd_pty(char * ident) {
 int find_unused_bsd_pty(FILE ** master, FILE ** slave) {
 	FILE *pty_file, *tty_file;
 	char tty_path[11], pty_path[11], tty_spc[2] = "p0";
+	int unlock = 0;
 
 	strcpy(tty_path, "/dev/tty");
 	strcpy(pty_path, "/dev/pty");
@@ -37,14 +38,16 @@ int find_unused_bsd_pty(FILE ** master, FILE ** slave) {
 		pty_path[9] = tty_path[9] = tty_spc[1];
 
 		pty_file = fopen(pty_path, "r+");
-		if(!pty_file)
-			printf("Could not open pty master %s: %s\n",
-					pty_path, strerror(errno));
+		if(!pty_file) continue; /* open failed, go try next one */
 		else {
+			/* This doesn't appear to actually be necessary
+			 * (according to the Linux kernel source), but let's do
+			 * it anyway.
+			 */
+			if(ioctl(fileno(pty_file), TIOCSPTLCK, &unlock) == -1)
+				continue;
 			tty_file = fopen(tty_path, "r+");
-			if(!tty_file)
-				printf("Could not open pty slave %s: %s\n",
-						tty_path, strerror(errno));
+			if(!tty_file) continue;
 
 			*master = pty_file;
 			*slave = tty_file;
