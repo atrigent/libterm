@@ -1,3 +1,118 @@
+-- Wednesday April 18, 2007 06:40:41 PM EDT --
+-- replace PTY_PATH_LEN with CHR_ARR_LEN, change sprintfs to snprintfs, add length checks --
+
+--- trynode.c.bkup	2007-04-18 18:24:13.000000000 -0400
++++ trynode.c	2007-04-18 18:39:55.000000000 -0400
+@@ -94,25 +94,34 @@
+ }
+ 
+ int unix98_slave_try_create(u4 num, char * path) {
+-	char orig[PTY_PATH_LEN];
++	char orig[CHR_ARR_LEN];
+ 
+-	sprintf(orig, "%u", num);
++	if(snprintf(orig, CHR_ARR_LEN, "%u", num) >= CHR_ARR_LEN) {
++		errno = ENAMETOOLONG;
++		return -1;
++	}
+ 
+ 	return try_create(orig, 'c', makedev(136 + num/256, num % 256), unix98_paths, path);
+ }
+ 
+ int bsd_slave_try_create(u1 chr, u1 num, char * path) {
+-	char orig[PTY_PATH_LEN];
++	char orig[CHR_ARR_LEN];
+ 
+-	sprintf(orig, "tty%c%x", chr, num);
++	if(snprintf(orig, CHR_ARR_LEN, "tty%c%x", chr, num) >= CHR_ARR_LEN) {
++		errno = ENAMETOOLONG;
++		return -1;
++	}
+ 
+ 	return try_create(orig, 'c', makedev(3, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsd_ptmx_paths, path);
+ }
+ 
+ int bsd_master_try_create(u1 chr, u1 num, char * path) {
+-	char orig[PTY_PATH_LEN];
++	char orig[CHR_ARR_LEN];
+ 
+-	sprintf(orig, "pty%c%x", chr, num);
++	if(snprintf(orig, CHR_ARR_LEN, "pty%c%x", chr, num) >= CHR_ARR_LEN) {
++		errno = ENAMETOOLONG;
++		return -1;
++	}
+ 
+ 	return try_create(orig, 'c', makedev(2, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsd_ptmx_paths, path);
+ }
+
+
+-- Wednesday April 18, 2007 06:24:11 PM EDT --
+-- moved and renamed --
+
+--- libterm.h.bkup	2007-04-18 18:19:39.000000000 -0400
++++ libterm.h	2007-04-18 18:24:06.000000000 -0400
+@@ -8,6 +8,11 @@
+ #define LTM_TRUE  (1)
+ #define LTM_FALSE (0)
+ 
++/* length of a character array, allows for
++ * 32 character and one null byte
++ */
++#define CHR_ARR_LEN 33
++
+ #include "ltmint.h"
+ #include "error.h"
+ #include "ptydev.h"
+
+
+-- Wednesday April 18, 2007 06:19:34 PM EDT --
+-- going to generalize this... --
+
+--- ptydev.h.bkup	2007-04-18 18:19:15.000000000 -0400
++++ ptydev.h	2007-04-18 18:19:28.000000000 -0400
+@@ -5,9 +5,6 @@
+ #define BSD_PTY    1
+ #define FUNC_PTY   2
+ 
+-/* this should be enough... */
+-#define PTY_PATH_LEN 32
+-
+ /* From here to... */
+ /* Since major is a function on SVR4, we can't use `ifndef major'.  */
+ #if MAJOR_IN_MKDEV
+
+
+-- Wednesday April 18, 2007 05:50:33 PM EDT --
+-- who am I kidding? a wrong uid isn't fixable! --
+
+--- init.c.bkup	2007-04-18 17:32:01.000000000 -0400
++++ init.c	2007-04-18 17:50:21.000000000 -0400
+@@ -30,6 +30,7 @@
+ int ltm_init() {
+ 	struct passwd * pwd_entry;
+ 
++	errno = 0; /* suggestion from getpwuid(3) */
+ 	pwd_entry = getpwuid(getuid());
+ 	/* I hear that many different things might be returned on a uid not
+ 	 * found, depending on the UNIX system. This would cause problems.
+@@ -38,12 +39,9 @@
+ 	 * their system returns anything other than the values handled here,
+ 	 * let me know.
+ 	 */
+-	if(!pwd_entry ||
+-	   (pwd_entry == -1 && 
+-	    (errno == ENOENT || errno == ESRCH || errno == EBADF ||
+-	     errno == EPERM)
+-	   )) FIXABLE_LTM_ERR(EINVAL)
+-	else if(pwd_entry == -1) FATAL_ERR("getpwuid", getuid())
++	if(!pwd_entry &&
++	   (errno == ENOENT || errno == ESRCH || errno == EBADF ||
++	    errno == EPERM || errno == 0)) FATAL_ERR("getpwuid", getuid())
+ 
+ 	return ltm_init_with_shell(pwd_entry->pw_shell);
+ }
+
+
 -- Thursday April 12, 2007 03:04:45 AM EDT --
 -- try the standards compliant one (posix_openpt) one first --
 
