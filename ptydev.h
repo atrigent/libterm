@@ -5,9 +5,6 @@
 #define BSD_PTY    1
 #define FUNC_PTY   2
 
-/* this should be enough... */
-#define PTY_PATH_LEN 32
-
 /* From here to... */
 /* Since major is a function on SVR4, we can't use `ifndef major'.  */
 #if MAJOR_IN_MKDEV
