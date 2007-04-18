@@ -30,6 +30,7 @@ int ltm_init_with_shell(char * shell) {
 int ltm_init() {
 	struct passwd * pwd_entry;
 
+	errno = 0; /* suggestion from getpwuid(3) */
 	pwd_entry = getpwuid(getuid());
 	/* I hear that many different things might be returned on a uid not
 	 * found, depending on the UNIX system. This would cause problems.
@@ -38,12 +39,9 @@ int ltm_init() {
 	 * their system returns anything other than the values handled here,
 	 * let me know.
 	 */
-	if(!pwd_entry ||
-	   (pwd_entry == -1 && 
-	    (errno == ENOENT || errno == ESRCH || errno == EBADF ||
-	     errno == EPERM)
-	   )) FIXABLE_LTM_ERR(EINVAL)
-	else if(pwd_entry == -1) FATAL_ERR("getpwuid", getuid())
+	if(!pwd_entry &&
+	   (errno == ENOENT || errno == ESRCH || errno == EBADF ||
+	    errno == EPERM || errno == 0)) FATAL_ERR("getpwuid", getuid())
 
 	return ltm_init_with_shell(pwd_entry->pw_shell);
 }
