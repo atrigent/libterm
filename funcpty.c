@@ -19,7 +19,7 @@
 # include <pty.h>
 #endif
 
-int alloc_func_pty(FILE ** omaster, FILE ** oslave) {
+int alloc_func_pty(struct ptydev * pty) {
 	FILE *master, *slave;
 	int master_fd, slave_fd, err;
 #if defined(HAVE_UNIX98_FUNCS)
@@ -61,8 +61,9 @@ int alloc_func_pty(FILE ** omaster, FILE ** oslave) {
 	slave = fdopen(slave_fd, "r+");
 	if(!slave) return 0;
 
-	*omaster = master;
-	*oslave = slave;
+	pty->type = FUNC_PTY;
+	pty->master = master;
+	pty->slave = slave;
 
 	return 1;
 #else

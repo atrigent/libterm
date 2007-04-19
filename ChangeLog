@@ -1,3 +1,141 @@
+-- Wednesday April 18, 2007 10:40:47 PM EDT --
+-- change names --
+
+--- unix98.c.bkup	2007-04-18 22:40:31.000000000 -0400
++++ unix98.c	2007-04-18 22:40:44.000000000 -0400
+@@ -24,8 +24,8 @@
+ 	if(!master) FATAL_ERR("fopen", slave_path)
+ 
+ 	pty->type = UNIX98_PTY;
+-	pty->pty_master = master;
+-	pty->pty_slave = slave;
++	pty->master = master;
++	pty->slave = slave;
+ 
+ 	return 1;
+ }
+
+
+-- Wednesday April 18, 2007 10:40:28 PM EDT --
+-- change names accordingly... --
+
+--- bsd.c.bkup	2007-04-18 22:40:12.000000000 -0400
++++ bsd.c	2007-04-18 22:40:22.000000000 -0400
+@@ -46,8 +46,8 @@
+ 			if(!tty_file) continue;
+ 
+ 			pty->type = BSD_PTY;
+-			pty->pty_master = pty_file;
+-			pty->pty_slave = tty_file;
++			pty->master = pty_file;
++			pty->slave = tty_file;
+ 
+ 			return 1;
+ 		}
+
+
+-- Wednesday April 18, 2007 10:40:09 PM EDT --
+-- change member names a little --
+
+--- ptydev.h.bkup	2007-04-18 22:39:55.000000000 -0400
++++ ptydev.h	2007-04-18 22:40:03.000000000 -0400
+@@ -36,8 +36,8 @@
+ 
+ struct ptydev {
+ 	u1 type;
+-	FILE * pty_master;
+-	FILE * pty_slave;
++	FILE * master;
++	FILE * slave;
+ };
+ 
+ #endif
+
+
+-- Wednesday April 18, 2007 10:39:53 PM EDT --
+-- use struct ptydev --
+
+--- funcpty.c.bkup	2007-04-18 22:31:57.000000000 -0400
++++ funcpty.c	2007-04-18 22:39:46.000000000 -0400
+@@ -19,7 +19,7 @@
+ # include <pty.h>
+ #endif
+ 
+-int alloc_func_pty(FILE ** omaster, FILE ** oslave) {
++int alloc_func_pty(struct ptydev * pty) {
+ 	FILE *master, *slave;
+ 	int master_fd, slave_fd, err;
+ #if defined(HAVE_UNIX98_FUNCS)
+@@ -61,8 +61,9 @@
+ 	slave = fdopen(slave_fd, "r+");
+ 	if(!slave) return 0;
+ 
+-	*omaster = master;
+-	*oslave = slave;
++	pty->type = FUNC_PTY;
++	pty->master = master;
++	pty->slave = slave;
+ 
+ 	return 1;
+ #else
+
+
+-- Wednesday April 18, 2007 10:31:44 PM EDT --
+-- change to use struct ptydev --
+
+--- unix98.c.bkup	2007-04-18 22:30:28.000000000 -0400
++++ unix98.c	2007-04-18 22:31:32.000000000 -0400
+@@ -1,7 +1,7 @@
+ #include <sys/ioctl.h>
+ #include <stdio.h>
+ 
+-int alloc_unix98_pty(FILE ** omaster, FILE ** oslave) {
++int alloc_unix98_pty(struct ptydev * pty) {
+ 	FILE *master, *slave;
+ 	char slave_path[32]; /* big enough */
+ 	int unlock = 0, err, pty_num;
+@@ -23,8 +23,9 @@
+ 	slave = fopen(slave_path, "r+");
+ 	if(!master) FATAL_ERR("fopen", slave_path)
+ 
+-	*omaster = master;
+-	*oslave = slave;
++	pty->type = UNIX98_PTY;
++	pty->pty_master = master;
++	pty->pty_slave = slave;
+ 
+ 	return 1;
+ }
+
+
+-- Wednesday April 18, 2007 10:30:25 PM EDT --
+-- hah! completely forgot about this struct... --
+
+--- bsd.c.bkup	2007-04-18 22:28:31.000000000 -0400
++++ bsd.c	2007-04-18 22:30:15.000000000 -0400
+@@ -20,7 +20,7 @@
+ 	return LTM_TRUE;
+ }
+ 
+-int find_unused_bsd_pty(FILE ** master, FILE ** slave) {
++int find_unused_bsd_pty(struct ptydev * pty) {
+ 	FILE *pty_file, *tty_file;
+ 	char tty_path[11], pty_path[11], tty_spc[2] = "p0";
+ 	int unlock = 0;
+@@ -45,8 +45,9 @@
+ 			tty_file = fopen(tty_path, "r+");
+ 			if(!tty_file) continue;
+ 
+-			*master = pty_file;
+-			*slave = tty_file;
++			pty->type = BSD_PTY;
++			pty->pty_master = pty_file;
++			pty->pty_slave = tty_file;
+ 
+ 			return 1;
+ 		}
+
+
 -- Wednesday April 18, 2007 08:03:24 PM EDT --
 -- no longer valid... --
 

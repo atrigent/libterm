@@ -1,7 +1,7 @@
 #include <sys/ioctl.h>
 #include <stdio.h>
 
-int alloc_unix98_pty(FILE ** omaster, FILE ** oslave) {
+int alloc_unix98_pty(struct ptydev * pty) {
 	FILE *master, *slave;
 	char slave_path[32]; /* big enough */
 	int unlock = 0, err, pty_num;
@@ -23,8 +23,9 @@ int alloc_unix98_pty(FILE ** omaster, FILE ** oslave) {
 	slave = fopen(slave_path, "r+");
 	if(!master) FATAL_ERR("fopen", slave_path)
 
-	*omaster = master;
-	*oslave = slave;
+	pty->type = UNIX98_PTY;
+	pty->master = master;
+	pty->slave = slave;
 
 	return 1;
 }

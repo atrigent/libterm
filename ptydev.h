@@ -36,8 +36,8 @@
 
 struct ptydev {
 	u1 type;
-	FILE * pty_master;
-	FILE * pty_slave;
+	FILE * master;
+	FILE * slave;
 };
 
 #endif

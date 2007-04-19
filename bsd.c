@@ -20,7 +20,7 @@ static int next_bsd_pty(char * ident) {
 	return LTM_TRUE;
 }
 
-int find_unused_bsd_pty(FILE ** master, FILE ** slave) {
+int find_unused_bsd_pty(struct ptydev * pty) {
 	FILE *pty_file, *tty_file;
 	char tty_path[11], pty_path[11], tty_spc[2] = "p0";
 	int unlock = 0;
@@ -45,8 +45,9 @@ int find_unused_bsd_pty(FILE ** master, FILE ** slave) {
 			tty_file = fopen(tty_path, "r+");
 			if(!tty_file) continue;
 
-			*master = pty_file;
-			*slave = tty_file;
+			pty->type = BSD_PTY;
+			pty->master = pty_file;
+			pty->slave = tty_file;
 
 			return 1;
 		}
