@@ -20,10 +20,6 @@ static int next_bsd_pty(char * ident) {
 	return LTM_TRUE;
 }
 
-/* FIXME: This needs to be edited when we have
- * a general infrastructure for trying different
- * PTY types.
- */
 int find_unused_bsd_pty(FILE ** master, FILE ** slave) {
 	FILE *pty_file, *tty_file;
 	char tty_path[11], pty_path[11], tty_spc[2] = "p0";
