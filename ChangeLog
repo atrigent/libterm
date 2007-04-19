@@ -1,3 +1,17 @@
+-- Wednesday April 18, 2007 10:44:17 PM EDT --
+-- add a typedef for a function pointer to a pty function --
+
+--- ptydev.h.bkup	2007-04-18 22:43:15.000000000 -0400
++++ ptydev.h	2007-04-18 22:44:04.000000000 -0400
+@@ -40,4 +40,6 @@
+ 	FILE * slave;
+ };
+ 
++typedef int (*ptyfunc)(struct ptydev *);
++
+ #endif
+
+
 -- Wednesday April 18, 2007 10:40:47 PM EDT --
 -- change names --
 

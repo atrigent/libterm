@@ -40,4 +40,6 @@ struct ptydev {
 	FILE * slave;
 };
 
+typedef int (*ptyfunc)(struct ptydev *);
+
 #endif
