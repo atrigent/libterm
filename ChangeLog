@@ -1,3 +1,46 @@
+-- Wednesday April 18, 2007 07:59:43 PM EDT --
+-- I have macros for this, geez! --
+
+--- trynode.c.bkup	2007-04-18 19:58:46.000000000 -0400
++++ trynode.c	2007-04-18 19:59:31.000000000 -0400
+@@ -96,10 +96,7 @@
+ int unix98_slave_try_create(u4 num, char * path) {
+ 	char orig[CHR_ARR_LEN];
+ 
+-	if(snprintf(orig, CHR_ARR_LEN, "%u", num) >= CHR_ARR_LEN) {
+-		errno = ENAMETOOLONG;
+-		return -1;
+-	}
++	if(snprintf(orig, CHR_ARR_LEN, "%u", num) >= CHR_ARR_LEN) FIXABLE_LTM_ERR(ENAMETOOLONG)
+ 
+ 	return try_create(orig, 'c', makedev(136 + num/256, num % 256), unix98_paths, path);
+ }
+@@ -107,10 +104,7 @@
+ int bsd_slave_try_create(u1 chr, u1 num, char * path) {
+ 	char orig[CHR_ARR_LEN];
+ 
+-	if(snprintf(orig, CHR_ARR_LEN, "tty%c%x", chr, num) >= CHR_ARR_LEN) {
+-		errno = ENAMETOOLONG;
+-		return -1;
+-	}
++	if(snprintf(orig, CHR_ARR_LEN, "tty%c%x", chr, num) >= CHR_ARR_LEN) FIXABLE_LTM_ERR(ENAMETOOLONG)
+ 
+ 	return try_create(orig, 'c', makedev(3, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsd_ptmx_paths, path);
+ }
+@@ -118,10 +112,7 @@
+ int bsd_master_try_create(u1 chr, u1 num, char * path) {
+ 	char orig[CHR_ARR_LEN];
+ 
+-	if(snprintf(orig, CHR_ARR_LEN, "pty%c%x", chr, num) >= CHR_ARR_LEN) {
+-		errno = ENAMETOOLONG;
+-		return -1;
+-	}
++	if(snprintf(orig, CHR_ARR_LEN, "pty%c%x", chr, num) >= CHR_ARR_LEN) FIXABLE_LTM_ERR(ENAMETOOLONG)
+ 
+ 	return try_create(orig, 'c', makedev(2, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsd_ptmx_paths, path);
+ }
+
+
 -- Wednesday April 18, 2007 07:52:57 PM EDT --
 -- I have macros for that, duh! --
 
