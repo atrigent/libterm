@@ -10,11 +10,13 @@ int next_desc = 0;
 struct ltm_term_desc * descriptors = 0; /* no such struct yet... */
 
 int ltm_init_with_shell(char * shell) {
+	struct ptydev * pty;
 	pid_t pid;
 
-	/* get the slave FD here... */
+	pty = choose_pty_method();
+	if(!pty) FIXABLE_LTM_ERR(ENODEV)
 	
-	pid = spawn(shell);
+	pid = spawn(shell, fileno(pty->slave));
 
 	descriptors = realloc(descriptors, ++next_desc * sizeof(struct ltm_term_desc));
 
