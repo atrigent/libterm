@@ -1,3 +1,56 @@
+-- Saturday April 28, 2007 02:29:54 AM EDT --
+-- fill the struct... --
+
+--- init.c.bkup	2007-04-27 23:13:58.000000000 -0400
++++ init.c	2007-04-28 02:29:29.000000000 -0400
+@@ -7,8 +7,11 @@
+ #include "libterm.h"
+ 
+ int next_desc = 0;
+-struct ltm_term_desc * descriptors = 0; /* no such struct yet... */
++struct ltm_term_desc * descriptors = 0;
+ 
++/* errno values:
++ * ENODEV: No available PTY devices were found.
++ */
+ int ltm_init_with_shell(char * shell) {
+ 	struct ptydev * pty;
+ 	pid_t pid;
+@@ -20,15 +23,11 @@
+ 
+ 	descriptors = realloc(descriptors, ++next_desc * sizeof(struct ltm_term_desc));
+ 
+-	/* probably fill in the struct here */
++	descriptors[next_desc-1].pty = pty;
+ 
+ 	return next_desc-1;
+ }
+ 
+-/* Return values:
+- * EINVAL - current UID is not a valid user id - try using ltm_init_with_shell
+- * to avoid having to access the passwd database
+- */
+ int ltm_init() {
+ 	struct passwd * pwd_entry;
+ 
+
+
+-- Friday April 27, 2007 11:13:32 PM EDT --
+-- NEW FILE: leave it like that for now... --
+
+--- descriptor.h.bkup	2007-04-27 21:50:46.000000000 -0400
++++ descriptor.h	2007-04-27 23:13:25.000000000 -0400
+@@ -0,0 +1,8 @@
++#ifdef DESCRIPTOR_H
++#define DESCRIPTOR_H
++
++struct ltm_term_desc {
++	struct ptydev * pty;
++}
++
++#endif
+
+
 -- Thursday April 19, 2007 12:00:30 AM EDT --
 -- add a call to choose_pty_method in ltm_init_with_shell --
 

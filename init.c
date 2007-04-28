@@ -7,8 +7,11 @@
 #include "libterm.h"
 
 int next_desc = 0;
-struct ltm_term_desc * descriptors = 0; /* no such struct yet... */
+struct ltm_term_desc * descriptors = 0;
 
+/* errno values:
+ * ENODEV: No available PTY devices were found.
+ */
 int ltm_init_with_shell(char * shell) {
 	struct ptydev * pty;
 	pid_t pid;
@@ -20,15 +23,11 @@ int ltm_init_with_shell(char * shell) {
 
 	descriptors = realloc(descriptors, ++next_desc * sizeof(struct ltm_term_desc));
 
-	/* probably fill in the struct here */
+	descriptors[next_desc-1].pty = pty;
 
 	return next_desc-1;
 }
 
-/* Return values:
- * EINVAL - current UID is not a valid user id - try using ltm_init_with_shell
- * to avoid having to access the passwd database
- */
 int ltm_init() {
 	struct passwd * pwd_entry;
 
