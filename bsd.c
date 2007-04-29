@@ -9,7 +9,7 @@
 static int next_bsd_pty(char * ident) {
 	if(ident[1] == 'f') {
 		if(ident[0] == 'z') ident[0] = 'a';
-		else if(ident[0] == 'e') return LTM_FALSE;
+		else if(ident[0] == 'e') return 0;
 		else ident[0]++;
 
 		ident[1] = '0';
@@ -17,7 +17,7 @@ static int next_bsd_pty(char * ident) {
 	else if(ident[1] == '9') ident[1] = 'a';
 	else ident[1]++;
 
-	return LTM_TRUE;
+	return 1;
 }
 
 int find_unused_bsd_pty(struct ptydev * pty) {

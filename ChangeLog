@@ -1,3 +1,197 @@
+-- Sunday April 29, 2007 03:17:04 AM EDT --
+-- stupid idea... --
+
+--- libterm.h.bkup	2007-04-29 03:16:45.000000000 -0400
++++ libterm.h	2007-04-29 03:17:01.000000000 -0400
+@@ -5,9 +5,6 @@
+ #include <stdint.h>
+ #include <errno.h>
+ 
+-#define LTM_TRUE  (1)
+-#define LTM_FALSE (0)
+-
+ /* length of a character array, allows for
+  * 32 characters and one null byte
+  */
+
+
+-- Sunday April 29, 2007 03:16:38 AM EDT --
+-- stupid idea... --
+
+--- trynode.c.bkup	2007-04-29 03:14:57.000000000 -0400
++++ trynode.c	2007-04-29 03:15:25.000000000 -0400
+@@ -47,17 +47,17 @@
+ 
+ 	for(i = 0; paths[i]; i++) {
+ 		mode = S_IRUSR | S_IWUSR;
+-		created = LTM_TRUE;
++		created = 1;
+ 
+ 		if(paths[i][strlen(paths[i])-1] == '/') {
+ 			if(mkdir(paths[i], mode) == -1) {
+ 				if(errno == EACCES ||
+ 				   errno == ENOENT) continue;
+-				else if(errno == EEXIST) created = LTM_FALSE;
++				else if(errno == EEXIST) created = 0;
+ 				else FATAL_ERR("mkdir", paths[i])
+ 			}
+ 		}
+-		else created = LTM_FALSE;
++		else created = 0;
+ 		
+ 		if(type == 'b')      mode |= S_IFBLK;
+ 		else if(type == 'c') mode |= S_IFCHR;
+@@ -85,8 +85,8 @@
+ 		break;
+ 	}
+ 
+-	if(!paths[i]) return LTM_FALSE;
+-	return LTM_TRUE;
++	if(!paths[i]) return 0;
++	return 1;
+ }
+ 
+ int ptmx_try_create(char * path) {
+
+
+-- Sunday April 29, 2007 03:14:51 AM EDT --
+-- stupid idea... --
+
+--- error.h.bkup	2007-04-29 03:14:27.000000000 -0400
++++ error.h	2007-04-29 03:14:47.000000000 -0400
+@@ -149,7 +149,7 @@
+ 		curerr.ltm_func = __func__; \
+ 		curerr.data = _data; \
+ 		curerr.err_no = errno; \
+-		if(always_dump) error_info_dump(curerr, LTM_TRUE); \
++		if(always_dump) error_info_dump(curerr, 1); \
+ 		return -1; \
+ 	} while(0);
+ 
+@@ -162,7 +162,7 @@
+ 		curerr.ltm_func = __func__; \
+ 		curerr.data = NULL; \
+ 		curerr.err_no = err; \
+-		if(always_dump) error_info_dump(curerr, LTM_TRUE); \
++		if(always_dump) error_info_dump(curerr, 1); \
+ 		errno = err; \
+ 		return -1; \
+ 	} while(0);
+@@ -176,7 +176,7 @@
+ 		curerr.ltm_func = __func__; \
+ 		curerr.data = _data; \
+ 		curerr.err_no = errno; \
+-		error_info_dump(curerr, LTM_FALSE); \
++		error_info_dump(curerr, 0); \
+ 		errno = 0; \
+ 		return -1; \
+ 	} while(0);
+
+
+-- Sunday April 29, 2007 03:14:23 AM EDT --
+-- stupid idea... --
+
+--- bsd.c.bkup	2007-04-29 03:14:05.000000000 -0400
++++ bsd.c	2007-04-29 03:14:17.000000000 -0400
+@@ -9,7 +9,7 @@
+ static int next_bsd_pty(char * ident) {
+ 	if(ident[1] == 'f') {
+ 		if(ident[0] == 'z') ident[0] = 'a';
+-		else if(ident[0] == 'e') return LTM_FALSE;
++		else if(ident[0] == 'e') return 0;
+ 		else ident[0]++;
+ 
+ 		ident[1] = '0';
+@@ -17,7 +17,7 @@
+ 	else if(ident[1] == '9') ident[1] = 'a';
+ 	else ident[1]++;
+ 
+-	return LTM_TRUE;
++	return 1;
+ }
+ 
+ int find_unused_bsd_pty(struct ptydev * pty) {
+
+
+-- Sunday April 29, 2007 03:11:42 AM EDT --
+-- fine, use a better integer datatype, see if I care... --
+
+--- libterm.bkup	2007-04-29 03:10:56.000000000 -0400
++++ libterm	2007-04-29 03:11:03.000000000 -0400
+@@ -23,7 +23,7 @@
+ STRUCTURES:
+ 
+ struct ptydev {
+-	char type;
++	ui1 type;
+ 	FILE * master;
+ 	FILE * slave;
+ }
+
+
+-- Sunday April 29, 2007 03:10:32 AM EDT --
+-- add some more notes... --
+
+--- libterm.bkup	2007-04-29 02:56:40.000000000 -0400
++++ libterm	2007-04-29 03:00:19.000000000 -0400
+@@ -11,24 +11,43 @@
+ 	detailed descriptions of sessions and process groups
+ 
+ use my own integer typedef header:
+-typedef unsigned long long u8;
+-typedef signed long long   s8;
+-typedef unsigned int       u4;
+-typedef signed int         s4;
+-typedef unsigned short     u2;
+-typedef signed short       s2;
+-typedef unsigned char      u1;
+-typedef signed char        s1;
++typedef unsigned long long ui8;
++typedef signed long long   si8;
++typedef unsigned int       ui4;
++typedef signed int         si4;
++typedef unsigned short     ui2;
++typedef signed short       si2;
++typedef unsigned char      ui1;
++typedef signed char        si1;
+ 
+ STRUCTURES:
+ 
++struct ptydev {
++	char type;
++	FILE * master;
++	FILE * slave;
++}
++
+ struct point {
+-	u2 x;
+-	u2 y;
++	ui2 x;
++	ui2 y;
+ };
+ 
+-struct attr {
+-	
++struct ltm_term_desc {
++	struct ptydev * pty;
++
++	struct point cursor;
++
++	/* some number of bit-array attribute variables? */
++	ui4 attrs1;
++	ui4 attrs2;
++	/* etc... */
++
++	/* what type? */ fgcolor;
++	/* what type? */ bgcolor;
++
++	/* undoubtedly more... */
++}
+ 
+ Some perspective stuff:
+ a context type
+
+
 -- Sunday April 29, 2007 02:53:40 AM EDT --
 -- oopsy --
 

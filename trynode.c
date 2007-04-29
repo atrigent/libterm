@@ -47,17 +47,17 @@ int try_create(char * orig, char type, dev_t device, char * paths[], char * path
 
 	for(i = 0; paths[i]; i++) {
 		mode = S_IRUSR | S_IWUSR;
-		created = LTM_TRUE;
+		created = 1;
 
 		if(paths[i][strlen(paths[i])-1] == '/') {
 			if(mkdir(paths[i], mode) == -1) {
 				if(errno == EACCES ||
 				   errno == ENOENT) continue;
-				else if(errno == EEXIST) created = LTM_FALSE;
+				else if(errno == EEXIST) created = 0;
 				else FATAL_ERR("mkdir", paths[i])
 			}
 		}
-		else created = LTM_FALSE;
+		else created = 0;
 		
 		if(type == 'b')      mode |= S_IFBLK;
 		else if(type == 'c') mode |= S_IFCHR;
@@ -85,8 +85,8 @@ int try_create(char * orig, char type, dev_t device, char * paths[], char * path
 		break;
 	}
 
-	if(!paths[i]) return LTM_FALSE;
-	return LTM_TRUE;
+	if(!paths[i]) return 0;
+	return 1;
 }
 
 int ptmx_try_create(char * path) {

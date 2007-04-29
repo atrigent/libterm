@@ -5,9 +5,6 @@
 #include <stdint.h>
 #include <errno.h>
 
-#define LTM_TRUE  (1)
-#define LTM_FALSE (0)
-
 /* length of a character array, allows for
  * 32 characters and one null byte
  */

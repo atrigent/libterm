@@ -149,7 +149,7 @@
 		curerr.ltm_func = __func__; \
 		curerr.data = _data; \
 		curerr.err_no = errno; \
-		if(always_dump) error_info_dump(curerr, LTM_TRUE); \
+		if(always_dump) error_info_dump(curerr, 1); \
 		return -1; \
 	} while(0);
 
@@ -162,7 +162,7 @@
 		curerr.ltm_func = __func__; \
 		curerr.data = NULL; \
 		curerr.err_no = err; \
-		if(always_dump) error_info_dump(curerr, LTM_TRUE); \
+		if(always_dump) error_info_dump(curerr, 1); \
 		errno = err; \
 		return -1; \
 	} while(0);
@@ -176,7 +176,7 @@
 		curerr.ltm_func = __func__; \
 		curerr.data = _data; \
 		curerr.err_no = errno; \
-		error_info_dump(curerr, LTM_FALSE); \
+		error_info_dump(curerr, 0); \
 		errno = 0; \
 		return -1; \
 	} while(0);

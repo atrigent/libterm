@@ -11,24 +11,43 @@ http://www.gnu.org/software/libc/manual/html_node/Job-Control.html
 	detailed descriptions of sessions and process groups
 
 use my own integer typedef header:
-typedef unsigned long long u8;
-typedef signed long long   s8;
-typedef unsigned int       u4;
-typedef signed int         s4;
-typedef unsigned short     u2;
-typedef signed short       s2;
-typedef unsigned char      u1;
-typedef signed char        s1;
+typedef unsigned long long ui8;
+typedef signed long long   si8;
+typedef unsigned int       ui4;
+typedef signed int         si4;
+typedef unsigned short     ui2;
+typedef signed short       si2;
+typedef unsigned char      ui1;
+typedef signed char        si1;
 
 STRUCTURES:
 
+struct ptydev {
+	ui1 type;
+	FILE * master;
+	FILE * slave;
+}
+
 struct point {
-	u2 x;
-	u2 y;
+	ui2 x;
+	ui2 y;
 };
 
-struct attr {
-	
+struct ltm_term_desc {
+	struct ptydev * pty;
+
+	struct point cursor;
+
+	/* some number of bit-array attribute variables? */
+	ui4 attrs1;
+	ui4 attrs2;
+	/* etc... */
+
+	/* what type? */ fgcolor;
+	/* what type? */ bgcolor;
+
+	/* undoubtedly more... */
+}
 
 Some perspective stuff:
 a context type
