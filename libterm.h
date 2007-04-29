@@ -9,12 +9,13 @@
 #define LTM_FALSE (0)
 
 /* length of a character array, allows for
- * 32 character and one null byte
+ * 32 characters and one null byte
  */
 #define CHR_ARR_LEN 33
 
 #include "ltmint.h"
 #include "error.h"
 #include "ptydev.h"
+#include "descriptor.h"
 
 #endif

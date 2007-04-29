@@ -1,3 +1,61 @@
+-- Sunday April 29, 2007 02:53:40 AM EDT --
+-- oopsy --
+
+--- descriptor.h.bkup	2007-04-29 02:53:06.000000000 -0400
++++ descriptor.h	2007-04-29 02:53:29.000000000 -0400
+@@ -1,10 +1,10 @@
+ #ifdef DESCRIPTOR_H
+ #define DESCRIPTOR_H
+ 
+-extern struct ltm_term_desc * descriptors;
+-
+ struct ltm_term_desc {
+ 	struct ptydev * pty;
+ }
+ 
++extern struct ltm_term_desc * descriptors;
++
+ #endif
+
+
+-- Sunday April 29, 2007 02:52:34 AM EDT --
+-- add an extern for the descriptors array --
+
+--- descriptor.h.bkup	2007-04-29 02:51:22.000000000 -0400
++++ descriptor.h	2007-04-29 02:51:37.000000000 -0400
+@@ -1,6 +1,8 @@
+ #ifdef DESCRIPTOR_H
+ #define DESCRIPTOR_H
+ 
++extern struct ltm_term_desc * descriptors;
++
+ struct ltm_term_desc {
+ 	struct ptydev * pty;
+ }
+
+
+-- Sunday April 29, 2007 02:50:54 AM EDT --
+-- add descriptor.h, spelling correction --
+
+--- libterm.h.bkup	2007-04-29 02:49:31.000000000 -0400
++++ libterm.h	2007-04-29 02:50:46.000000000 -0400
+@@ -9,12 +9,13 @@
+ #define LTM_FALSE (0)
+ 
+ /* length of a character array, allows for
+- * 32 character and one null byte
++ * 32 characters and one null byte
+  */
+ #define CHR_ARR_LEN 33
+ 
+ #include "ltmint.h"
+ #include "error.h"
+ #include "ptydev.h"
++#include "descriptor.h"
+ 
+ #endif
+
+
 -- Saturday April 28, 2007 02:29:54 AM EDT --
 -- fill the struct... --
 
