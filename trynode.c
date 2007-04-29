@@ -93,7 +93,7 @@ int ptmx_try_create(char * path) {
 	return try_create("ptmx", 'c', makedev(PTMX_MAJOR, PTMX_MINOR), bsd_ptmx_paths, path);
 }
 
-int unix98_slave_try_create(u4 num, char * path) {
+int unix98_slave_try_create(int num, char * path) {
 	char orig[CHR_ARR_LEN];
 
 	if(snprintf(orig, CHR_ARR_LEN, "%u", num) >= CHR_ARR_LEN) FIXABLE_LTM_ERR(ENAMETOOLONG)
@@ -101,7 +101,7 @@ int unix98_slave_try_create(u4 num, char * path) {
 	return try_create(orig, 'c', makedev(136 + num/256, num % 256), unix98_paths, path);
 }
 
-int bsd_slave_try_create(u1 chr, u1 num, char * path) {
+int bsd_slave_try_create(unsigned char chr, unsigned char num, char * path) {
 	char orig[CHR_ARR_LEN];
 
 	if(snprintf(orig, CHR_ARR_LEN, "tty%c%x", chr, num) >= CHR_ARR_LEN) FIXABLE_LTM_ERR(ENAMETOOLONG)
@@ -109,7 +109,7 @@ int bsd_slave_try_create(u1 chr, u1 num, char * path) {
 	return try_create(orig, 'c', makedev(3, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsd_ptmx_paths, path);
 }
 
-int bsd_master_try_create(u1 chr, u1 num, char * path) {
+int bsd_master_try_create(unsigned char chr, unsigned char num, char * path) {
 	char orig[CHR_ARR_LEN];
 
 	if(snprintf(orig, CHR_ARR_LEN, "pty%c%x", chr, num) >= CHR_ARR_LEN) FIXABLE_LTM_ERR(ENAMETOOLONG)

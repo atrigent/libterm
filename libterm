@@ -10,16 +10,6 @@ Useful links
 http://www.gnu.org/software/libc/manual/html_node/Job-Control.html
 	detailed descriptions of sessions and process groups
 
-use my own integer typedef header:
-typedef unsigned long long ui8;
-typedef signed long long   si8;
-typedef unsigned int       ui4;
-typedef signed int         si4;
-typedef unsigned short     ui2;
-typedef signed short       si2;
-typedef unsigned char      ui1;
-typedef signed char        si1;
-
 STRUCTURES:
 
 struct ptydev {

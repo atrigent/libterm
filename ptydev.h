@@ -35,7 +35,7 @@
  */
 
 struct ptydev {
-	u1 type;
+	char type;
 	FILE * master;
 	FILE * slave;
 };

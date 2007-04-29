@@ -5,9 +5,9 @@
 
 #include "libterm.h"
 
-s2 numlen(u8 num, u1 base) {
-	u8 place, placemax = -1ULL/base;
-	s2 chrs;
+short numlen(unsigned long long num, char base) {
+	unsigned long long place, placemax = -1ULL/base;
+	short chrs;
 	
 	for(place = 1, chrs = 0; num; chrs++) {
 		if(place > placemax) num = 0;
@@ -20,7 +20,7 @@ s2 numlen(u8 num, u1 base) {
 	return chrs;
 }
 
-int file_check_type(u1 * path, u1 * type, dev_t * dev) {
+int file_check_type(char * path, char * type, dev_t * dev) {
 	struct stat statbuf;
 
 	if(stat(path, &statbuf) == -1) {
@@ -46,8 +46,8 @@ int file_check_type(u1 * path, u1 * type, dev_t * dev) {
 	return 0;
 }
 
-int is_chrdev(u1 * path, dev_t inpdev) {
-	u1 type;
+int is_chrdev(char * path, dev_t inpdev) {
+	char type;
 	dev_t dev;
 
 	if(file_check_type(path, &type, &dev) == -1) return -1;

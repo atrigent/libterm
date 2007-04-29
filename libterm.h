@@ -10,7 +10,6 @@
  */
 #define CHR_ARR_LEN 33
 
-#include "ltmint.h"
 #include "error.h"
 #include "ptydev.h"
 #include "descriptor.h"

@@ -1,3 +1,116 @@
+-- Sunday April 29, 2007 03:53:00 AM EDT --
+-- no longer doing that... --
+
+--- libterm.bkup	2007-04-29 03:52:26.000000000 -0400
++++ libterm	2007-04-29 03:52:55.000000000 -0400
+@@ -10,16 +10,6 @@
+ http://www.gnu.org/software/libc/manual/html_node/Job-Control.html
+ 	detailed descriptions of sessions and process groups
+ 
+-use my own integer typedef header:
+-typedef unsigned long long ui8;
+-typedef signed long long   si8;
+-typedef unsigned int       ui4;
+-typedef signed int         si4;
+-typedef unsigned short     ui2;
+-typedef signed short       si2;
+-typedef unsigned char      ui1;
+-typedef signed char        si1;
+-
+ STRUCTURES:
+ 
+ struct ptydev {
+
+
+-- Sunday April 29, 2007 03:52:05 AM EDT --
+-- remove reference to ltmint.h --
+
+--- libterm.h.bkup	2007-04-29 03:51:48.000000000 -0400
++++ libterm.h	2007-04-29 03:51:58.000000000 -0400
+@@ -10,7 +10,6 @@
+  */
+ #define CHR_ARR_LEN 33
+ 
+-#include "ltmint.h"
+ #include "error.h"
+ #include "ptydev.h"
+ #include "descriptor.h"
+
+
+-- Sunday April 29, 2007 03:49:54 AM EDT --
+-- remove uses of the typedefs --
+
+--- util.c.bkup	2007-04-29 03:39:31.000000000 -0400
++++ util.c	2007-04-29 03:49:41.000000000 -0400
+@@ -5,9 +5,9 @@
+ 
+ #include "libterm.h"
+ 
+-s2 numlen(u8 num, u1 base) {
+-	u8 place, placemax = -1ULL/base;
+-	s2 chrs;
++short numlen(unsigned long long num, char base) {
++	unsigned long long place, placemax = -1ULL/base;
++	short chrs;
+ 	
+ 	for(place = 1, chrs = 0; num; chrs++) {
+ 		if(place > placemax) num = 0;
+@@ -20,7 +20,7 @@
+ 	return chrs;
+ }
+ 
+-int file_check_type(u1 * path, u1 * type, dev_t * dev) {
++int file_check_type(char * path, char * type, dev_t * dev) {
+ 	struct stat statbuf;
+ 
+ 	if(stat(path, &statbuf) == -1) {
+@@ -46,8 +46,8 @@
+ 	return 0;
+ }
+ 
+-int is_chrdev(u1 * path, dev_t inpdev) {
+-	u1 type;
++int is_chrdev(char * path, dev_t inpdev) {
++	char type;
+ 	dev_t dev;
+ 
+ 	if(file_check_type(path, &type, &dev) == -1) return -1;
+
+
+-- Sunday April 29, 2007 03:39:19 AM EDT --
+-- no datatype typedefs... --
+
+--- trynode.c.bkup	2007-04-29 03:38:16.000000000 -0400
++++ trynode.c	2007-04-29 03:39:02.000000000 -0400
+@@ -93,7 +93,7 @@
+ 	return try_create("ptmx", 'c', makedev(PTMX_MAJOR, PTMX_MINOR), bsd_ptmx_paths, path);
+ }
+ 
+-int unix98_slave_try_create(u4 num, char * path) {
++int unix98_slave_try_create(int num, char * path) {
+ 	char orig[CHR_ARR_LEN];
+ 
+ 	if(snprintf(orig, CHR_ARR_LEN, "%u", num) >= CHR_ARR_LEN) FIXABLE_LTM_ERR(ENAMETOOLONG)
+@@ -101,7 +101,7 @@
+ 	return try_create(orig, 'c', makedev(136 + num/256, num % 256), unix98_paths, path);
+ }
+ 
+-int bsd_slave_try_create(u1 chr, u1 num, char * path) {
++int bsd_slave_try_create(unsigned char chr, unsigned char num, char * path) {
+ 	char orig[CHR_ARR_LEN];
+ 
+ 	if(snprintf(orig, CHR_ARR_LEN, "tty%c%x", chr, num) >= CHR_ARR_LEN) FIXABLE_LTM_ERR(ENAMETOOLONG)
+@@ -109,7 +109,7 @@
+ 	return try_create(orig, 'c', makedev(3, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsd_ptmx_paths, path);
+ }
+ 
+-int bsd_master_try_create(u1 chr, u1 num, char * path) {
++int bsd_master_try_create(unsigned char chr, unsigned char num, char * path) {
+ 	char orig[CHR_ARR_LEN];
+ 
+ 	if(snprintf(orig, CHR_ARR_LEN, "pty%c%x", chr, num) >= CHR_ARR_LEN) FIXABLE_LTM_ERR(ENAMETOOLONG)
+
+
 -- Sunday April 29, 2007 03:17:04 AM EDT --
 -- stupid idea... --
 
