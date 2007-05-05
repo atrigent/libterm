@@ -1,3 +1,73 @@
+-- Saturday May 05, 2007 05:50:18 PM EDT --
+-- make it a union --
+
+--- libterm.bkup	2007-05-05 17:49:17.000000000 -0400
++++ libterm	2007-05-05 17:50:15.000000000 -0400
+@@ -40,8 +40,10 @@
+ 
+ 	/* buffer stuff */
+ 	uint8_t type; /* memory, file, or none */
+-	FILE * buff_file; /* for file-based buffers */
+-	char * buff_mem; /* for a memory buffer */
++	union {
++		FILE * buff_file; /* for file-based buffers */
++		char * buff_mem; /* for a memory buffer */
++	} buff_storage;
+ 	uint32_t num_lines; /* 0 is unlimited */
+ 
+ 	/* undoubtedly more... */
+
+
+-- Saturday May 05, 2007 05:35:13 PM EDT --
+-- add stuff about the buffer --
+
+--- libterm.bkup	2007-05-05 16:43:25.000000000 -0400
++++ libterm	2007-05-05 17:35:08.000000000 -0400
+@@ -12,15 +12,17 @@
+ 
+ STRUCTURES:
+ 
++use stdint.h?
++
+ struct ptydev {
+-	ui1 type;
++	uint8_t type;
+ 	FILE * master;
+ 	FILE * slave;
+ }
+ 
+ struct point {
+-	ui2 x;
+-	ui2 y;
++	uint16_t x;
++	uint16_t y;
+ };
+ 
+ struct ltm_term_desc {
+@@ -29,13 +31,19 @@
+ 	struct point cursor;
+ 
+ 	/* some number of bit-array attribute variables? */
+-	ui4 attrs1;
+-	ui4 attrs2;
++	uint32_t attrs1;
++	uint32_t attrs2;
+ 	/* etc... */
+ 
+ 	/* what type? */ fgcolor;
+ 	/* what type? */ bgcolor;
+ 
++	/* buffer stuff */
++	uint8_t type; /* memory, file, or none */
++	FILE * buff_file; /* for file-based buffers */
++	char * buff_mem; /* for a memory buffer */
++	uint32_t num_lines; /* 0 is unlimited */
++
+ 	/* undoubtedly more... */
+ }
+ 
+
+
 -- Sunday April 29, 2007 03:53:00 AM EDT --
 -- no longer doing that... --
 

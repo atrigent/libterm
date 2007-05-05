@@ -12,15 +12,17 @@ http://www.gnu.org/software/libc/manual/html_node/Job-Control.html
 
 STRUCTURES:
 
+use stdint.h?
+
 struct ptydev {
-	ui1 type;
+	uint8_t type;
 	FILE * master;
 	FILE * slave;
 }
 
 struct point {
-	ui2 x;
-	ui2 y;
+	uint16_t x;
+	uint16_t y;
 };
 
 struct ltm_term_desc {
@@ -29,12 +31,20 @@ struct ltm_term_desc {
 	struct point cursor;
 
 	/* some number of bit-array attribute variables? */
-	ui4 attrs1;
-	ui4 attrs2;
+	uint32_t attrs1;
+	uint32_t attrs2;
 	/* etc... */
 
 	/* what type? */ fgcolor;
 	/* what type? */ bgcolor;
+
+	/* buffer stuff */
+	uint8_t type; /* memory, file, or none */
+	union {
+		FILE * buff_file; /* for file-based buffers */
+		char * buff_mem; /* for a memory buffer */
+	} buff_storage;
+	uint32_t num_lines; /* 0 is unlimited */
 
 	/* undoubtedly more... */
 }
