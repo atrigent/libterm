@@ -160,7 +160,7 @@
 		curerr.sys_func = NULL; \
 		curerr.ltm_func = __func__; \
 		curerr.err_no = err; \
-		if(always_dump) error_info_dump(curerr, 1); \
+		if(always_dump) error_info_dump(curerr, NULL, 1); \
 		errno = err; \
 		return -1; \
 	} while(0);
