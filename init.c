@@ -9,23 +9,36 @@
 int next_desc = 0;
 struct ltm_term_desc * descriptors = 0;
 
+int alloc_tid() {
+	int i;
+
+	for(i = 0; i < next_desc; i++)
+		if(descriptors[i].pty == NULL) return i;
+
+	/* no unused slots found, make a new one... */
+	descriptors = realloc(descriptors, ++next_desc * sizeof(struct ltm_term_desc));
+
+	return next_desc-1;
+}
+
 /* errno values:
  * ENODEV: No available PTY devices were found.
  */
 int ltm_init_with_shell(char * shell) {
 	struct ptydev * pty;
 	pid_t pid;
+	int tid;
 
 	pty = choose_pty_method();
 	if(!pty) FIXABLE_LTM_ERR(ENODEV)
 	
 	pid = spawn(shell, fileno(pty->slave));
 
-	descriptors = realloc(descriptors, ++next_desc * sizeof(struct ltm_term_desc));
+	tid = alloc_tid();
 
-	descriptors[next_desc-1].pty = pty;
+	descriptors[tid].pty = pty;
 
-	return next_desc-1;
+	return tid;
 }
 
 int ltm_init() {
