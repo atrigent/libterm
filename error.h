@@ -143,13 +143,12 @@
 /* program should try to resolve or report the error
  * used for system call errors
  */
-#define FIXABLE_SYS_ERR(name, _data) \
+#define FIXABLE_SYS_ERR(name, data) \
 	do { \
 		curerr.sys_func = name; \
 		curerr.ltm_func = __func__; \
-		curerr.data = _data; \
 		curerr.err_no = errno; \
-		if(always_dump) error_info_dump(curerr, 1); \
+		if(always_dump) error_info_dump(curerr, data, 1); \
 		return -1; \
 	} while(0);
 
@@ -160,7 +159,6 @@
 	do { \
 		curerr.sys_func = NULL; \
 		curerr.ltm_func = __func__; \
-		curerr.data = NULL; \
 		curerr.err_no = err; \
 		if(always_dump) error_info_dump(curerr, 1); \
 		errno = err; \
@@ -170,13 +168,12 @@
 /* program should not try to resolve or report the error
  * used for system call errors
  */
-#define FATAL_ERR(name, _data) \
+#define FATAL_ERR(name, data) \
 	do { \
 		curerr.sys_func = name; \
 		curerr.ltm_func = __func__; \
-		curerr.data = _data; \
 		curerr.err_no = errno; \
-		error_info_dump(curerr, 0); \
+		error_info_dump(curerr, data, 0); \
 		errno = 0; \
 		return -1; \
 	} while(0);
@@ -184,7 +181,6 @@
 struct error_info {
 	char * sys_func;
 	char * ltm_func;
-	char * data;
 	int err_no;
 };
 
