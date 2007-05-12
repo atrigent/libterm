@@ -3,11 +3,11 @@
 
 #include "libterm.h"
 
-struct error_info curerr = {0, 0, 0, 0};
+struct error_info curerr = {0, 0, 0};
 int always_dump = 0;
 FILE * dump_dest = stderr;
 
-void error_info_dump(struct error_info err, int recover) {
+void error_info_dump(struct error_info err, char * data, int recover) {
 	char * err_str;
 
 	fprintf(dump_dest, "libterm ");
@@ -28,5 +28,5 @@ void error_info_dump(struct error_info err, int recover) {
 	fprintf(dump_dest, "\tError: %s (%i numerical)\n", err_str, err.err_no);
 
 	/* FIXME: this should use some sort of hex dumping function */
-	if(err.data) fprintf(dump_dest, "\tData: %s\n", err.data);
+	if(data) fprintf(dump_dest, "\tData: %s\n", data);
 }
