@@ -1,6 +1,9 @@
 libterm: a library for providing a terminal, but none of the actual interface. that would be defined by the program that uses it.
 
 STUFF I NEED TO DO:
+read a bunch of stuff that experienced people have written:
+	Ulrich Drepper's thing on libraries
+	read some stuff on 
 figure out what all those weird things in terminfo files do
 what's the best way to use bsd ttys?
 read some source code
