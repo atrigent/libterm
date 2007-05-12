@@ -21,12 +21,14 @@ struct ptydev * choose_pty_method() {
 		result = (*pty_func_prior[i])(pty);
 
 		if(result == 0 || result == -1) continue;
-		else break;
+		
+		break;
 	}
 
 	if(!pty->master) {
 		free(pty);
 		return NULL;
 	}
-	else return pty;
+	
+	return pty;
 }

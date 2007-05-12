@@ -30,36 +30,31 @@ int alloc_func_pty(struct ptydev * pty) {
 # if defined(HAVE_UNIX98_FUNCS)
 #  if defined(HAVE_POSIX_OPENPT)
 	master_fd = posix_openpt(O_RDWR|O_NOCTTY);
-	if(master_fd == -1) return 0;
+	if(master_fd == -1) FATAL_ERR("posix_openpt", NULL)
 #  elif defined(HAVE_GETPT)
 	master_fd = getpt();
-	if(master_fd == -1) return 0;
+	if(master_fd == -1) FATAL_ERR("getpt", NULL)
 #  else
 	master_fd = open("/dev/ptmx", O_RDWR|O_NOCTTY);
-	if(master_fd == -1) return 0;
+	if(master_fd == -1) FATAL_ERR("open", "/dev/ptmx")
 #  endif
-	if(grantpt(master_fd) == -1) return 0;
+	if(grantpt(master_fd) == -1) FATAL_ERR("grantpt", NULL)
 
-	if(unlockpt(master_fd) == -1) return 0;
+	if(unlockpt(master_fd) == -1) FATAL_ERR("unlockpt", NULL)
 
 	pts_name = ptsname(master_fd);
-	if(!pts_name) return 0;
+	if(!pts_name) FATAL_ERR("ptsname", NULL)
 
 	slave_fd = open(pts_name, O_RDWR|O_NOCTTY);
-	if(slave_fd == -1) return 0;
+	if(slave_fd == -1) FATAL_ERR("open", pts_name)
 # else
-	if(openpty(&master_fd, &slave_fd, NULL, NULL, NULL) == -1) return 0;
+	if(openpty(&master_fd, &slave_fd, NULL, NULL, NULL) == -1) FATAL_ERR("openpty", NULL)
 # endif
 	master = fdopen(master_fd, "r+");
-	if(!master) return 0; /* don't really know what to do here, since
-			       * the error could be "fatal" (i.e. shouldn't
-			       * ever happen), but I also don't want to take
-			       * away the opportunity to try other terminal
-			       * types.
-			       */
+	if(!master) FATAL_ERR("fdopen", "fdopening master_fd")
 
 	slave = fdopen(slave_fd, "r+");
-	if(!slave) return 0;
+	if(!slave) FATAL_ERR("fdopen", "fdopening slave_fd")
 
 	pty->type = FUNC_PTY;
 	pty->master = master;
