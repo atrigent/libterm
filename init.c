@@ -55,7 +55,7 @@ int ltm_init() {
 	 */
 	if(!pwd_entry &&
 	   (errno == ENOENT || errno == ESRCH || errno == EBADF ||
-	    errno == EPERM || errno == 0)) FATAL_ERR("getpwuid", getuid())
+	    errno == EPERM || errno == 0)) FATAL_ERR("getpwuid", "your current UID")
 
 	return ltm_init_with_shell(pwd_entry->pw_shell);
 }
