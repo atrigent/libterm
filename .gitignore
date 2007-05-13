@@ -1,8 +1,9 @@
 configure
-autom4te.cache/*
-autoscan-2.59.log
 config.h
 config.status
 config.log
+configure.scan
 a.out
 utmp_dump
+ignore/*
+Makefile
