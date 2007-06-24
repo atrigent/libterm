@@ -1,4 +1,4 @@
-#ifdef DESCRIPTOR_H
+#ifndef DESCRIPTOR_H
 #define DESCRIPTOR_H
 
 #define DIE_ON_INVAL_TID(tid) \
@@ -7,7 +7,7 @@
 
 struct ltm_term_desc {
 	struct ptydev * pty;
-}
+};
 
 extern struct ltm_term_desc * descriptors;
 extern int next_desc;
