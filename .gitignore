@@ -1,7 +1,9 @@
-configure
 config.h
 config.status
 config.log
 configure.scan
-ignore/*
+ignore
 Makefile
+.deps
+stamp-h1
+libtool
