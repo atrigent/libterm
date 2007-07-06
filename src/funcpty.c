@@ -11,7 +11,7 @@
 #  include <sys/stat.h>
 #  include <fcntl.h>
 # endif
-# if !defined(HAVE_POSIX_OPENPTY)
+# if !defined(HAVE_POSIX_OPENPT)
 #  define _XOPEN_SOURCE
 # endif
 # include <stdlib.h>
