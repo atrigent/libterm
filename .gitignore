@@ -1,9 +1,0 @@
-config.h
-config.status
-config.log
-configure.scan
-ignore
-Makefile
-.deps
-stamp-h1
-libtool
