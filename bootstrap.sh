@@ -1,5 +1,11 @@
 #!/bin/sh
 
+AUXDIR=`autom4te -l Autoconf -t AC_CONFIG_AUX_DIR:\\$1 configure.ac`
+if [ -n "$AUXDIR" ]; then
+	echo "Creating auxiliary build tools directory ($AUXDIR)..."
+	mkdir -p $AUXDIR
+fi
+
 echo Running aclocal...
 aclocal || exit
 
