@@ -53,7 +53,7 @@ struct ltm_term_desc {
 	/* undoubtedly more... */
 }
 
-Some perspective stuff:
+Some prospective stuff:
 a context type
 ltm_context_t
 	maybe - this would be a struct, you would set a bunch of callbacks, eg:
@@ -63,10 +63,10 @@ ltm_cb_update_areas
 	this would be called with an argument that is an array of ranges on the screen that need to be updated when the screen is updated. The program would then look up those ranges in the libterm-maintaned screen matrix and change its own screen accordingly
 ltm_cb_reload_screen
 	re-read the entire screen, for example if something BIG was pasted in, the program went into full-screen mode, the screen was scrolled, etc.
-ltm_cb_add_line
-	an extra line has been added to the screen. This might include an implicit one-line scroll if the entire screen has already been filled, would also probably include an implicit cursor advance
-ltm_cb_add_char
-	one character has been added (for example, if the user has typed a character), would include an implicit cursor advance
+ltm_cb_scroll_and_update
+	some extra lines have been printed onto the screen. This would mean that the existing stuff has been scrolled up and that there is new stuff to read in the void that was created by this scroll. This might include an implicit cursor move to (0, screen height)
+ltm_cb_add_input
+	some text has been types by the user. This would include an implicit cursor advance.
 ltm_cb_beep
 	beep! (in response to the \a character)
 	should this in in the form of an argument to the update/reload callbacks? This might ensure that I'm using as few callbacks as possible and that the beep happened RIGHT when the update happened instead of a split-second later... maybe this should only be used if the \a was the only character printed?
@@ -133,26 +133,36 @@ in order to communicate to the code using libterm what the attributes (bold, bgc
 		Cons: Probably pretty slow as it would require a lot of function calls and returns
 	2. Have the various update callbacks pass an array of attribute data with location data relative to the start of the part of the screen that will be updated (ones that only update a single line will always have the row number as 0, for example - this would allow you to simply add to the current location)
 
-I'm thinking that all stuff will begin with ltm_ for LibTerM
+I'm thinking that all stuff will namespaced by beginning with ltm_ for LibTerM 
 
 general functions:
 ltm_init()
-	would do the whole pipe, dup2, fork, exec thing using shell stored in /etc/passwd
+	would do the whole init pty, dup2, fork, exec thing using shell stored in /etc/passwd
 ltm_init_with_shell("/bin/bash")
-	would do the whole pipe, dup2, fork, exec thing
+	would do the whole init pty, dup2, fork, exec thing
 ltm_update_window_dimensions(lines, cols)
 	for example: 50, 50
 ltm_user_input_feed_to_program(user_input)
 	this would include newlines...
 
+Generally, the init process would be thus:
+	1. Allocate a tid
+		1a. this would include setting up a structure that is easily accessible with this tid
+			that would include all necessary information about this terminal
+		1b. in addition, you would have to allocate the screen matrix
+	2. Acquire a pseudoterminal from the OS
+	3. Start up the shell with the shell's I/O FDs refer to the slave FD of the previously acquired pseudoterminal
+
 scrollback buffer stuff:
 would start out with a default memory buffer. default size would be unlimited? 100? what?
 ltm_buffer_off()
-	if, for example, the gui being used automatically buffers text fields
+	if, for example, the gui being used can automatically buffers text fields
 ltm_buffer_use_file("/tmp/kfhsldf")
 	store the buffer in a specific file
 ltm_buffer_use_file_descriptor(mkstemp("tmp-XXXXXX"))
 	store the buffer in a pre-opened file stream
+ltm_buffer_use_file_pointer(fopen(...))
+	store the buffer in a pre-opened FILE *
 ltm_buffer_use_memory()	
 	store the buffer in memory (fast but very limited in terms of space)
 ltm_buffer_set_size(0 /* or 50 or whatever */)
