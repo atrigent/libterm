@@ -1,57 +1,82 @@
 # Process w/ autoconf
 
-# Autoconf requirements
+dnl Autoconf requirements
 AC_PREREQ([2.61])
-# Boilerplate
+dnl Boilerplate
 AC_INIT([libterm], [devel], [lmage11@twcny.rr.com], [libterm])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/init.c])
+AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE
 
-# Options
+dnl Options
 
-# Checks for programs
+dnl Checks for programs
 AC_PROG_LIBTOOL
 AC_PROG_CC
 
-# Checks for libraries
-AC_CHECK_LIB([util], [openpty])
+dnl Checks for libraries
 
-# Checks for header files
+dnl Checks for header files
 AC_HEADER_STDC
+
+if test $ac_cv_header_stdc = no; then
+	AC_MSG_ERROR([Cannot find the standard ANSI C headers! Please install them or upgrade your system.])
+fi
+
 AC_HEADER_MAJOR
-AC_CHECK_HEADERS([sys/ioctl.h])
-AC_CHECK_HEADERS([sys/types.h])
-AC_CHECK_HEADERS([sys/stat.h])
-AC_CHECK_HEADERS([unistd.h])
-AC_CHECK_HEADERS([stdio.h])
-AC_CHECK_HEADERS([pwd.h])
-AC_CHECK_HEADERS([string.h])
-AC_CHECK_HEADERS([stdlib.h])
-AC_CHECK_HEADERS([errno.h])
-AC_CHECK_HEADERS([libgen.h])
-AC_CHECK_HEADERS([fcntl.h])
-AC_CHECK_HEADERS([utmp.h])
-AC_CHECK_HEADERS([time.h])
-AC_CHECK_HEADERS([stdint.h])
+dnl Is it fair to assume that the other ioctl macros will be in the same place as TIOCGWINSZ?
+AC_HEADER_TIOCGWINSZ
+AC_CHECK_HEADERS(
+	[sys/ioctl.h \
+	sys/types.h \
+	sys/stat.h \
+	unistd.h \
+	stdio.h \
+	pwd.h \
+	string.h \
+	stdlib.h \
+	errno.h \
+	libgen.h \
+	fcntl.h \
+	utmp.h \
+	time.h],
+	[],
+	[AC_MSG_ERROR([The required header $ac_header was not found!])]
+)
 
-# Checks for types
+dnl Checks for types
+AC_TYPE_PID_T
 
-# Checks for structures
+dnl Checks for structures
 
-# Checks for compiler characteristics
+dnl Checks for compiler characteristics
 
-# Checks for library functions
-AC_CHECK_FUNCS([posix_openpt])
-AC_CHECK_FUNCS([getpt])
-AC_CHECK_FUNCS([openpty])
-AC_CHECK_FUNCS([grantpt])
-AC_CHECK_FUNCS([unlockpt])
-AC_CHECK_FUNCS([ptsname])
+dnl Checks for library functions
+dnl Checks for pty functions
+AC_CHECK_FUNCS([posix_openpt getpt], [break])
+AC_CHECK_FUNCS([open grantpt unlockpt ptsname])
 
-# Checks for system services
+if	(
+		test $ac_cv_func_posix_openpt = yes ||
+		test $ac_cv_func_getpt = yes ||
+		test $ac_cv_func_open = yes
+	) &&
+	test $ac_cv_func_grantpt = yes &&
+	test $ac_cv_func_unlockpt = yes &&
+	test $ac_cv_func_ptsname = yes; then
+	AC_DEFINE([HAVE_UNIX98_FUNCS], [1], [Define to 1 if you have the Unix98 PTY functions, i.e. posix_openpt, getpt, or open and grantpt, unlockpt, and ptsname])
+else
+	AC_SEARCH_LIBS([openpty], [util bsd])
+	AC_CHECK_FUNCS([openpty])
 
-AC_CONFIG_FILES([Makefile])
-AC_CONFIG_FILES([src/Makefile])
+	if test $ac_cv_func_openpty = no; then
+		AC_MSG_ERROR([Could not find any system pseudoterminal facilities!])
+	fi
+fi
+
+dnl Checks for system services
+
+AC_CONFIG_FILES([Makefile src/Makefile])
 
 AC_OUTPUT
