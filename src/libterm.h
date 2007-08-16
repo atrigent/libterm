@@ -2,7 +2,6 @@
 #define LIBTERM_H
 
 #include <stdio.h>
-#include <stdint.h>
 #include <errno.h>
 
 /* length of a character array, allows for
@@ -13,5 +12,6 @@
 #include "error.h"
 #include "ptydev.h"
 #include "descriptor.h"
+#include "util.h"
 
 #endif

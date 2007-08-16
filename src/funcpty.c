@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include "libterm.h"
 
 /* need to change these once I have a configure script... */
 

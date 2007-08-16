@@ -1,5 +1,6 @@
 #include <sys/ioctl.h>
-#include <stdio.h>
+
+#include "libterm.h"
 
 int alloc_unix98_pty(struct ptydev * pty) {
 	FILE *master, *slave;

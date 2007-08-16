@@ -3,9 +3,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "libterm.h"
+
+#define PTMX_MAJOR 5
+#define PTMX_MINOR 2
 
 char * unix98_paths[] = {
 	"/dev/pty",

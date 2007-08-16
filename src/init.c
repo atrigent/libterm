@@ -1,7 +1,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <pwd.h>
 
 #include "libterm.h"
@@ -28,6 +27,14 @@ int ltm_init_with_shell(char * shell) {
 	struct ptydev * pty;
 	pid_t pid;
 	int tid;
+
+	/* If this hasn't been set yet, set it
+	 * It's a bit of a hack to put this here,
+	 * since it doesn't have anything to do
+	 * with any specific terminal initialization
+	 * but I don't know where else to put it :-/
+	 */
+	if(!dump_dest) dump_dest = stderr;
 
 	pty = choose_pty_method();
 	if(!pty) FIXABLE_LTM_ERR(ENODEV)

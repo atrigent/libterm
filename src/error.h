@@ -180,11 +180,14 @@
 
 struct error_info {
 	char * sys_func;
-	char * ltm_func;
+	const char * ltm_func;
 	int err_no;
 };
 
 extern struct error_info curerr;
 extern int always_dump;
+extern FILE * dump_dest;
+
+extern void error_info_dump(struct error_info, char *, int);
 
 #endif
