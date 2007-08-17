@@ -23,16 +23,17 @@ int alloc_tid() {
 /* errno values:
  * ENODEV: No available PTY devices were found.
  */
-int ltm_init_with_shell(char * shell) {
+int ltm_init_with_shell(char * shell, uint width, uint height) {
 	struct ptydev * pty;
 	pid_t pid;
-	int tid;
+	int tid, i;
 
 	/* If this hasn't been set yet, set it
 	 * It's a bit of a hack to put this here,
 	 * since it doesn't have anything to do
 	 * with any specific terminal initialization
-	 * but I don't know where else to put it :-/
+	 * I need to put it in the config code when I've
+	 * written it.
 	 */
 	if(!dump_dest) dump_dest = stderr;
 
@@ -45,10 +46,21 @@ int ltm_init_with_shell(char * shell) {
 
 	descriptors[tid].pty = pty;
 
+	descriptors[tid].main_screen = malloc(height * sizeof(uint *));
+	if(!descriptors[tid].main_screen) FATAL_ERR("malloc", NULL)
+
+	for(i=0; i < height; i++) {
+		descriptors[tid].main_screen[i] = malloc_fill(width * sizeof(uint), ' ');
+		if(!descriptors[tid].main_screen[i]) FATAL_ERR("malloc", NULL)
+	}
+
+	descriptors[tid].width = width;
+	descriptors[tid].height = height;
+
 	return tid;
 }
 
-int ltm_init() {
+int ltm_init(uint width, uint height) {
 	struct passwd * pwd_entry;
 
 	errno = 0; /* suggestion from getpwuid(3) */
@@ -64,5 +76,24 @@ int ltm_init() {
 	   (errno == ENOENT || errno == ESRCH || errno == EBADF ||
 	    errno == EPERM || errno == 0)) FATAL_ERR("getpwuid", "your current UID")
 
-	return ltm_init_with_shell(pwd_entry->pw_shell);
+	return ltm_init_with_shell(pwd_entry->pw_shell, width, height);
+}
+
+int ltm_close(uint tid) {
+	int i;
+
+	DIE_ON_INVAL_TID(tid)
+
+	free(descriptors[tid].pty);
+	descriptors[tid].pty = 0;
+
+	for(i=0; i < descriptors[tid].height; i++)
+		free(descriptors[tid].main_screen[i]);
+
+	free(descriptors[tid].main_screen);
+
+	if(tid == next_desc-1)
+		descriptors = realloc(descriptors, --next_desc * sizeof(struct ltm_term_desc));
+
+	return 0;
 }

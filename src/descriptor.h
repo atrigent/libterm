@@ -7,6 +7,12 @@
 
 struct ltm_term_desc {
 	struct ptydev * pty;
+
+	uint width;
+	uint height;
+
+	char ** cur_screen;
+	char ** main_screen;
 };
 
 extern struct ltm_term_desc * descriptors;
