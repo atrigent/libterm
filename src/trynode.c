@@ -103,7 +103,7 @@ int unix98_slave_try_create(int num, char * path) {
 	return try_create(orig, 'c', makedev(136 + num/256, num % 256), unix98_paths, path);
 }
 
-int bsd_slave_try_create(unsigned char chr, unsigned char num, char * path) {
+int bsd_slave_try_create(uchar chr, uchar num, char * path) {
 	char orig[CHR_ARR_LEN];
 
 	if(snprintf(orig, CHR_ARR_LEN, "tty%c%x", chr, num) >= CHR_ARR_LEN) FIXABLE_LTM_ERR(ENAMETOOLONG)
@@ -111,7 +111,7 @@ int bsd_slave_try_create(unsigned char chr, unsigned char num, char * path) {
 	return try_create(orig, 'c', makedev(3, (chr >= 112 ? chr-112 : chr-86)*16 + num), bsd_ptmx_paths, path);
 }
 
-int bsd_master_try_create(unsigned char chr, unsigned char num, char * path) {
+int bsd_master_try_create(uchar chr, uchar num, char * path) {
 	char orig[CHR_ARR_LEN];
 
 	if(snprintf(orig, CHR_ARR_LEN, "pty%c%x", chr, num) >= CHR_ARR_LEN) FIXABLE_LTM_ERR(ENAMETOOLONG)
