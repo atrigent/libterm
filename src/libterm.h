@@ -18,6 +18,6 @@ typedef unsigned int uint;
 #include "descriptor.h"
 #include "util.h"
 
-extern int spawn(char *, int);
+extern int spawn(char *, FILE *);
 
 #endif
