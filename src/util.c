@@ -65,11 +65,3 @@ char * get_tmp_dir() {
 
 	return tmpdir;
 }
-
-void * malloc_fill(size_t size, int byte) {
-	void * mem = malloc(size);
-
-	memset(mem, byte, size);
-
-	return mem;
-}

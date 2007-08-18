@@ -7,6 +7,5 @@ extern short numlen(unsigned long long, char);
 extern int file_check_type(char *, char *, dev_t *);
 extern int is_chrdev(char *, dev_t);
 extern char * get_tmp_dir();
-extern void * malloc_fill(size_t, int);
 
 #endif
