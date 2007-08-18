@@ -13,7 +13,7 @@ int ltm_feed_input_to_program(int tid, char * input, uint n) {
 }
 
 int resize_width(int tid, uint width, uint height) {
-	int i, n;
+	uint i, n;
 
 	if(descriptors[tid].width != width)
 		for(i = 0; i < height; i++) {
@@ -32,7 +32,7 @@ int resize_width(int tid, uint width, uint height) {
 }
 
 int ltm_set_window_dimensions(int tid, uint width, uint height) {
-	int i, diff, n;
+	uint i, diff, n;
 
 	DIE_ON_INVAL_TID(tid)
 

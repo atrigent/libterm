@@ -38,7 +38,7 @@ int ltm_term_alloc() {
 
 int term_init_with_shell(int tid, char * shell) {
 	pid_t pid;
-	int i, n;
+	uint i, n;
 
 	DIE_ON_INVAL_TID(tid)
 
@@ -104,7 +104,7 @@ int ltm_term_init(int tid) {
 }
 
 int ltm_close(int tid) {
-	int i;
+	uint i;
 
 	DIE_ON_INVAL_TID(tid)
 
