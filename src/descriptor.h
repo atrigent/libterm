@@ -2,11 +2,15 @@
 #define DESCRIPTOR_H
 
 #define DIE_ON_INVAL_TID(tid) \
-	if(tid >= next_desc || descriptors[tid].pty == NULL) \
+	if(tid >= next_tid || descriptors[tid].allocated == 0) \
 		FIXABLE_LTM_ERR(EINVAL)
 
 struct ltm_term_desc {
-	struct ptydev * pty;
+	struct ptydev pty;
+
+	char allocated;
+
+	char * shell;
 
 	uint width;
 	uint height;
@@ -16,6 +20,6 @@ struct ltm_term_desc {
 };
 
 extern struct ltm_term_desc * descriptors;
-extern int next_desc;
+extern int next_tid;
 
 #endif

@@ -10,12 +10,8 @@ ptyfunc pty_func_prior[] = {
 	NULL
 };
 
-struct ptydev * choose_pty_method() {
-	struct ptydev * pty;
+int choose_pty_method(struct ptydev * pty) {
 	int i, result;
-
-	pty = malloc(sizeof(struct ptydev));
-	pty->master = 0;
 
 	for(i = 0; pty_func_prior[i]; i++) {
 		result = (*pty_func_prior[i])(pty);
@@ -25,10 +21,7 @@ struct ptydev * choose_pty_method() {
 		break;
 	}
 
-	if(!pty->master) {
-		free(pty);
-		return NULL;
-	}
+	if(!pty->master || !pty->slave) FIXABLE_LTM_ERR(ENODEV)
 	
-	return pty;
+	return 0;
 }

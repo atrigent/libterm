@@ -46,6 +46,6 @@ extern int alloc_unix98_pty(struct ptydev *);
 extern int find_unused_bsd_pty(struct ptydev *);
 extern int alloc_func_pty(struct ptydev *);
 
-extern struct ptydev * choose_pty_method();
+extern int choose_pty_method(struct ptydev *);
 
 #endif
