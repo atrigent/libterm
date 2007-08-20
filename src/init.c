@@ -55,17 +55,6 @@ int term_init_with_shell(int tid, char * shell) {
 	
 	pid = spawn(shell, descriptors[tid].pty.slave);
 
-	descriptors[tid].main_screen = malloc(descriptors[tid].height * sizeof(uint *));
-	if(!descriptors[tid].main_screen) FATAL_ERR("malloc", NULL)
-
-	for(i = 0; i < descriptors[tid].height; i++) {
-		descriptors[tid].main_screen[i] = malloc(descriptors[tid].width * sizeof(uint));
-		if(!descriptors[tid].main_screen[i]) FATAL_ERR("malloc", NULL)
-
-		for(n = 0; n < descriptors[tid].width; n++)
-			descriptors[tid].main_screen[i][n] = ' ';
-	}
-
 	return tid;
 }
 

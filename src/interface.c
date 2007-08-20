@@ -38,13 +38,18 @@ int ltm_set_window_dimensions(int tid, uint width, uint height) {
 
 	if(!width || !height) FIXABLE_LTM_ERR(EINVAL)
 
-	if(!descriptors[tid].width || !descriptors[tid].height)
-		/* do ABSOLUTELY NOTHING!!! Mwahaha. This is for the initial
-		 * setup of width/height values. All this function does in this
-		 * case is assign the width and height values in the descriptor.
-		 */
-		;
-	else if(height < descriptors[tid].height) {
+	if(!descriptors[tid].width || !descriptors[tid].height) {
+		descriptors[tid].main_screen = malloc(height * sizeof(uint *));
+		if(!descriptors[tid].main_screen) FATAL_ERR("malloc", NULL)
+
+		for(i = 0; i < height; i++) {
+			descriptors[tid].main_screen[i] = malloc(width * sizeof(uint));
+			if(!descriptors[tid].main_screen[i]) FATAL_ERR("malloc", NULL)
+
+			for(n = 0; n < width; n++)
+				descriptors[tid].main_screen[i][n] = ' ';
+		}
+	} else if(height < descriptors[tid].height) {
 		/* in order to minimize the work that's done,
 		 * here are some orders in which to do things:
 		 *
