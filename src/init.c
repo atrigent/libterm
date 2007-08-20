@@ -8,6 +8,7 @@
 
 int next_tid = 0;
 struct ltm_term_desc * descriptors = 0;
+char init_done = 0;
 
 int ltm_init() {
 	/* this should include some function to set off
@@ -16,11 +17,19 @@ int ltm_init() {
 
 	dump_dest = stderr;
 
+	init_done = 1;
+
 	return 0;
 }
 
+/* errno values:
+ * EPERM (Operation not permitted):
+ * 	you neglected to call ltm_init() before calling this, you naughty person!
+ */
 int ltm_term_alloc() {
 	int i, tid;
+
+	if(!init_done) FIXABLE_LTM_ERR(EPERM)
 
 	for(i = 0; i < next_tid; i++)
 		if(descriptors[i].allocated == 0) return i;
