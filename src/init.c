@@ -45,60 +45,34 @@ int ltm_term_alloc() {
 	return tid;
 }
 
-int term_init_with_shell(int tid, char * shell) {
-	pid_t pid;
-	uint i, n;
-
-	DIE_ON_INVAL_TID(tid)
-
-	if(choose_pty_method(&descriptors[tid].pty) == -1) return -1;
-	
-	pid = spawn(shell, descriptors[tid].pty.slave);
-
-	return tid;
-}
-
 /* errno values:
  * ENODEV: No available PTY devices were found.
  */
 int ltm_term_init(int tid) {
 	struct passwd * pwd_entry;
-	int ret;
+	pid_t pid;
 
 	DIE_ON_INVAL_TID(tid)
 
+	if(choose_pty_method(&descriptors[tid].pty) == -1) return -1;
+
 	if(descriptors[tid].shell) {
-		ret = term_init_with_shell(tid, descriptors[tid].shell);
+		pid = spawn(descriptors[tid].shell, descriptors[tid].pty.slave);
 
 		free(descriptors[tid].shell);
 		descriptors[tid].shell = 0;
-
-		return ret;
-	}
-	/* else if(config.shell) {
-		ret = term_init_with_shell(tid, config.shell);
-
-		free(config.shell);
-		config.shell = 0;
-
-		return ret;
-	}*/
+	} /*else if(config.shell)
+		pid = spawn(config.shell, descriptors[tid].pty.slave);*/
 	else {
-		errno = 0; /* suggestion from getpwuid(3) */
 		pwd_entry = getpwuid(getuid());
-		/* I hear that many different things might be returned on a uid not
-		 * found, depending on the UNIX system. This would cause problems.
-		 * I've put in some of the possible errno values noted in the getpwuid
-		 * manpage, but it's probably not all of them. If anyone finds that
-		 * their system returns anything other than the values handled here,
-		 * let me know.
-		 */
-		if(!pwd_entry &&
-		   (errno == ENOENT || errno == ESRCH || errno == EBADF ||
-		    errno == EPERM || errno == 0)) FATAL_ERR("getpwuid", "your current UID")
+		if(!pwd_entry) FATAL_ERR("getpwuid", NULL)
 
-		return term_init_with_shell(tid, pwd_entry->pw_shell);
+		pid = spawn(pwd_entry->pw_shell, descriptors[tid].pty.slave);
 	}
+
+	/* should the pid be put into some property of descriptors[tid]? */
+
+	return pid == -1 ? -1 : 0;
 }
 
 int ltm_close(int tid) {
