@@ -1,9 +1,7 @@
 #ifndef LIBTERM_H
 #define LIBTERM_H
 
-#include <sys/types.h>
 #include <stdio.h>
-#include <errno.h>
 
 typedef unsigned char uchar;
 typedef unsigned short ushort;
@@ -17,8 +15,5 @@ typedef unsigned int uint;
 #include "error.h"
 #include "ptydev.h"
 #include "descriptor.h"
-#include "util.h"
-
-extern int spawn(char *, FILE *);
 
 #endif

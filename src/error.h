@@ -1,6 +1,8 @@
 #ifndef ERROR_H
 #define ERROR_H
 
+#include <errno.h>
+
 /* Error reporting policy in libterm:
  * If a system call that libterm calls returns an error, there are currently three
  * means in which these errors are communicated to the program using libterm:

@@ -1,6 +1,8 @@
 #ifndef DESCRIPTOR_H
 #define DESCRIPTOR_H
 
+#include <sys/types.h>
+
 #define DIE_ON_INVAL_TID(tid) \
 	if(tid >= next_tid || descriptors[tid].allocated == 0) \
 		FIXABLE_LTM_ERR(EINVAL)

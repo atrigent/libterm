@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "libterm.h"
+#include "util.h"
 
 #define PTMX_MAJOR 5
 #define PTMX_MINOR 2
