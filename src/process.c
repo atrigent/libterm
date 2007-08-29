@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include "libterm.h"
 
@@ -9,15 +10,19 @@ int spawn_unix(char * path, int io_fd) {
 
 	pid = fork();
 	if(!pid) {
-		dup2(io_fd, 0);
-		dup2(io_fd, 1);
-		dup2(io_fd, 2);
+		/* We can't use normal error handling in here.
+		 * Instead, just use exit(EXIT_FAILURE)
+		 */
+
+		if(dup2(io_fd, 0) == -1) exit(EXIT_FAILURE);
+		if(dup2(io_fd, 1) == -1) exit(EXIT_FAILURE);
+		if(dup2(io_fd, 2) == -1) exit(EXIT_FAILURE);
 		
-		if(io_fd > 2) close(io_fd);
+		if(io_fd > 2) if(close(io_fd) == -1) exit(EXIT_FAILURE);
 
 		execl(path, path, NULL);
 
-		FATAL_ERR("execl", path) /* if we get here, execl failed */
+		exit(EXIT_FAILURE); /* if we get here, execl failed */
 	}
 	else if(pid == -1) FATAL_ERR("fork", NULL);
 
