@@ -1,6 +1,7 @@
 #ifndef LIBTERM_H
 #define LIBTERM_H
 
+#include <sys/types.h>
 #include <stdio.h>
 #include <errno.h>
 

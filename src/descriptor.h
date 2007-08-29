@@ -12,6 +12,8 @@ struct ltm_term_desc {
 
 	char * shell;
 
+	pid_t pid;
+
 	uint width;
 	uint height;
 
