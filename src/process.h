@@ -4,7 +4,9 @@
 #include <signal.h>
 
 extern int spawn(char *, FILE *);
-extern int setup_signal(int, void (*)(int, siginfo_t *, void *));
+extern int set_handler(int, void (*)(int, siginfo_t *, void *));
 extern void dontfearthereaper(int, siginfo_t *, void *);
+
+extern struct sigaction oldaction;
 
 #endif

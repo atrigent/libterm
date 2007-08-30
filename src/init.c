@@ -5,6 +5,8 @@
 #include <pwd.h>
 
 #include "libterm.h"
+#include "process.h"
+#include "interface.h"
 
 int next_tid = 0;
 struct ltm_term_desc * descriptors = 0;
@@ -16,6 +18,11 @@ int ltm_init() {
 	 */
 
 	dump_dest = stderr;
+
+	/* we're not really reloading it, but this does
+	 * what we want to do, so use it
+	 */
+	if(ltm_reload_sigchld_handler() == -1) return -1;
 
 	init_done = 1;
 
@@ -70,9 +77,12 @@ int ltm_term_init(int tid) {
 		pid = spawn(pwd_entry->pw_shell, descriptors[tid].pty.slave);
 	}
 
-	/* should the pid be put into some property of descriptors[tid]? */
-
-	return pid == -1 ? -1 : 0;
+	if(pid == -1)
+		return -1;
+	else {
+		descriptors[tid].pid = pid;
+		return 0;
+	}
 }
 
 int ltm_close(int tid) {
