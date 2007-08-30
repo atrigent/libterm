@@ -61,6 +61,9 @@ int ltm_term_init(int tid) {
 
 	DIE_ON_INVAL_TID(tid)
 
+	if(!descriptors[tid].width || !descriptors[tid].height)
+		if(ltm_set_window_dimensions(tid, 80, 24) == -1) return -1;
+
 	if(choose_pty_method(&descriptors[tid].pty) == -1) return -1;
 
 	if(descriptors[tid].shell) {

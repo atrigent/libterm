@@ -6,5 +6,6 @@
  */
 
 extern int ltm_reload_sigchld_handler();
+extern int ltm_set_window_dimensions(int, uint, uint);
 
 #endif
