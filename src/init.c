@@ -45,6 +45,8 @@ int ltm_term_alloc() {
 	tid = next_tid;
 
 	descriptors = realloc(descriptors, ++next_tid * sizeof(struct ltm_term_desc));
+	if(!descriptors) FATAL_ERR("realloc", NULL)
+
 	memset(&descriptors[tid], 0, sizeof(struct ltm_term_desc));
 
 	descriptors[tid].allocated = 1;
@@ -102,9 +104,10 @@ int ltm_close(int tid) {
 
 	free(descriptors[tid].main_screen);
 
-	if(tid == next_tid-1)
+	if(tid == next_tid-1) {
 		descriptors = realloc(descriptors, --next_tid * sizeof(struct ltm_term_desc));
-	else
+		if(!descriptors) FATAL_ERR("realloc", NULL)
+	} else
 		memset(&descriptors[tid], 0, sizeof(struct ltm_term_desc));
 
 	return 0;
