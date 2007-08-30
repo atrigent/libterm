@@ -13,42 +13,36 @@ int ltm_feed_input_to_program(int tid, char * input, uint n) {
 	return 0;
 }
 
-int resize_width(int tid, uint width, uint height) {
+int resize_width(int tid, uint width, uint height, char ** screen) {
 	uint i, n;
 
 	if(descriptors[tid].width != width)
 		for(i = 0; i < height; i++) {
-			descriptors[tid].main_screen[i] = realloc(
-					descriptors[tid].main_screen[i],
-					width * sizeof(uint)
-				);
-			if(!descriptors[tid].main_screen[i]) FATAL_ERR("realloc", NULL)
+			screen[i] = realloc(screen[i], width * sizeof(uint));
+			if(!screen[i]) FATAL_ERR("realloc", NULL)
 
 			if(width > descriptors[tid].width)
 				for(n = descriptors[tid].width; n < width; n++)
-					descriptors[tid].main_screen[i][n] = ' ';
+					screen[i][n] = ' ';
 		}
 
 	return 0;
 }
 
-int ltm_set_window_dimensions(int tid, uint width, uint height) {
+int set_screen_dimensions(int tid, uint width, uint height, char *** screen) {
+	char ** dscreen = *screen;
 	uint i, diff, n;
 
-	DIE_ON_INVAL_TID(tid)
-
-	if(!width || !height) FIXABLE_LTM_ERR(EINVAL)
-
 	if(!descriptors[tid].width || !descriptors[tid].height) {
-		descriptors[tid].main_screen = malloc(height * sizeof(uint *));
-		if(!descriptors[tid].main_screen) FATAL_ERR("malloc", NULL)
+		*screen = dscreen = malloc(height * sizeof(uint *));
+		if(!dscreen) FATAL_ERR("malloc", NULL)
 
 		for(i = 0; i < height; i++) {
-			descriptors[tid].main_screen[i] = malloc(width * sizeof(uint));
-			if(!descriptors[tid].main_screen[i]) FATAL_ERR("malloc", NULL)
+			dscreen[i] = malloc(width * sizeof(uint));
+			if(!dscreen[i]) FATAL_ERR("malloc", NULL)
 
 			for(n = 0; n < width; n++)
-				descriptors[tid].main_screen[i][n] = ' ';
+				dscreen[i][n] = ' ';
 		}
 	} else if(height < descriptors[tid].height) {
 		/* in order to minimize the work that's done,
@@ -74,57 +68,76 @@ int ltm_set_window_dimensions(int tid, uint width, uint height) {
 
 		for(i = 0; i < diff; i++)
 			/* probably push each line into the buffer later */
-			free(descriptors[tid].main_screen[i]);
+			free(dscreen[i]);
 
 /*		for(i = 0; i < height; i++)
-			descriptors[tid].main_screen[i] = descriptors[tid].main_screen[i+diff];*/
+			dscreen[i] = dscreen[i+diff];*/
 
-		memmove(
-				&descriptors[tid].main_screen,
-				&descriptors[tid].main_screen[diff],
-				height * sizeof(uint *)
-		       );
+		memmove(dscreen, &dscreen[diff], height * sizeof(uint *));
 
-		descriptors[tid].main_screen = realloc(
-				descriptors[tid].main_screen,
-				height * sizeof(uint *)
-			);
-		if(!descriptors[tid].main_screen) FATAL_ERR("realloc", NULL)
+		*screen = dscreen = realloc(dscreen, height * sizeof(uint *));
+		if(!dscreen) FATAL_ERR("realloc", NULL)
 
-		if(resize_width(tid, width, height) == -1) return -1;
+		if(resize_width(tid, width, height, dscreen) == -1) return -1;
 	} else if(height > descriptors[tid].height) {
 		diff = height - descriptors[tid].height;
 
-		if(resize_width(tid, width, descriptors[tid].height) == -1) return -1;
+		if(resize_width(tid, width, descriptors[tid].height, dscreen) == -1) return -1;
 
-		descriptors[tid].main_screen = realloc(
-				descriptors[tid].main_screen,
-				height * sizeof(uint *)
-			);
-		if(!descriptors[tid].main_screen) FATAL_ERR("realloc", NULL)
+		*screen = dscreen = realloc(dscreen, height * sizeof(uint *));
+		if(!dscreen) FATAL_ERR("realloc", NULL)
 
 /*		for(i = diff; i < height; i++)
-			descriptors[tid].main_screen[i] = descriptors[tid].main_screen[i-diff];*/
+			dscreen[i] = dscreen[i-diff];*/
 
-		memmove(
-				&descriptors[tid].main_screen[diff],
-				&descriptors[tid].main_screen,
-				descriptors[tid].height * sizeof(uint *)
-			);
+		memmove(&dscreen[diff], dscreen, descriptors[tid].height * sizeof(uint *));
 
 		for(i = 0; i < diff; i++) {
-			descriptors[tid].main_screen[i] = malloc(width * sizeof(uint));
-			if(!descriptors[tid].main_screen[i]) FATAL_ERR("malloc", NULL)
+			*screen = dscreen = malloc(width * sizeof(uint));
+			if(!dscreen) FATAL_ERR("malloc", NULL)
 
 			/* probably pop lines off the buffer and put them in here later */
 			for(n = 0; n < width; n++)
-				descriptors[tid].main_screen[i][n] = ' ';
+				dscreen[i][n] = ' ';
 		}
 	} else
-		if(resize_width(tid, width, height) == -1) return -1;
+		if(resize_width(tid, width, height, dscreen) == -1) return -1;
+
+	return 0;
+}
+
+int ltm_set_window_dimensions(int tid, uint width, uint height) {
+	DIE_ON_INVAL_TID(tid)
+
+	if(!width || !height) FIXABLE_LTM_ERR(EINVAL)
+
+	if(set_screen_dimensions(tid, width, height, &descriptors[tid].main_screen) == -1) return -1;
+	/* probably:
+	 * set_screen_dimensions(tid, width, height, &descriptors[tid].alt_screen); 
+	 * in the future
+	 * ... or more! (who knows?)
+	 *
+	 * even though everything else is enabled to support an alternate screen,
+	 * I don't want to enable this as it's a fairly expensive operation, and
+	 * what's the point of enabling it if it's not actually used yet?
+	 */
 
 	descriptors[tid].height = height;
 	descriptors[tid].width = width;
+
+	/* since the memory for a descriptor gets zero'd out and MAINSCREEN
+	 * evaluates to zero, this should work even when cur_screen hasn't
+	 * been explicitly set yet
+	 *
+	 * is it wrong to make an assumption like this? is it ok to perform
+	 * unnecessary operations (explicitly setting cur_screen to MAINSCREEN)
+	 * in the name of correctness? I don't know :(
+	 */
+	if(descriptors[tid].cur_screen == MAINSCREEN)
+		descriptors[tid].screen = descriptors[tid].main_screen;
+	else if(descriptors[tid].cur_screen == ALTSCREEN)
+		descriptors[tid].screen = descriptors[tid].alt_screen;
+	/* what to do if cur_screen contains an invalid value??? */
 
 	return 0;
 }

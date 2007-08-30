@@ -7,6 +7,12 @@
 	if(tid >= next_tid || descriptors[tid].allocated == 0) \
 		FIXABLE_LTM_ERR(EINVAL)
 
+/* some things won't work if MAINSCREEN isn't zero! don't
+ * change this!
+ */
+#define MAINSCREEN 0
+#define ALTSCREEN 1
+
 struct ltm_term_desc {
 	struct ptydev pty;
 
@@ -19,8 +25,10 @@ struct ltm_term_desc {
 	uint width;
 	uint height;
 
-	char ** cur_screen;
+	char cur_screen;
+	char ** screen;
 	char ** main_screen;
+	char ** alt_screen;
 };
 
 extern struct ltm_term_desc * descriptors;
