@@ -57,6 +57,8 @@ dnl Checks for pty functions
 AC_CHECK_FUNCS([posix_openpt getpt], [break])
 AC_CHECK_FUNCS([open grantpt unlockpt ptsname])
 
+unix98_funcs=no
+
 if	(
 		test $ac_cv_func_posix_openpt = yes ||
 		test $ac_cv_func_getpt = yes ||
@@ -66,6 +68,7 @@ if	(
 	test $ac_cv_func_unlockpt = yes &&
 	test $ac_cv_func_ptsname = yes; then
 	AC_DEFINE([HAVE_UNIX98_FUNCS], [1], [Define to 1 if you have the Unix98 PTY functions, i.e. posix_openpt, getpt, or open and grantpt, unlockpt, and ptsname])
+	unix98_funcs=yes
 else
 	AC_SEARCH_LIBS([openpty], [util bsd])
 	AC_CHECK_FUNCS([openpty])
@@ -74,6 +77,9 @@ else
 		AC_MSG_ERROR([Could not find any system pseudoterminal facilities!])
 	fi
 fi
+
+AM_CONDITIONAL([HAVE_UNIX98_FUNCS], [test $unix98_funcs = yes])
+AM_CONDITIONAL([HAVE_POSIX_OPENPT], [test $ac_cv_func_posix_openpt = yes])
 
 dnl Checks for system services
 

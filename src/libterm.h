@@ -12,6 +12,7 @@ typedef unsigned int uint;
  */
 #define CHR_ARR_LEN 33
 
+#include "config.h"
 #include "error.h"
 #include "ptydev.h"
 #include "descriptor.h"

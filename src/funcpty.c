@@ -3,16 +3,12 @@
 /* need to change these once I have a configure script... */
 
 #if defined(HAVE_UNIX98_FUNCS)
-# if defined(HAVE_POSIX_OPENPT)
-#  define _XOPEN_SOURCE 600
+# if defined(HAVE_POSIX_OPENPT) /* required for posix_openpt */
 #  include <fcntl.h>
-# elif !defined(HAVE_GETPT)
+# elif !defined(HAVE_GETPT) /* required for open */
 #  include <sys/types.h>
 #  include <sys/stat.h>
 #  include <fcntl.h>
-# endif
-# if !defined(HAVE_POSIX_OPENPT)
-#  define _XOPEN_SOURCE
 # endif
 # include <stdlib.h>
 #elif defined(HAVE_OPENPTY)
@@ -21,7 +17,7 @@
 
 int alloc_func_pty(struct ptydev * pty) {
 	FILE *master, *slave;
-	int master_fd, slave_fd, err;
+	int master_fd, slave_fd;
 #if defined(HAVE_UNIX98_FUNCS)
 	char * pts_name;
 #endif
