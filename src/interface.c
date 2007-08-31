@@ -143,6 +143,8 @@ int ltm_set_window_dimensions(int tid, uint width, uint height) {
 }
 
 int ltm_set_shell(int tid, char * shell) {
+	DIE_ON_INVAL_TID(tid)
+
 	descriptors[tid].shell = strdup(shell);
 
 	if(!descriptors[tid].shell) FATAL_ERR("strdup", shell)
