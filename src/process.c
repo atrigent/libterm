@@ -1,10 +1,14 @@
-#include <sys/ioctl.h>
 #include <sys/types.h>
+#include <termios.h>
 #include <signal.h>
 #include <unistd.h>
 #include <stdlib.h>
 
 #include "libterm.h"
+
+#ifdef GWINSZ_IN_SYS_IOCTL
+# include <sys/ioctl.h>
+#endif
 
 struct sigaction oldaction;
 FILE * pipefiles[2];
