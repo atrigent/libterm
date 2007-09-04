@@ -50,6 +50,24 @@ int ltm_init() {
 	return 0;
 }
 
+int ltm_uninit() {
+	if(!init_done) return 0;
+
+	/* close notification pipe */
+	fclose(pipefiles[0]);
+	fclose(pipefiles[1]);
+
+	/* this should work... set the SIGCHLD handler
+	 * to the sigaction struct used for simulation
+	 */
+	sigaction(SIGCHLD, &oldaction, NULL);
+
+	/* init not done now */
+	init_done = 0;
+
+	return 0;
+}
+
 /* errno values:
  * EPERM (Operation not permitted):
  * 	you neglected to call ltm_init() before calling this, you naughty person!
