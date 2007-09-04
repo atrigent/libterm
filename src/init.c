@@ -89,6 +89,8 @@ int ltm_term_init(int tid, FILE ** listen) {
 
 	if(choose_pty_method(&descriptors[tid].pty) == -1) return -1;
 
+	if(tcsetwinsz(tid) == -1) return -1;
+
 	if(descriptors[tid].shell) {
 		pid = spawn(descriptors[tid].shell, descriptors[tid].pty.slave);
 

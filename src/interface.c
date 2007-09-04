@@ -1,8 +1,14 @@
+#include <termios.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "libterm.h"
 #include "process.h"
+
+#ifdef GWINSZ_IN_SYS_IOCTL
+# include <sys/ioctl.h>
+#endif
 
 int ltm_feed_input_to_program(int tid, char * input, uint n) {
 	DIE_ON_INVAL_TID(tid)
@@ -13,8 +19,8 @@ int ltm_feed_input_to_program(int tid, char * input, uint n) {
 	return 0;
 }
 
-int resize_width(int tid, uint width, uint height, char ** screen) {
-	uint i, n;
+int resize_width(int tid, ushort width, ushort height, char ** screen) {
+	ushort i, n;
 
 	if(descriptors[tid].width != width)
 		for(i = 0; i < height; i++) {
@@ -29,9 +35,9 @@ int resize_width(int tid, uint width, uint height, char ** screen) {
 	return 0;
 }
 
-int set_screen_dimensions(int tid, uint width, uint height, char *** screen) {
+int set_screen_dimensions(int tid, ushort width, ushort height, char *** screen) {
 	char ** dscreen = *screen;
-	uint i, diff, n;
+	ushort i, diff, n;
 
 	if(!descriptors[tid].width || !descriptors[tid].height) {
 		*screen = dscreen = malloc(height * sizeof(uint *));
@@ -106,10 +112,31 @@ int set_screen_dimensions(int tid, uint width, uint height, char *** screen) {
 	return 0;
 }
 
-int ltm_set_window_dimensions(int tid, uint width, uint height) {
+/* a function like this should've been put in POSIX...
+ * (minus the libterm-specific stuff, of course)
+ */
+int tcsetwinsz(int tid) {
+	int mfd = fileno(descriptors[tid].pty.master);
+	struct winsize size;
+
+	size.ws_row = descriptors[tid].width;
+	size.ws_col = descriptors[tid].height;
+	size.ws_xpixel = size.ws_ypixel = 0; /* necessary? */
+
+	if(ioctl(mfd, TIOCSWINSZ, &size) == -1) FATAL_ERR("ioctl", NULL)
+	
+	return 0;
+}
+
+int ltm_set_window_dimensions(int tid, ushort width, ushort height) {
+	pid_t pgrp;
+
 	DIE_ON_INVAL_TID(tid)
 
 	if(!width || !height) FIXABLE_LTM_ERR(EINVAL)
+
+	/* if not changing anything, just pretend we did something and exit successfully immediately */
+	if(width == descriptors[tid].width && height == descriptors[tid].height) return 0;
 
 	if(set_screen_dimensions(tid, width, height, &descriptors[tid].main_screen) == -1) return -1;
 	/* probably:
@@ -138,6 +165,22 @@ int ltm_set_window_dimensions(int tid, uint width, uint height) {
 	else if(descriptors[tid].cur_screen == ALTSCREEN)
 		descriptors[tid].screen = descriptors[tid].alt_screen;
 	/* what to do if cur_screen contains an invalid value??? */
+
+	/* only do this if the pty has been created and the shell has been started! */
+	if(descriptors[tid].pid) {
+		if(tcsetwinsz(tid) == -1) return -1;
+
+		pgrp = tcgetpgrp(fileno(descriptors[tid].pty.master));
+		if(pgrp == -1) FATAL_ERR("tcgetpgrp", NULL)
+
+		/* not caring whether this fails or not
+		 * it can do so if there's currently no
+		 * foreground process group or if we don't
+		 * have permission to signal some processes
+		 * in the process group
+		 */
+		killpg(pgrp, SIGWINCH);
+	}
 
 	return 0;
 }

@@ -14,8 +14,8 @@
 #define ALTSCREEN 1
 
 struct point {
-	uint x;
-	uint y;
+	ushort x;
+	ushort y;
 };
 
 struct area {
@@ -40,8 +40,8 @@ struct ltm_term_desc {
 	char * shell;
 	pid_t pid;
 
-	uint width;
-	uint height;
+	ushort width;
+	ushort height;
 
 	struct point cursor;
 
