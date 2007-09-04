@@ -1,3 +1,4 @@
+#include <sys/ioctl.h>
 #include <sys/types.h>
 #include <signal.h>
 #include <unistd.h>
@@ -6,6 +7,7 @@
 #include "libterm.h"
 
 struct sigaction oldaction;
+FILE * pipefiles[2];
 
 /* Start a program (the shell) using a different I/O source */
 int spawn_unix(char * path, int io_fd) {
@@ -16,6 +18,10 @@ int spawn_unix(char * path, int io_fd) {
 		/* We can't use normal error handling in here.
 		 * Instead, just use exit(EXIT_FAILURE)
 		 */
+
+		if(setsid() == -1) exit(EXIT_FAILURE);
+
+		if(ioctl(io_fd, TIOCSCTTY, 0) == -1) exit(EXIT_FAILURE);
 
 		if(dup2(io_fd, 0) == -1) exit(EXIT_FAILURE);
 		if(dup2(io_fd, 1) == -1) exit(EXIT_FAILURE);
@@ -162,7 +168,7 @@ void dontfearthereaper(int sig, siginfo_t * info, void * data) {
 			/* do some stuff that notifies various things that
 			 * the shell has exited
 			 */
-
+			fwrite(&i, 1, sizeof(int), pipefiles[1]);
 			break;
 		}
 }

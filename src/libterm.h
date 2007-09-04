@@ -17,4 +17,6 @@ typedef unsigned int uint;
 #include "ptydev.h"
 #include "descriptor.h"
 
+extern char init_done;
+
 #endif

@@ -12,12 +12,33 @@ int next_tid = 0;
 struct ltm_term_desc * descriptors = 0;
 char init_done = 0;
 
+int setup_pipe() {
+	int pipefds[2];
+
+	if(pipe(pipefds) == -1) FATAL_ERR("pipe", NULL)
+
+	pipefiles[0] = fdopen(pipefds[0], "r");
+	pipefiles[1] = fdopen(pipefds[1], "w");
+
+	if(!pipefiles[0] || !pipefiles[1]) FATAL_ERR("fdopen", NULL)
+
+	/* necessary...? */
+	setbuf(pipefiles[0], NULL);
+	setbuf(pipefiles[1], NULL);
+
+	return 0;
+}
+
 int ltm_init() {
 	/* this should include some function to set off
 	 * processing of the config file in the future!
 	 */
 
+	if(init_done) return 0;
+
 	dump_dest = stderr;
+
+	if(setup_pipe() == -1) return -1;
 
 	/* we're not really reloading it, but this does
 	 * what we want to do, so use it
@@ -57,7 +78,7 @@ int ltm_term_alloc() {
 /* errno values:
  * ENODEV: No available PTY devices were found.
  */
-int ltm_term_init(int tid) {
+int ltm_term_init(int tid, FILE ** listen) {
 	struct passwd * pwd_entry;
 	pid_t pid;
 
@@ -84,10 +105,14 @@ int ltm_term_init(int tid) {
 
 	if(pid == -1)
 		return -1;
-	else {
-		descriptors[tid].pid = pid;
-		return 0;
-	}
+
+	if(descriptors[tid].threading) {
+		/* do a bunch of shit to start up the thread */
+	} else
+		*listen = descriptors[tid].pty.master;
+
+	descriptors[tid].pid = pid;
+	return 0;
 }
 
 int ltm_close(int tid) {

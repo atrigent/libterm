@@ -13,17 +13,37 @@
 #define MAINSCREEN 0
 #define ALTSCREEN 1
 
+struct point {
+	uint x;
+	uint y;
+};
+
+struct area {
+	struct point start;
+	struct point end;
+};
+
+struct ltm_callbacks {
+	int (*update_areas)(int, struct area *);
+
+	/* many more in the future! */
+};
+
 struct ltm_term_desc {
 	struct ptydev pty;
 
+	struct ltm_callbacks cb;
+
 	char allocated;
+	char threading;
 
 	char * shell;
-
 	pid_t pid;
 
 	uint width;
 	uint height;
+
+	struct point cursor;
 
 	char cur_screen;
 	char ** screen;

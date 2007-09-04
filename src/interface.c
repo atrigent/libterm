@@ -152,6 +152,22 @@ int ltm_set_shell(int tid, char * shell) {
 	return 0;
 }
 
+int ltm_get_callbacks_ptr(int tid, struct ltm_callbacks ** cb) {
+	DIE_ON_INVAL_TID(tid)
+
+	*cb = &descriptors[tid].cb;
+
+	return 0;
+}
+
+int ltm_toggle_threading(int tid) {
+	DIE_ON_INVAL_TID(tid)
+
+	descriptors[tid].threading = !descriptors[tid].threading;
+
+	return 0;
+}
+
 /* This function is intended to be used in the case that an application needs
  * to call something (another library, for example) that it has no control over
  * and that changes the handler for SIGCHLD after the call to ltm_init. The use
@@ -185,6 +201,8 @@ int ltm_set_shell(int tid, char * shell) {
  * ltm_reload_sigchld_handler solves this problem.
  */
 int ltm_reload_sigchld_handler() {
+	if(!init_done) FIXABLE_LTM_ERR(EPERM)
+
 	if(sigaction(SIGCHLD, NULL, &oldaction) == -1) FATAL_ERR("sigaction", NULL)
 
 	return set_handler(SIGCHLD, dontfearthereaper);
@@ -194,7 +212,17 @@ int ltm_reload_sigchld_handler() {
  * better function to use as it has no race condition problems.
  */
 int ltm_set_sigchld_handler(struct sigaction * action) {
+	if(!init_done) FIXABLE_LTM_ERR(EPERM)
+
 	memcpy(&oldaction, action, sizeof(struct sigaction));
 
 	return set_handler(SIGCHLD, dontfearthereaper);
+}
+
+int ltm_get_notifier(FILE ** notifier) {
+	if(!init_done) FIXABLE_LTM_ERR(EPERM)
+
+	*notifier = pipefiles[0];
+
+	return 0;
 }
