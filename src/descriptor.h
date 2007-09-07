@@ -24,7 +24,7 @@ struct area {
 };
 
 struct ltm_callbacks {
-	int (*update_areas)(int, struct area *);
+	int (*update_areas)(int, uint **, struct point *, struct area *, uint);
 
 	/* many more in the future! */
 };
@@ -44,11 +44,15 @@ struct ltm_term_desc {
 	ushort height;
 
 	struct point cursor;
+	char curs_changed;
 
 	char cur_screen;
 	uint ** screen;
 	uint ** main_screen;
 	uint ** alt_screen;
+
+	char * outputbuf;
+	uint buflen;
 };
 
 extern struct ltm_term_desc * descriptors;
