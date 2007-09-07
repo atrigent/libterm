@@ -19,7 +19,7 @@ int ltm_feed_input_to_program(int tid, char * input, uint n) {
 	return 0;
 }
 
-int resize_width(int tid, ushort width, ushort height, char ** screen) {
+int resize_width(int tid, ushort width, ushort height, uint ** screen) {
 	ushort i, n;
 
 	if(descriptors[tid].width != width)
@@ -35,8 +35,8 @@ int resize_width(int tid, ushort width, ushort height, char ** screen) {
 	return 0;
 }
 
-int set_screen_dimensions(int tid, ushort width, ushort height, char *** screen) {
-	char ** dscreen = *screen;
+int set_screen_dimensions(int tid, ushort width, ushort height, uint *** screen) {
+	uint ** dscreen = *screen;
 	ushort i, diff, n;
 
 	if(!descriptors[tid].width || !descriptors[tid].height) {

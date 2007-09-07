@@ -46,9 +46,9 @@ struct ltm_term_desc {
 	struct point cursor;
 
 	char cur_screen;
-	char ** screen;
-	char ** main_screen;
-	char ** alt_screen;
+	uint ** screen;
+	uint ** main_screen;
+	uint ** alt_screen;
 };
 
 extern struct ltm_term_desc * descriptors;
