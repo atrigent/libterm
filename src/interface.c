@@ -123,7 +123,7 @@ int tcsetwinsz(int tid) {
 	size.ws_col = descriptors[tid].width;
 	size.ws_xpixel = size.ws_ypixel = 0; /* necessary? */
 
-	if(ioctl(mfd, TIOCSWINSZ, &size) == -1) FATAL_ERR("ioctl", NULL)
+	if(ioctl(mfd, TIOCSWINSZ, &size) == -1) FATAL_ERR("ioctl", "TIOCSWINSZ")
 	
 	return 0;
 }
