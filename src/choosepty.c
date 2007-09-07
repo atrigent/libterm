@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "libterm.h"
 
@@ -22,6 +23,9 @@ int choose_pty_method(struct ptydev * pty) {
 	}
 
 	if(!pty->master || !pty->slave) FIXABLE_LTM_ERR(ENODEV)
+
+	setbuf(pty->master, NULL);
+	setbuf(pty->slave, NULL);
 	
 	return 0;
 }
