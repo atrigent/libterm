@@ -151,7 +151,7 @@ int ltm_close(int tid) {
 
 	if(tid == next_tid-1) {
 		descriptors = realloc(descriptors, --next_tid * sizeof(struct ltm_term_desc));
-		if(!descriptors) FATAL_ERR("realloc", NULL)
+		if(!descriptors && next_tid) FATAL_ERR("realloc", NULL)
 	} else
 		memset(&descriptors[tid], 0, sizeof(struct ltm_term_desc));
 
