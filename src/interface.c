@@ -119,8 +119,8 @@ int tcsetwinsz(int tid) {
 	int mfd = fileno(descriptors[tid].pty.master);
 	struct winsize size;
 
-	size.ws_row = descriptors[tid].width;
-	size.ws_col = descriptors[tid].height;
+	size.ws_row = descriptors[tid].height;
+	size.ws_col = descriptors[tid].width;
 	size.ws_xpixel = size.ws_ypixel = 0; /* necessary? */
 
 	if(ioctl(mfd, TIOCSWINSZ, &size) == -1) FATAL_ERR("ioctl", NULL)
