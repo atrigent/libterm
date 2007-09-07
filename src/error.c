@@ -3,7 +3,6 @@
 #include "libterm.h"
 
 struct error_info curerr = {0, 0, 0};
-int always_dump = 0;
 FILE * dump_dest = 0;
 
 void error_info_dump(struct error_info err, char * data, int recover) {

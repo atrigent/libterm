@@ -150,7 +150,7 @@
 		curerr.sys_func = name; \
 		curerr.ltm_func = __func__; \
 		curerr.err_no = errno; \
-		if(always_dump) error_info_dump(curerr, data, 1); \
+		error_info_dump(curerr, data, 1); \
 		return -1; \
 	} while(0);
 
@@ -162,7 +162,7 @@
 		curerr.sys_func = NULL; \
 		curerr.ltm_func = __func__; \
 		curerr.err_no = err; \
-		if(always_dump) error_info_dump(curerr, NULL, 1); \
+		error_info_dump(curerr, NULL, 1); \
 		errno = err; \
 		return -1; \
 	} while(0);
@@ -187,7 +187,6 @@ struct error_info {
 };
 
 extern struct error_info curerr;
-extern int always_dump;
 extern FILE * dump_dest;
 
 extern void error_info_dump(struct error_info, char *, int);
