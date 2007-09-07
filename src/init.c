@@ -36,7 +36,7 @@ int ltm_init() {
 
 	if(init_done) return 0;
 
-	dump_dest = stderr;
+	if(!dump_dest) dump_dest = stderr;
 
 	if(setup_pipe() == -1) return -1;
 

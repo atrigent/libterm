@@ -265,3 +265,7 @@ int ltm_get_notifier(FILE ** notifier) {
 
 	return 0;
 }
+
+void ltm_set_error_dest(FILE * dest) {
+	dump_dest = dest;
+}
