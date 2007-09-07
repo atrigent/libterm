@@ -246,9 +246,7 @@ int ltm_toggle_threading(int tid) {
 int ltm_reload_sigchld_handler() {
 	if(!init_done) FIXABLE_LTM_ERR(EPERM)
 
-	if(sigaction(SIGCHLD, NULL, &oldaction) == -1) FATAL_ERR("sigaction", NULL)
-
-	return set_handler(SIGCHLD, dontfearthereaper);
+	return reload_handler(SIGCHLD, dontfearthereaper);
 }
 
 /* If the application has control over the code that sets the new handler, this is the
@@ -257,9 +255,7 @@ int ltm_reload_sigchld_handler() {
 int ltm_set_sigchld_handler(struct sigaction * action) {
 	if(!init_done) FIXABLE_LTM_ERR(EPERM)
 
-	memcpy(&oldaction, action, sizeof(struct sigaction));
-
-	return set_handler(SIGCHLD, dontfearthereaper);
+	return set_handler_struct(SIGCHLD, dontfearthereaper, action);
 }
 
 int ltm_get_notifier(FILE ** notifier) {

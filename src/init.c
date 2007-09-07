@@ -43,7 +43,7 @@ int ltm_init() {
 	/* we're not really reloading it, but this does
 	 * what we want to do, so use it
 	 */
-	if(ltm_reload_sigchld_handler() == -1) return -1;
+	if(reload_handler(SIGCHLD, dontfearthereaper) == -1) return -1;
 
 	init_done = 1;
 

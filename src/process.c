@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <termios.h>
+#include <string.h>
 #include <signal.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -239,4 +240,16 @@ int set_handler(int sig, void (*callback)(int, siginfo_t *, void *)) {
 	sigaction(sig, &action, NULL);
 
 	return 0;
+}
+
+int reload_handler(int sig, void (*callback)(int, siginfo_t *, void *)) {
+	if(sigaction(sig, NULL, &oldaction) == -1) FATAL_ERR("sigaction", NULL)
+
+	return set_handler(sig, callback);
+}
+
+int set_handler_struct(int sig, void (*callback)(int, siginfo_t *, void *), struct sigaction * action) {
+	memcpy(&oldaction, action, sizeof(struct sigaction));
+
+	return set_handler(sig, callback);
 }

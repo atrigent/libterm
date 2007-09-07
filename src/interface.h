@@ -5,7 +5,6 @@
  * put it in here
  */
 
-extern int ltm_reload_sigchld_handler();
 extern int ltm_set_window_dimensions(int, uint, uint);
 
 /* ok fine, so it's not really an interface function
