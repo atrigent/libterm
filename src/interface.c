@@ -99,8 +99,8 @@ int set_screen_dimensions(int tid, ushort width, ushort height, uint *** screen)
 		memmove(&dscreen[diff], dscreen, descriptors[tid].height * sizeof(uint *));
 
 		for(i = 0; i < diff; i++) {
-			*screen = dscreen = malloc(width * sizeof(uint));
-			if(!dscreen) FATAL_ERR("malloc", NULL)
+			dscreen[i] = malloc(width * sizeof(uint));
+			if(!dscreen[i]) FATAL_ERR("malloc", NULL)
 
 			/* probably pop lines off the buffer and put them in here later */
 			for(n = 0; n < width; n++)
