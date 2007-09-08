@@ -135,8 +135,8 @@ void simulate_handler_call(int sig, siginfo_t * info, void * data) {
 	if(
 		oldaction.sa_handler == SIG_DFL ||
 		oldaction.sa_handler == SIG_IGN ||
-		oldaction.sa_sigaction == SIG_DFL ||
-		oldaction.sa_sigaction == SIG_IGN
+		oldaction.sa_sigaction == (void*)SIG_DFL ||
+		oldaction.sa_sigaction == (void*)SIG_IGN
 	  ) return; /* these would conflict with our usage, ignore them */
 
 	sigprocmask(SIG_SETMASK, &oldaction.sa_mask, &oldmask);
@@ -214,7 +214,7 @@ int set_handler(int sig, void (*callback)(int, siginfo_t *, void *)) {
 	if(
 		oldaction.sa_flags & SA_NOCLDWAIT ||
 		oldaction.sa_handler == SIG_IGN ||
-		oldaction.sa_sigaction == SIG_IGN
+		oldaction.sa_sigaction == (void*)SIG_IGN
 	  ) action.sa_flags |= SA_NOCLDWAIT;
 
 	if(oldaction.sa_flags & SA_NOCLDSTOP)
