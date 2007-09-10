@@ -16,13 +16,18 @@ FILE * pipefiles[2];
 
 /* Start a program (the shell) using a different I/O source */
 int spawn_unix(char * path, int io_fd) {
+	sigset_t allsigs;
 	pid_t pid;
+
+	sigfillset(&allsigs);
 
 	pid = fork();
 	if(!pid) {
 		/* We can't use normal error handling in here.
 		 * Instead, just use exit(EXIT_FAILURE)
 		 */
+
+		sigprocmask(SIG_UNBLOCK, &allsigs, NULL);
 
 		if(setsid() == -1) exit(EXIT_FAILURE);
 
