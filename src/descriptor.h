@@ -4,7 +4,7 @@
 #include <sys/types.h>
 
 #define DIE_ON_INVAL_TID(tid) \
-	if(tid >= next_tid || descriptors[tid].allocated == 0) \
+	if(tid >= next_tid || descs[tid].allocated == 0) \
 		FIXABLE_LTM_ERR(EINVAL)
 
 /* some things won't work if MAINSCREEN isn't zero! don't
@@ -57,7 +57,7 @@ struct ltm_term_desc {
 	uint buflen;
 };
 
-extern struct ltm_term_desc * descriptors;
+extern struct ltm_term_desc * descs;
 extern int next_tid;
 
 #endif

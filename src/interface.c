@@ -7,7 +7,7 @@
 int ltm_feed_input_to_program(int tid, char * input, uint n) {
 	DIE_ON_INVAL_TID(tid)
 
-	if(fwrite(input, 1, n, descriptors[tid].pty.master) < n)
+	if(fwrite(input, 1, n, descs[tid].pty.master) < n)
 		FATAL_ERR("fwrite", input)
 
 	return 0;
@@ -16,9 +16,9 @@ int ltm_feed_input_to_program(int tid, char * input, uint n) {
 int ltm_set_shell(int tid, char * shell) {
 	DIE_ON_INVAL_TID(tid)
 
-	descriptors[tid].shell = strdup(shell);
+	descs[tid].shell = strdup(shell);
 
-	if(!descriptors[tid].shell) FATAL_ERR("strdup", shell)
+	if(!descs[tid].shell) FATAL_ERR("strdup", shell)
 
 	return 0;
 }
@@ -26,7 +26,7 @@ int ltm_set_shell(int tid, char * shell) {
 int ltm_get_callbacks_ptr(int tid, struct ltm_callbacks ** cb) {
 	DIE_ON_INVAL_TID(tid)
 
-	*cb = &descriptors[tid].cb;
+	*cb = &descs[tid].cb;
 
 	return 0;
 }
@@ -34,7 +34,7 @@ int ltm_get_callbacks_ptr(int tid, struct ltm_callbacks ** cb) {
 int ltm_toggle_threading(int tid) {
 	DIE_ON_INVAL_TID(tid)
 
-	descriptors[tid].threading = !descriptors[tid].threading;
+	descs[tid].threading = !descs[tid].threading;
 
 	return 0;
 }

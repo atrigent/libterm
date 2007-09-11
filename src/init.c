@@ -10,7 +10,7 @@
 #include "callbacks.h"
 
 int next_tid = 0;
-struct ltm_term_desc * descriptors = 0;
+struct ltm_term_desc * descs = 0;
 char init_done = 0;
 
 int setup_pipe() {
@@ -79,17 +79,17 @@ int ltm_term_alloc() {
 	if(!init_done) FIXABLE_LTM_ERR(EPERM)
 
 	for(i = 0; i < next_tid; i++)
-		if(descriptors[i].allocated == 0) return i;
+		if(descs[i].allocated == 0) return i;
 
 	/* no unused slots found, make a new one... */
 	tid = next_tid;
 
-	descriptors = realloc(descriptors, ++next_tid * sizeof(struct ltm_term_desc));
-	if(!descriptors) FATAL_ERR("realloc", NULL)
+	descs = realloc(descs, ++next_tid * sizeof(struct ltm_term_desc));
+	if(!descs) FATAL_ERR("realloc", NULL)
 
-	memset(&descriptors[tid], 0, sizeof(struct ltm_term_desc));
+	memset(&descs[tid], 0, sizeof(struct ltm_term_desc));
 
-	descriptors[tid].allocated = 1;
+	descs[tid].allocated = 1;
 
 	return tid;
 }
@@ -105,36 +105,36 @@ int ltm_term_init(int tid, FILE ** listen) {
 
 	if(check_callbacks(tid) == -1) return -1;
 
-	if(!descriptors[tid].width || !descriptors[tid].height)
+	if(!descs[tid].width || !descs[tid].height)
 		if(ltm_set_window_dimensions(tid, 80, 24) == -1) return -1;
 
-	if(choose_pty_method(&descriptors[tid].pty) == -1) return -1;
+	if(choose_pty_method(&descs[tid].pty) == -1) return -1;
 
 	if(tcsetwinsz(tid) == -1) return -1;
 
-	if(descriptors[tid].shell) {
-		pid = spawn(descriptors[tid].shell, descriptors[tid].pty.slave);
+	if(descs[tid].shell) {
+		pid = spawn(descs[tid].shell, descs[tid].pty.slave);
 
-		free(descriptors[tid].shell);
-		descriptors[tid].shell = 0;
+		free(descs[tid].shell);
+		descs[tid].shell = 0;
 	} /*else if(config.shell)
-		pid = spawn(config.shell, descriptors[tid].pty.slave);*/
+		pid = spawn(config.shell, descs[tid].pty.slave);*/
 	else {
 		pwd_entry = getpwuid(getuid());
 		if(!pwd_entry) FATAL_ERR("getpwuid", NULL)
 
-		pid = spawn(pwd_entry->pw_shell, descriptors[tid].pty.slave);
+		pid = spawn(pwd_entry->pw_shell, descs[tid].pty.slave);
 	}
 
 	if(pid == -1)
 		return -1;
 
-	if(descriptors[tid].threading) {
+	if(descs[tid].threading) {
 		/* do a bunch of shit to start up the thread */
 	} else
-		*listen = descriptors[tid].pty.master;
+		*listen = descs[tid].pty.master;
 
-	descriptors[tid].pid = pid;
+	descs[tid].pid = pid;
 	return 0;
 }
 
@@ -144,19 +144,19 @@ int ltm_close(int tid) {
 	DIE_ON_INVAL_TID(tid)
 
 	/* is this the right way to close these...? */
-	fclose(descriptors[tid].pty.master);
-	fclose(descriptors[tid].pty.slave);
+	fclose(descs[tid].pty.master);
+	fclose(descs[tid].pty.slave);
 
-	for(i=0; i < descriptors[tid].height; i++)
-		free(descriptors[tid].main_screen[i]);
+	for(i=0; i < descs[tid].height; i++)
+		free(descs[tid].main_screen[i]);
 
-	free(descriptors[tid].main_screen);
+	free(descs[tid].main_screen);
 
 	if(tid == next_tid-1) {
-		descriptors = realloc(descriptors, --next_tid * sizeof(struct ltm_term_desc));
-		if(!descriptors && next_tid) FATAL_ERR("realloc", NULL)
+		descs = realloc(descs, --next_tid * sizeof(struct ltm_term_desc));
+		if(!descs && next_tid) FATAL_ERR("realloc", NULL)
 	} else
-		memset(&descriptors[tid], 0, sizeof(struct ltm_term_desc));
+		memset(&descs[tid], 0, sizeof(struct ltm_term_desc));
 
 	return 0;
 }

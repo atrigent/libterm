@@ -11,37 +11,37 @@ void cursor_rel_move(int tid, char direction, uint num) {
 
 	switch(direction) {
 		case UP:
-			if(descriptors[tid].cursor.y > num)
-				descriptors[tid].cursor.y -= num;
-			else if(descriptors[tid].cursor.y)
-				descriptors[tid].cursor.y = 0;
+			if(descs[tid].cursor.y > num)
+				descs[tid].cursor.y -= num;
+			else if(descs[tid].cursor.y)
+				descs[tid].cursor.y = 0;
 			else
 				return;
 
 			break;
 		case DOWN:
-			if(descriptors[tid].cursor.y + num < descriptors[tid].height)
-				descriptors[tid].cursor.y += num;
-			else if(descriptors[tid].cursor.y != descriptors[tid].height-1)
-				descriptors[tid].cursor.y = descriptors[tid].height-1;
+			if(descs[tid].cursor.y + num < descs[tid].height)
+				descs[tid].cursor.y += num;
+			else if(descs[tid].cursor.y != descs[tid].height-1)
+				descs[tid].cursor.y = descs[tid].height-1;
 			else
 				return;
 			
 			break;
 		case LEFT:
-			if(descriptors[tid].cursor.x > num)
-				descriptors[tid].cursor.x -= num;
-			else if(descriptors[tid].cursor.x)
-				descriptors[tid].cursor.x = 0;
+			if(descs[tid].cursor.x > num)
+				descs[tid].cursor.x -= num;
+			else if(descs[tid].cursor.x)
+				descs[tid].cursor.x = 0;
 			else
 				return;
 
 			break;
 		case RIGHT:
-			if(descriptors[tid].cursor.x + num < descriptors[tid].width)
-				descriptors[tid].cursor.x += num;
-			else if(descriptors[tid].cursor.x != descriptors[tid].width-1)
-				descriptors[tid].cursor.x = descriptors[tid].width-1;
+			if(descs[tid].cursor.x + num < descs[tid].width)
+				descs[tid].cursor.x += num;
+			else if(descs[tid].cursor.x != descs[tid].width-1)
+				descs[tid].cursor.x = descs[tid].width-1;
 			else
 				return;
 
@@ -50,33 +50,33 @@ void cursor_rel_move(int tid, char direction, uint num) {
 			return;
 	}
 
-	descriptors[tid].curs_changed = 1;
+	descs[tid].curs_changed = 1;
 }
 
 void cursor_abs_move(int tid, char axis, uint num) {
 	switch(axis) {
 		case X:
-			if(num < descriptors[tid].width && num != descriptors[tid].cursor.x)
-				descriptors[tid].cursor.x = num;
+			if(num < descs[tid].width && num != descs[tid].cursor.x)
+				descs[tid].cursor.x = num;
 			else
 				return;
 
 			break;
 		case Y:
-			if(num < descriptors[tid].height && num != descriptors[tid].cursor.y)
-				descriptors[tid].cursor.y = num;
+			if(num < descs[tid].height && num != descs[tid].cursor.y)
+				descs[tid].cursor.y = num;
 			else
 				return;
 
 			break;
 	}
 
-	descriptors[tid].curs_changed = 1;
+	descs[tid].curs_changed = 1;
 }
 
 void cursor_vertical_tab(int tid, struct area ** areas, uint * nareas) {
 	/* scroll the screen, but only in the main screen */
-	if(descriptors[tid].cursor.y == descriptors[tid].height-1 && descriptors[tid].cur_screen == MAINSCREEN)
+	if(descs[tid].cursor.y == descs[tid].height-1 && descs[tid].cur_screen == MAINSCREEN)
 		scroll_screen(tid, areas, nareas);
 	else
 		cursor_rel_move(tid, DOWN, 1);
@@ -97,7 +97,7 @@ void cursor_carriage_return(int tid) {
 }
 
 void cursor_advance(int tid, struct area ** areas, uint * nareas) {
-	if(descriptors[tid].cursor.x == descriptors[tid].width-1) {
+	if(descs[tid].cursor.x == descs[tid].width-1) {
 		/* set some sort of bit array which
 		 * keeps track of which lines are wrapped
 		 * in the future...

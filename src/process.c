@@ -174,7 +174,7 @@ void dontfearthereaper(int sig, siginfo_t * info, void * data) {
 	  ) return;
 
 	for(i = 0; i < next_tid; i++)
-		if(descriptors[i].pid == info->si_pid) {
+		if(descs[i].pid == info->si_pid) {
 			/* do some stuff that notifies various things that
 			 * the shell has exited
 			 */
