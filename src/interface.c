@@ -5,6 +5,7 @@
 
 #include "libterm.h"
 #include "process.h"
+#include "callbacks.h"
 
 #ifdef GWINSZ_IN_SYS_IOCTL
 # include <sys/ioctl.h>
@@ -176,6 +177,7 @@ int tcsetwinsz(int tid) {
 }
 
 int ltm_set_window_dimensions(int tid, ushort width, ushort height) {
+	char big_changes;
 	pid_t pgrp;
 
 	DIE_ON_INVAL_TID(tid)
@@ -184,6 +186,13 @@ int ltm_set_window_dimensions(int tid, ushort width, ushort height) {
 
 	/* if not changing anything, just pretend we did something and exit successfully immediately */
 	if(width == descriptors[tid].width && height == descriptors[tid].height) return 0;
+
+	if(height > descriptors[tid].height && 0 /* lines_in_buffer(tid) */)
+		big_changes = 1;
+	else if(height < descriptors[tid].height && descriptors[tid].cursor.y >= height)
+		big_changes = 1;
+	else
+		big_changes = 0;
 
 	if(set_screen_dimensions(tid, MAINSCREEN, width, height) == -1) return -1;
 	/* probably:
@@ -214,6 +223,7 @@ int ltm_set_window_dimensions(int tid, ushort width, ushort height) {
 	/* what to do if cur_screen contains an invalid value??? */
 
 	/* only do this if the pty has been created and the shell has been started! */
+	/* checking if pid is set is a quick'n'dirty way or checking whether ltm_term_init finished */
 	if(descriptors[tid].pid) {
 		if(tcsetwinsz(tid) == -1) return -1;
 
@@ -227,6 +237,14 @@ int ltm_set_window_dimensions(int tid, ushort width, ushort height) {
 		 * in the process group
 		 */
 		killpg(pgrp, SIGWINCH);
+
+		/* don't do this before ltm_term_init since the callbacks
+		 * aren't guaranteed to be set (and there isn't much point
+		 * since there can't be anything on the screen before the
+		 * shell starts)
+		 */
+		if(big_changes)
+			cb_refresh_screen(tid);
 	}
 
 	return 0;

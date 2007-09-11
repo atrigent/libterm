@@ -4,6 +4,9 @@ int check_callbacks(int tid) {
 	if(!descriptors[tid].cb.update_areas)
 		FIXABLE_LTM_ERR(ENOTSUP)
 
+	if(!descriptors[tid].cb.refresh_screen)
+		fprintf(dump_dest, "Warning: The refresh_screen callback was not supplied. It will be emulated with update_areas\n");
+
 	/* more as the ltm_callbacks struct grows... */
 
 	return 0;
@@ -20,6 +23,26 @@ int cb_update_areas(int tid, struct area ** areas) {
 	descriptors[tid].cb.update_areas(tid, descriptors[tid].screen, curs, areas);
 
 	descriptors[tid].curs_changed = 0;
+
+	return 0;
+}
+
+int cb_refresh_screen(int tid) {
+	struct area * areas[2], area;
+
+	if(descriptors[tid].cb.refresh_screen)
+		descriptors[tid].cb.refresh_screen(tid, descriptors[tid].screen);
+	else {
+		area.start.y = area.start.x = 0;
+
+		area.end.y = descriptors[tid].height-1;
+		area.end.x = descriptors[tid].width;
+
+		areas[0] = &area;
+		areas[1] = NULL;
+
+		cb_update_areas(tid, areas);
+	}
 
 	return 0;
 }
