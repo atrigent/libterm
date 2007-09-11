@@ -5,16 +5,6 @@
 
 #include "libterm.h"
 
-/* checks if second is one point ahead of first */
-int is_one_ahead(int tid, struct point * first, struct point * second) {
-	if(
-		(first->x+1 == second->x && first->y == second->y) ||
-		(first->x == descriptors[tid].width-1 && second->x == 0 && first->y+1 == second->y)
-	  ) return 1;
-	
-	return 0;
-}
-
 int read_into_outputbuf(int tid) {
 	uint buflen;
 	char *buf;
