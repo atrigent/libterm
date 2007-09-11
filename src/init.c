@@ -7,6 +7,7 @@
 #include "libterm.h"
 #include "process.h"
 #include "interface.h"
+#include "callbacks.h"
 
 int next_tid = 0;
 struct ltm_term_desc * descriptors = 0;
@@ -101,6 +102,8 @@ int ltm_term_init(int tid, FILE ** listen) {
 	pid_t pid;
 
 	DIE_ON_INVAL_TID(tid)
+
+	if(check_callbacks(tid) == -1) return -1;
 
 	if(!descriptors[tid].width || !descriptors[tid].height)
 		if(ltm_set_window_dimensions(tid, 80, 24) == -1) return -1;

@@ -5,6 +5,7 @@
 
 #include "libterm.h"
 #include "cursor.h"
+#include "callbacks.h"
 
 int read_into_outputbuf(int tid) {
 	uint buflen;
@@ -38,7 +39,6 @@ int read_into_outputbuf(int tid) {
 
 int ltm_process_output(int tid) {
 	struct area **areas = 0;
-	struct point * curs;
 	uint i, nareas = 0;
 	char *buf;
 
@@ -107,12 +107,7 @@ int ltm_process_output(int tid) {
 
 	areas[nareas] = NULL;
 
-	if(descriptors[tid].curs_changed)
-		curs = &descriptors[tid].cursor;
-	else
-		curs = NULL;
-
-	descriptors[tid].cb.update_areas(tid, descriptors[tid].screen, curs, areas);
+	cb_update_areas(tid, areas);
 
 	free(areas);
 
