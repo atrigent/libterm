@@ -74,13 +74,16 @@ void cursor_abs_move(int tid, char axis, uint num) {
 	descriptors[tid].curs_changed = 1;
 }
 
-void cursor_line_break(int tid, struct area ** areas, uint * nareas) {
+void cursor_vertical_tab(int tid, struct area ** areas, uint * nareas) {
 	/* scroll the screen, but only in the main screen */
 	if(descriptors[tid].cursor.y == descriptors[tid].height-1 && descriptors[tid].cur_screen == MAINSCREEN)
 		scroll_screen(tid, areas, nareas);
 	else
 		cursor_rel_move(tid, DOWN, 1);
+}
 
+void cursor_line_break(int tid, struct area ** areas, uint * nareas) {
+	cursor_vertical_tab(tid, areas, nareas);
 	cursor_abs_move(tid, X, 0);
 }
 

@@ -15,5 +15,6 @@ extern void cursor_abs_move(int, char, uint);
 extern void cursor_line_break(int, struct area **, uint *);
 extern void cursor_advance(int, struct area **, uint *);
 extern void cursor_carriage_return(int);
+extern void cursor_vertical_tab(int, struct area **, uint *);
 
 #endif
