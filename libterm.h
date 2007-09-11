@@ -21,6 +21,7 @@ struct area {
 struct ltm_callbacks {
 	int (*update_areas)(int, uint **, struct point *, struct area **);
 	int (*refresh_screen)(int, uint **);
+	int (*scroll_lines)(int, uint);
 
 	/* many more in the future! */
 };

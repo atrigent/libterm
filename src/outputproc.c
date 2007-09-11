@@ -52,7 +52,7 @@ int ltm_process_output(int tid) {
 		if(buf[i] > 0x7f) continue;
 
 		if(buf[i] == '\n') { /* line break */
-			cursor_line_break(tid);
+			cursor_line_break(tid, areas, &nareas);
 			continue;
 		} else if(buf[i] == '\r') { /* carriage return */
 			cursor_carriage_return(tid);
@@ -75,7 +75,7 @@ int ltm_process_output(int tid) {
 
 		descriptors[tid].screen[descriptors[tid].cursor.y][descriptors[tid].cursor.x] = buf[i];
 
-		cursor_advance(tid);
+		cursor_advance(tid, areas, &nareas);
 
 		areas[nareas-1]->end.x = descriptors[tid].cursor.x;
 		areas[nareas-1]->end.y = descriptors[tid].cursor.y;
