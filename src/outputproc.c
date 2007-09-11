@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include "libterm.h"
+#include "cursor.h"
 
 int read_into_outputbuf(int tid) {
 	uint buflen;
@@ -51,13 +52,10 @@ int ltm_process_output(int tid) {
 		if(buf[i] > 0x7f) continue;
 
 		if(buf[i] == '\n') { /* line break */
-			descriptors[tid].cursor.y++;
-			descriptors[tid].cursor.x = 0;
-			descriptors[tid].curs_changed = 1;
+			cursor_line_break(tid);
 			continue;
 		} else if(buf[i] == '\r') { /* carriage return */
-			descriptors[tid].cursor.x = 0;
-			descriptors[tid].curs_changed = 1;
+			cursor_carriage_return(tid);
 			continue;
 		} else if(buf[i] > '~' || buf[i] < ' ') continue;
 
@@ -74,14 +72,7 @@ int ltm_process_output(int tid) {
 
 		descriptors[tid].screen[descriptors[tid].cursor.y][descriptors[tid].cursor.x] = buf[i];
 
-		if(descriptors[tid].cursor.x == descriptors[tid].width-1) {
-			descriptors[tid].cursor.y++;
-			descriptors[tid].cursor.x = 0;
-			descriptors[tid].curs_changed = 1;
-		} else {
-			descriptors[tid].cursor.x++;
-			descriptors[tid].curs_changed = 1;
-		}
+		cursor_advance(tid);
 
 		areas[nareas-1]->end.x = descriptors[tid].cursor.x;
 		areas[nareas-1]->end.y = descriptors[tid].cursor.y;
