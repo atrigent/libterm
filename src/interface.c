@@ -35,9 +35,20 @@ int resize_width(int tid, ushort width, ushort height, uint ** screen) {
 	return 0;
 }
 
-int set_screen_dimensions(int tid, ushort width, ushort height, uint *** screen) {
-	uint ** dscreen = *screen;
+int set_screen_dimensions(int tid, char type, ushort width, ushort height) {
+	uint **dscreen, ***screen;
 	ushort i, diff, n;
+
+	switch(type) {
+		case MAINSCREEN:
+			screen = &descriptors[tid].main_screen;
+			break;
+		case ALTSCREEN:
+			screen = &descriptors[tid].alt_screen;
+			break;
+	}
+
+	dscreen = *screen;
 
 	if(!descriptors[tid].width || !descriptors[tid].height) {
 		*screen = dscreen = malloc(height * sizeof(uint *));
@@ -70,23 +81,46 @@ int set_screen_dimensions(int tid, ushort width, ushort height, uint *** screen)
 		 * 	the lines should be realloced (if the width is changing)
 		 */
 
-		diff = descriptors[tid].height - height;
+		if(descriptors[tid].cursor.y >= height)
+			diff = descriptors[tid].cursor.y - (height-1);
+		else
+			diff = 0;
 
 		for(i = 0; i < diff; i++)
-			/* probably push each line into the buffer later */
+			/* probably push lines into the buffer later */
+			free(dscreen[i]);
+
+		for(i = height + diff; i < descriptors[tid].height; i++)
 			free(dscreen[i]);
 
 /*		for(i = 0; i < height; i++)
 			dscreen[i] = dscreen[i+diff];*/
 
-		memmove(dscreen, &dscreen[diff], height * sizeof(uint *));
+		if(diff) {
+			memmove(dscreen, &dscreen[diff], height * sizeof(uint *));
+
+			if(type == MAINSCREEN)
+				descriptors[tid].cursor.y -= diff;
+		}
 
 		*screen = dscreen = realloc(dscreen, height * sizeof(uint *));
 		if(!dscreen) FATAL_ERR("realloc", NULL)
 
 		if(resize_width(tid, width, height, dscreen) == -1) return -1;
 	} else if(height > descriptors[tid].height) {
-		diff = height - descriptors[tid].height;
+		/* in the future this will look something like this:
+		 *
+		 * if(lines_in_buffer(tid)) {
+		 * 	diff = height - descriptors[tid].height;
+		 *
+		 * 	if(lines_in_buffer(tid) < diff) diff = lines_in_buffer(tid);
+		 * } else
+		 * 	diff = 0;
+		 *
+		 * but for now, we're just putting the diff = 0 thing there
+		 */
+
+		diff = 0;
 
 		if(resize_width(tid, width, descriptors[tid].height, dscreen) == -1) return -1;
 
@@ -96,13 +130,26 @@ int set_screen_dimensions(int tid, ushort width, ushort height, uint *** screen)
 /*		for(i = diff; i < height; i++)
 			dscreen[i] = dscreen[i-diff];*/
 
-		memmove(&dscreen[diff], dscreen, descriptors[tid].height * sizeof(uint *));
+		if(diff) {
+			memmove(&dscreen[diff], dscreen, descriptors[tid].height * sizeof(uint *));
 
+			if(type == MAINSCREEN)
+				descriptors[tid].cursor.y += diff;
+		}
+
+		/* probably pop lines off the buffer and put them in here later */
 		for(i = 0; i < diff; i++) {
 			dscreen[i] = malloc(width * sizeof(uint));
 			if(!dscreen[i]) FATAL_ERR("malloc", NULL)
 
-			/* probably pop lines off the buffer and put them in here later */
+			for(n = 0; n < width; n++)
+				dscreen[i][n] = ' ';
+		}
+
+		for(i = descriptors[tid].height + diff; i < height; i++) {
+			dscreen[i] = malloc(width * sizeof(uint));
+			if(!dscreen[i]) FATAL_ERR("malloc", NULL)
+
 			for(n = 0; n < width; n++)
 				dscreen[i][n] = ' ';
 		}
@@ -138,9 +185,9 @@ int ltm_set_window_dimensions(int tid, ushort width, ushort height) {
 	/* if not changing anything, just pretend we did something and exit successfully immediately */
 	if(width == descriptors[tid].width && height == descriptors[tid].height) return 0;
 
-	if(set_screen_dimensions(tid, width, height, &descriptors[tid].main_screen) == -1) return -1;
+	if(set_screen_dimensions(tid, MAINSCREEN, width, height) == -1) return -1;
 	/* probably:
-	 * set_screen_dimensions(tid, width, height, &descriptors[tid].alt_screen); 
+	 * set_screen_dimensions(tid, ALTSCREEN, width, height);
 	 * in the future
 	 * ... or more! (who knows?)
 	 *
