@@ -109,6 +109,7 @@ int ltm_process_output(int tid) {
 
 	cb_update_areas(tid, areas);
 
+	for(i = 0; areas[i]; i++) free(areas[i]);
 	free(areas);
 
 	return 0;
