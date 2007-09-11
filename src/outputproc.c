@@ -36,7 +36,7 @@ int read_into_outputbuf(int tid) {
 }
 
 int ltm_process_output(int tid) {
-	struct area * areas = 0;
+	struct area **areas = 0;
 	struct point * curs;
 	uint i, nareas = 0;
 	char *buf;
@@ -61,12 +61,15 @@ int ltm_process_output(int tid) {
 			continue;
 		} else if(buf[i] > '~' || buf[i] < ' ') continue;
 
-		if(areas == NULL || memcmp(&areas[nareas-1].end, &descriptors[tid].cursor, sizeof(struct point))) {
-			areas = realloc(areas, ++nareas * sizeof(struct area));
+		if(areas == NULL || memcmp(&areas[nareas-1]->end, &descriptors[tid].cursor, sizeof(struct point))) {
+			areas = realloc(areas, ++nareas * sizeof(struct area *));
 			if(!areas) FATAL_ERR("realloc", NULL)
 
-			areas[nareas-1].start.y = areas[nareas-1].end.y = descriptors[tid].cursor.y;
-			areas[nareas-1].start.x = areas[nareas-1].end.x = descriptors[tid].cursor.x;
+			areas[nareas-1] = malloc(sizeof(struct area));
+			if(!areas[nareas-1]) FATAL_ERR("malloc", NULL)
+
+			areas[nareas-1]->start.y = descriptors[tid].cursor.y;
+			areas[nareas-1]->start.x = descriptors[tid].cursor.x;
 		}
 
 		descriptors[tid].screen[descriptors[tid].cursor.y][descriptors[tid].cursor.x] = buf[i];
@@ -80,8 +83,8 @@ int ltm_process_output(int tid) {
 			descriptors[tid].curs_changed = 1;
 		}
 
-		areas[nareas-1].end.x = descriptors[tid].cursor.x;
-		areas[nareas-1].end.y = descriptors[tid].cursor.y;
+		areas[nareas-1]->end.x = descriptors[tid].cursor.x;
+		areas[nareas-1]->end.y = descriptors[tid].cursor.y;
 	}
 
 	if(i == descriptors[tid].buflen) {
@@ -105,12 +108,17 @@ int ltm_process_output(int tid) {
 	} else /* nothing done, exit */
 		return 0;
 
+	areas = realloc(areas, (nareas+1) * sizeof(struct area));
+	if(!areas) FATAL_ERR("realloc", NULL)
+
+	areas[nareas] = NULL;
+
 	if(descriptors[tid].curs_changed)
 		curs = &descriptors[tid].cursor;
 	else
 		curs = NULL;
 
-	descriptors[tid].cb.update_areas(tid, descriptors[tid].screen, curs, areas, nareas);
+	descriptors[tid].cb.update_areas(tid, descriptors[tid].screen, curs, areas);
 
 	free(areas);
 

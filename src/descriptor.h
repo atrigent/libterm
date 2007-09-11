@@ -24,7 +24,7 @@ struct area {
 };
 
 struct ltm_callbacks {
-	int (*update_areas)(int, uint **, struct point *, struct area *, uint);
+	int (*update_areas)(int, uint **, struct point *, struct area **);
 
 	/* many more in the future! */
 };
