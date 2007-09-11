@@ -51,19 +51,24 @@ int ltm_process_output(int tid) {
 	for(i = 0; i < descriptors[tid].buflen; i++) {
 		if(buf[i] > 0x7f) continue;
 
-		if(buf[i] == '\n') { /* line break */
-			cursor_line_break(tid, areas, &nareas);
+		if(buf[i] > '~' || buf[i] < ' ') {
+			switch(buf[i]) {
+				case '\n': /* line break */
+					cursor_line_break(tid, areas, &nareas);
+					break;
+				case '\r': /* carriage return */
+					cursor_carriage_return(tid);
+					break;
+				case '\b': /* backspace */
+					cursor_rel_move(tid, LEFT, 1);
+					break;
+				case '\v': /* vertical tab */
+					cursor_vertical_tab(tid, areas, &nareas);
+					break;
+			}
+
 			continue;
-		} else if(buf[i] == '\r') { /* carriage return */
-			cursor_carriage_return(tid);
-			continue;
-		} else if(buf[i] == '\b') { /* backspace */
-			cursor_rel_move(tid, LEFT, 1);
-			continue;
-		} else if(buf[i] == '\v') { /* vertical tab */
-			cursor_vertical_tab(tid, areas, &nareas);
-			continue;
-		} else if(buf[i] > '~' || buf[i] < ' ') continue;
+		}
 
 		if(areas == NULL || memcmp(&areas[nareas-1]->end, &descriptors[tid].cursor, sizeof(struct point))) {
 			areas = realloc(areas, ++nareas * sizeof(struct area *));
