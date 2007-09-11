@@ -57,6 +57,9 @@ int ltm_process_output(int tid) {
 		} else if(buf[i] == '\r') { /* carriage return */
 			cursor_carriage_return(tid);
 			continue;
+		} else if(buf[i] == '\b') { /* backspace */
+			cursor_rel_move(tid, LEFT, 1);
+			continue;
 		} else if(buf[i] > '~' || buf[i] < ' ') continue;
 
 		if(areas == NULL || memcmp(&areas[nareas-1]->end, &descriptors[tid].cursor, sizeof(struct point))) {
