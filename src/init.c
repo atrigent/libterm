@@ -6,7 +6,7 @@
 
 #include "libterm.h"
 #include "process.h"
-#include "interface.h"
+#include "window.h"
 #include "callbacks.h"
 
 int next_tid = 0;
