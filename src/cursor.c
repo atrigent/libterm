@@ -89,7 +89,7 @@ void cursor_line_break(int tid, struct area ** areas, uint * nareas) {
 
 		cb_scroll_lines(tid, 1);
 
-		for(i = 0; i < *nareas; i++)
+		for(i = 0; i < *nareas;)
 			if(!areas[i]->end.y) {
 				/* this update has been scrolled off,
 				 * free it and rotate the areas down
@@ -112,6 +112,8 @@ void cursor_line_break(int tid, struct area ** areas, uint * nareas) {
 					areas[i]->start.x = 0;
 
 				areas[i]->end.y--;
+
+				i++;
 			}
 	} else
 		cursor_rel_move(tid, DOWN, 1);
