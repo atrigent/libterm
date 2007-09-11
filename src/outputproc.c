@@ -75,15 +75,13 @@ int ltm_process_output(int tid) {
 			descriptors[tid].cursor.y++;
 			descriptors[tid].cursor.x = 0;
 			descriptors[tid].curs_changed = 1;
-
-			areas[nareas-1].end.y++;
-			areas[nareas-1].end.x = 0;
 		} else {
 			descriptors[tid].cursor.x++;
 			descriptors[tid].curs_changed = 1;
-
-			areas[nareas-1].end.x++;
 		}
+
+		areas[nareas-1].end.x = descriptors[tid].cursor.x;
+		areas[nareas-1].end.y = descriptors[tid].cursor.y;
 	}
 
 	if(i == descriptors[tid].buflen) {
