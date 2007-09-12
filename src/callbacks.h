@@ -6,5 +6,6 @@ extern int check_callbacks(int);
 extern int cb_update_areas(int);
 extern int cb_refresh_screen(int);
 extern int cb_scroll_lines(int, uint);
+extern int cb_alert(int);
 
 #endif

@@ -67,6 +67,9 @@ int ltm_process_output(int tid) {
 				case '\t': /* horizontal tab */
 					cursor_horiz_tab(tid);
 					break;
+				case '\a': /* bell */
+					cb_alert(tid);
+					break;
 			}
 
 			continue;

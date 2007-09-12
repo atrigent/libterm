@@ -10,6 +10,9 @@ int check_callbacks(int tid) {
 	if(!descs[tid].cb.scroll_lines)
 		fprintf(dump_dest, "Warning: The scroll_lines callback was not supplied. It will be emulated with update_areas\n");
 
+	if(!descs[tid].cb.alert)
+		fprintf(dump_dest, "Warning: The alert callback was not supplied. The ASCII bell character will be ignored\n");
+
 	/* more as the ltm_callbacks struct grows... */
 
 	return 0;
@@ -70,6 +73,13 @@ int cb_scroll_lines(int tid, uint lines) {
 
 		cb_refresh_screen(tid);
 	}
+
+	return 0;
+}
+
+int cb_alert(int tid) {
+	if(descs[tid].cb.alert)
+		descs[tid].cb.alert(tid);
 
 	return 0;
 }
