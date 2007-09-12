@@ -64,6 +64,9 @@ int ltm_process_output(int tid) {
 				case '\v': /* vertical tab */
 					cursor_vertical_tab(tid);
 					break;
+				case '\t': /* horizontal tab */
+					cursor_horiz_tab(tid);
+					break;
 			}
 
 			continue;

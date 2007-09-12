@@ -74,6 +74,13 @@ void cursor_abs_move(int tid, char axis, uint num) {
 	descs[tid].curs_changed = 1;
 }
 
+void cursor_horiz_tab(int tid) {
+	/* don't hardcode 8 here in the future? */
+	char dist = 8 - (descs[tid].cursor.x % 8);
+
+	cursor_rel_move(tid, RIGHT, dist);
+}
+
 void cursor_vertical_tab(int tid) {
 	/* scroll the screen, but only in the main screen */
 	if(descs[tid].cursor.y == descs[tid].height-1 && descs[tid].cur_screen == MAINSCREEN)
