@@ -38,9 +38,8 @@ int read_into_outputbuf(int tid) {
 }
 
 int ltm_process_output(int tid) {
-	struct area **areas = 0;
-	uint i, nareas = 0;
 	char *buf;
+	uint i;
 
 	DIE_ON_INVAL_TID(tid)
 
@@ -54,7 +53,7 @@ int ltm_process_output(int tid) {
 		if(buf[i] > '~' || buf[i] < ' ') {
 			switch(buf[i]) {
 				case '\n': /* line break */
-					cursor_line_break(tid, areas, &nareas);
+					cursor_line_break(tid);
 					break;
 				case '\r': /* carriage return */
 					cursor_carriage_return(tid);
@@ -63,30 +62,30 @@ int ltm_process_output(int tid) {
 					cursor_rel_move(tid, LEFT, 1);
 					break;
 				case '\v': /* vertical tab */
-					cursor_vertical_tab(tid, areas, &nareas);
+					cursor_vertical_tab(tid);
 					break;
 			}
 
 			continue;
 		}
 
-		if(areas == NULL || memcmp(&areas[nareas-1]->end, &descs[tid].cursor, sizeof(struct point))) {
-			areas = realloc(areas, ++nareas * sizeof(struct area *));
-			if(!areas) FATAL_ERR("realloc", NULL)
+		if(descs[tid].areas == NULL || memcmp(&descs[tid].areas[descs[tid].nareas-1]->end, &descs[tid].cursor, sizeof(struct point))) {
+			descs[tid].areas = realloc(descs[tid].areas, ++descs[tid].nareas * sizeof(struct area *));
+			if(!descs[tid].areas) FATAL_ERR("realloc", NULL)
 
-			areas[nareas-1] = malloc(sizeof(struct area));
-			if(!areas[nareas-1]) FATAL_ERR("malloc", NULL)
+			descs[tid].areas[descs[tid].nareas-1] = malloc(sizeof(struct area));
+			if(!descs[tid].areas[descs[tid].nareas-1]) FATAL_ERR("malloc", NULL)
 
-			areas[nareas-1]->start.y = descs[tid].cursor.y;
-			areas[nareas-1]->start.x = descs[tid].cursor.x;
+			descs[tid].areas[descs[tid].nareas-1]->start.y = descs[tid].cursor.y;
+			descs[tid].areas[descs[tid].nareas-1]->start.x = descs[tid].cursor.x;
 		}
 
 		descs[tid].screen[descs[tid].cursor.y][descs[tid].cursor.x] = buf[i];
 
-		cursor_advance(tid, areas, &nareas);
+		cursor_advance(tid);
 
-		areas[nareas-1]->end.x = descs[tid].cursor.x;
-		areas[nareas-1]->end.y = descs[tid].cursor.y;
+		descs[tid].areas[descs[tid].nareas-1]->end.x = descs[tid].cursor.x;
+		descs[tid].areas[descs[tid].nareas-1]->end.y = descs[tid].cursor.y;
 	}
 
 	if(i == descs[tid].buflen) {
@@ -110,15 +109,18 @@ int ltm_process_output(int tid) {
 	} else /* nothing done, exit */
 		return 0;
 
-	areas = realloc(areas, (nareas+1) * sizeof(struct area));
-	if(!areas) FATAL_ERR("realloc", NULL)
+	descs[tid].areas = realloc(descs[tid].areas, (descs[tid].nareas+1) * sizeof(struct area));
+	if(!descs[tid].areas) FATAL_ERR("realloc", NULL)
 
-	areas[nareas] = NULL;
+	descs[tid].areas[descs[tid].nareas] = NULL;
 
-	cb_update_areas(tid, areas);
+	cb_update_areas(tid);
 
-	for(i = 0; areas[i]; i++) free(areas[i]);
-	free(areas);
+	for(i = 0; descs[tid].areas[i]; i++) free(descs[tid].areas[i]);
+	free(descs[tid].areas);
+
+	descs[tid].areas = NULL;
+	descs[tid].nareas = 0;
 
 	return 0;
 }

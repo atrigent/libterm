@@ -15,7 +15,7 @@ int check_callbacks(int tid) {
 	return 0;
 }
 
-int cb_update_areas(int tid, struct area ** areas) {
+int cb_update_areas(int tid) {
 	struct point * curs;
 
 	if(descs[tid].curs_changed)
@@ -23,7 +23,8 @@ int cb_update_areas(int tid, struct area ** areas) {
 	else
 		curs = NULL;
 
-	descs[tid].cb.update_areas(tid, descs[tid].screen, curs, areas);
+	/* assuming descs[tid].areas has been set up and is null terminated... */
+	descs[tid].cb.update_areas(tid, descs[tid].screen, curs, descs[tid].areas);
 
 	descs[tid].curs_changed = 0;
 
@@ -44,7 +45,11 @@ int cb_refresh_screen(int tid) {
 		areas[0] = &area;
 		areas[1] = NULL;
 
-		cb_update_areas(tid, areas);
+		descs[tid].areas = areas;
+
+		cb_update_areas(tid);
+
+		descs[tid].areas = 0;
 	}
 
 	return 0;

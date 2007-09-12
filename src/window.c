@@ -241,7 +241,7 @@ int ltm_set_window_dimensions(int tid, ushort width, ushort height) {
 	return 0;
 }
 
-int scroll_screen(int tid, struct area ** areas, uint * nareas) {
+int scroll_screen(int tid) {
 	uint i, n, *linesave;
 
 	/* push this line into the buffer later... */
@@ -255,29 +255,29 @@ int scroll_screen(int tid, struct area ** areas, uint * nareas) {
 
 	cb_scroll_lines(tid, 1);
 
-	for(i = 0; i < *nareas;)
-		if(!areas[i]->end.y) {
+	for(i = 0; i < descs[tid].nareas;)
+		if(!descs[tid].areas[i]->end.y) {
 			/* this update has been scrolled off,
 			 * free it and rotate the areas down
 			 */
-			free(areas[i]);
+			free(descs[tid].areas[i]);
 
-			(*nareas)--;
+			descs[tid].nareas--;
 
-			for(n = 0; n < *nareas; n++) areas[n] = areas[n+1];
+			for(n = 0; n < descs[tid].nareas; n++) descs[tid].areas[n] = descs[tid].areas[n+1];
 		} else {
 			/* move it down... */
-			if(areas[i]->start.y)
+			if(descs[tid].areas[i]->start.y)
 				/* if it's not at the top yet, move it one up */
-				areas[i]->start.y--;
+				descs[tid].areas[i]->start.y--;
 			else
 				/* if it's already at the top, don't move it;
 				 * set the X coord to the beginning. Think
 				 * about it! :)
 				 */
-				areas[i]->start.x = 0;
+				descs[tid].areas[i]->start.x = 0;
 
-			areas[i]->end.y--;
+			descs[tid].areas[i]->end.y--;
 
 			i++;
 		}

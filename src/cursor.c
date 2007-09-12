@@ -74,16 +74,16 @@ void cursor_abs_move(int tid, char axis, uint num) {
 	descs[tid].curs_changed = 1;
 }
 
-void cursor_vertical_tab(int tid, struct area ** areas, uint * nareas) {
+void cursor_vertical_tab(int tid) {
 	/* scroll the screen, but only in the main screen */
 	if(descs[tid].cursor.y == descs[tid].height-1 && descs[tid].cur_screen == MAINSCREEN)
-		scroll_screen(tid, areas, nareas);
+		scroll_screen(tid);
 	else
 		cursor_rel_move(tid, DOWN, 1);
 }
 
-void cursor_line_break(int tid, struct area ** areas, uint * nareas) {
-	cursor_vertical_tab(tid, areas, nareas);
+void cursor_line_break(int tid) {
+	cursor_vertical_tab(tid);
 	cursor_abs_move(tid, X, 0);
 }
 
@@ -96,14 +96,14 @@ void cursor_carriage_return(int tid) {
 	cursor_abs_move(tid, X, 0);
 }
 
-void cursor_advance(int tid, struct area ** areas, uint * nareas) {
+void cursor_advance(int tid) {
 	if(descs[tid].cursor.x == descs[tid].width-1) {
 		/* set some sort of bit array which
 		 * keeps track of which lines are wrapped
 		 * in the future...
 		 */
 
-		cursor_line_break(tid, areas, nareas);
+		cursor_line_break(tid);
 	} else
 		cursor_rel_move(tid, RIGHT, 1);
 }

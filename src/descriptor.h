@@ -55,6 +55,9 @@ struct ltm_term_desc {
 
 	char * outputbuf;
 	uint buflen;
+
+	struct area ** areas;
+	uint nareas;
 };
 
 extern struct ltm_term_desc * descs;
