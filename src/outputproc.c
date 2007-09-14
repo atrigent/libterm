@@ -84,6 +84,9 @@ int ltm_process_output(int tid) {
 
 			descs[tid].areas[descs[tid].nareas-1]->start.y = descs[tid].cursor.y;
 			descs[tid].areas[descs[tid].nareas-1]->start.x = descs[tid].cursor.x;
+
+			descs[tid].areas[descs[tid].nareas-1]->end.y = descs[tid].cursor.y;
+			descs[tid].areas[descs[tid].nareas-1]->end.x = descs[tid].cursor.x;
 		}
 
 		descs[tid].screen[descs[tid].cursor.y][descs[tid].cursor.x] = buf[i];
@@ -115,7 +118,7 @@ int ltm_process_output(int tid) {
 	} else /* nothing done, exit */
 		return 0;
 
-	descs[tid].areas = realloc(descs[tid].areas, (descs[tid].nareas+1) * sizeof(struct area));
+	descs[tid].areas = realloc(descs[tid].areas, (descs[tid].nareas+1) * sizeof(struct area *));
 	if(!descs[tid].areas) FATAL_ERR("realloc", NULL)
 
 	descs[tid].areas[descs[tid].nareas] = NULL;
