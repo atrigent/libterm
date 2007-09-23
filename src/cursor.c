@@ -94,15 +94,6 @@ void cursor_line_break(int tid) {
 	cursor_abs_move(tid, X, 0);
 }
 
-void cursor_carriage_return(int tid) {
-	/* access some sort of bit array which
-	 * keeps track of which lines are wrapped
-	 * in the future...
-	 */
-
-	cursor_abs_move(tid, X, 0);
-}
-
 void cursor_advance(int tid) {
 	if(descs[tid].cursor.x == descs[tid].width-1) {
 		/* set some sort of bit array which

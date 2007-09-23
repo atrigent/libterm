@@ -56,7 +56,7 @@ int ltm_process_output(int tid) {
 					cursor_line_break(tid);
 					break;
 				case '\r': /* carriage return */
-					cursor_carriage_return(tid);
+					cursor_abs_move(tid, X, 0);
 					break;
 				case '\b': /* backspace */
 					cursor_rel_move(tid, LEFT, 1);
