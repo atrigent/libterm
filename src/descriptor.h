@@ -54,6 +54,8 @@ struct ltm_term_desc {
 	uint ** main_screen;
 	uint ** alt_screen;
 
+	uchar * wrapped;
+
 	char * outputbuf;
 	uint buflen;
 

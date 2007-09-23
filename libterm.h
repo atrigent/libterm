@@ -49,4 +49,6 @@ extern int ltm_get_notifier(FILE **);
 
 extern void ltm_set_error_dest(FILE *);
 
+extern int ltm_is_line_wrapped(int, uint);
+
 #endif

@@ -6,6 +6,7 @@
 
 #include "libterm.h"
 #include "callbacks.h"
+#include "bitarr.h"
 
 #ifdef GWINSZ_IN_SYS_IOCTL
 # include <sys/ioctl.h>
@@ -53,6 +54,8 @@ int set_screen_dimensions(int tid, char type, ushort width, ushort height) {
 			for(n = 0; n < width; n++)
 				dscreen[i][n] = ' ';
 		}
+
+		if(bitarr_resize(&descs[tid].wrapped, 0, height) == -1) return -1;
 	} else if(height < descs[tid].height) {
 		/* in order to minimize the work that's done,
 		 * here are some orders in which to do things:
@@ -91,12 +94,17 @@ int set_screen_dimensions(int tid, char type, ushort width, ushort height) {
 		if(diff) {
 			memmove(dscreen, &dscreen[diff], height * sizeof(uint *));
 
-			if(type == MAINSCREEN)
+			if(type == MAINSCREEN) {
 				descs[tid].cursor.y -= diff;
+
+				bitarr_shift_left(descs[tid].wrapped, descs[tid].height, diff);
+			}
 		}
 
 		*screen = dscreen = realloc(dscreen, height * sizeof(uint *));
 		if(!dscreen) FATAL_ERR("realloc", NULL)
+
+		if(bitarr_resize(&descs[tid].wrapped, descs[tid].height, height) == -1) return -1;
 
 		if(resize_width(tid, width, height, dscreen) == -1) return -1;
 	} else if(height > descs[tid].height) {
@@ -119,14 +127,19 @@ int set_screen_dimensions(int tid, char type, ushort width, ushort height) {
 		*screen = dscreen = realloc(dscreen, height * sizeof(uint *));
 		if(!dscreen) FATAL_ERR("realloc", NULL)
 
+		if(bitarr_resize(&descs[tid].wrapped, descs[tid].height, height) == -1) return -1;
+
 /*		for(i = diff; i < height; i++)
 			dscreen[i] = dscreen[i-diff];*/
 
 		if(diff) {
 			memmove(&dscreen[diff], dscreen, descs[tid].height * sizeof(uint *));
 
-			if(type == MAINSCREEN)
+			if(type == MAINSCREEN) {
 				descs[tid].cursor.y += diff;
+
+				bitarr_shift_right(descs[tid].wrapped, descs[tid].height, diff);
+			}
 		}
 
 		/* probably pop lines off the buffer and put them in here later */
@@ -254,6 +267,8 @@ int scroll_screen(int tid) {
 	descs[tid].screen[descs[tid].height-1] = linesave;
 
 	cb_scroll_lines(tid, 1);
+
+	bitarr_shift_left(descs[tid].wrapped, descs[tid].height, 1);
 
 	for(i = 0; i < descs[tid].nareas;)
 		if(!descs[tid].areas[i]->end.y) {

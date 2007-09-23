@@ -152,6 +152,8 @@ int ltm_close(int tid) {
 
 	free(descs[tid].main_screen);
 
+	free(descs[tid].wrapped);
+
 	if(tid == next_tid-1) {
 		descs = realloc(descs, --next_tid * sizeof(struct ltm_term_desc));
 		if(!descs && next_tid) FATAL_ERR("realloc", NULL)

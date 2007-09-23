@@ -3,6 +3,7 @@
 
 #include "libterm.h"
 #include "process.h"
+#include "bitarr.h"
 
 int ltm_feed_input_to_program(int tid, char * input, uint n) {
 	DIE_ON_INVAL_TID(tid)
@@ -37,6 +38,12 @@ int ltm_toggle_threading(int tid) {
 	descs[tid].threading = !descs[tid].threading;
 
 	return 0;
+}
+
+int ltm_is_line_wrapped(int tid, uint line) {
+	DIE_ON_INVAL_TID(tid)
+
+	return bitarr_test_index(descs[tid].wrapped, line);
 }
 
 /* This function is intended to be used in the case that an application needs

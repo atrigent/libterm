@@ -4,6 +4,7 @@
 #include "libterm.h"
 #include "cursor.h"
 #include "window.h"
+#include "bitarr.h"
 
 void cursor_rel_move(int tid, char direction, uint num) {
 	if(!num) return;
@@ -84,8 +85,11 @@ void cursor_vertical_tab(int tid) {
 	/* scroll the screen, but only in the main screen */
 	if(descs[tid].cursor.y == descs[tid].height-1 && descs[tid].cur_screen == MAINSCREEN)
 		scroll_screen(tid);
-	else
+	else {
 		cursor_rel_move(tid, DOWN, 1);
+
+		bitarr_unset_index(descs[tid].wrapped, descs[tid].cursor.y);
+	}
 }
 
 void cursor_line_break(int tid) {
@@ -95,12 +99,9 @@ void cursor_line_break(int tid) {
 
 void cursor_advance(int tid) {
 	if(descs[tid].cursor.x == descs[tid].width-1) {
-		/* set some sort of bit array which
-		 * keeps track of which lines are wrapped
-		 * in the future...
-		 */
-
 		cursor_line_break(tid);
+
+		bitarr_set_index(descs[tid].wrapped, descs[tid].cursor.y);
 	} else
 		cursor_rel_move(tid, RIGHT, 1);
 }
