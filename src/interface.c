@@ -43,6 +43,8 @@ int ltm_toggle_threading(int tid) {
 int ltm_is_line_wrapped(int tid, uint line) {
 	DIE_ON_INVAL_TID(tid)
 
+	if(line > descs[tid].height-1) FIXABLE_LTM_ERR(EINVAL)
+
 	return bitarr_test_index(descs[tid].wrapped, line);
 }
 
