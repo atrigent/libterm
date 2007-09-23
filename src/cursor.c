@@ -3,7 +3,6 @@
 
 #include "libterm.h"
 #include "cursor.h"
-#include "callbacks.h"
 #include "window.h"
 
 void cursor_rel_move(int tid, char direction, uint num) {
