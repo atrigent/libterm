@@ -264,7 +264,7 @@ int scroll_screen(int tid) {
 
 			descs[tid].nareas--;
 
-			for(n = 0; n < descs[tid].nareas; n++) descs[tid].areas[n] = descs[tid].areas[n+1];
+			for(n = i; n < descs[tid].nareas; n++) descs[tid].areas[n] = descs[tid].areas[n+1];
 		} else {
 			/* move it down... */
 			if(descs[tid].areas[i]->start.y)
