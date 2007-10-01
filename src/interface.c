@@ -43,7 +43,7 @@ int ltm_toggle_threading(int tid) {
 int ltm_is_line_wrapped(int tid, ushort line) {
 	DIE_ON_INVAL_TID(tid)
 
-	if(line > descs[tid].height-1) FIXABLE_LTM_ERR(EINVAL)
+	if(line > descs[tid].height-1) FIXABLE_LTM_ERR(EINVAL, "line is too large")
 
 	return bitarr_test_index(descs[tid].wrapped, line);
 }
@@ -81,7 +81,7 @@ int ltm_is_line_wrapped(int tid, ushort line) {
  * ltm_reload_sigchld_handler solves this problem.
  */
 int ltm_reload_sigchld_handler() {
-	if(!init_done) FIXABLE_LTM_ERR(EPERM)
+	if(!init_done) FIXABLE_LTM_ERR(EPERM, "libterm has not yet been inited")
 
 	return reload_handler(SIGCHLD, dontfearthereaper);
 }
@@ -90,13 +90,13 @@ int ltm_reload_sigchld_handler() {
  * better function to use as it has no race condition problems.
  */
 int ltm_set_sigchld_handler(struct sigaction * action) {
-	if(!init_done) FIXABLE_LTM_ERR(EPERM)
+	if(!init_done) FIXABLE_LTM_ERR(EPERM, "libterm has not yet been inited")
 
 	return set_handler_struct(SIGCHLD, dontfearthereaper, action);
 }
 
 int ltm_get_notifier(FILE ** notifier) {
-	if(!init_done) FIXABLE_LTM_ERR(EPERM)
+	if(!init_done) FIXABLE_LTM_ERR(EPERM, "libterm has not yet been inited")
 
 	*notifier = pipefiles[0];
 

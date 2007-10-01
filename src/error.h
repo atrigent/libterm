@@ -157,12 +157,12 @@
 /* program should try to resolve or report the error
  * used for errors set by a libterm function
  */
-#define FIXABLE_LTM_ERR(err) \
+#define FIXABLE_LTM_ERR(err, data) \
 	do { \
 		curerr.sys_func = NULL; \
 		curerr.ltm_func = __func__; \
 		curerr.err_no = err; \
-		error_info_dump(curerr, NULL, 1); \
+		error_info_dump(curerr, data, 1); \
 		errno = err; \
 		return -1; \
 	} while(0);

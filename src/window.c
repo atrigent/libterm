@@ -187,7 +187,7 @@ int ltm_set_window_dimensions(int tid, ushort width, ushort height) {
 
 	DIE_ON_INVAL_TID(tid)
 
-	if(!width || !height) FIXABLE_LTM_ERR(EINVAL)
+	if(!width || !height) FIXABLE_LTM_ERR(EINVAL, "width or height is zero")
 
 	/* if not changing anything, just pretend we did something and exit successfully immediately */
 	if(width == descs[tid].width && height == descs[tid].height) return 0;

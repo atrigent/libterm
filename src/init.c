@@ -76,7 +76,7 @@ int ltm_uninit() {
 int ltm_term_alloc() {
 	int i, tid;
 
-	if(!init_done) FIXABLE_LTM_ERR(EPERM)
+	if(!init_done) FIXABLE_LTM_ERR(EPERM, "libterm has not yet been inited")
 
 	for(i = 0; i < next_tid; i++)
 		if(descs[i].allocated == 0) return i;

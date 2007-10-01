@@ -22,7 +22,7 @@ int choose_pty_method(struct ptydev * pty) {
 		break;
 	}
 
-	if(!pty->master || !pty->slave) FIXABLE_LTM_ERR(ENODEV)
+	if(!pty->master || !pty->slave) FIXABLE_LTM_ERR(ENODEV, "Could not acquire a pseudoterminal pair")
 
 	setbuf(pty->master, NULL);
 	setbuf(pty->slave, NULL);
