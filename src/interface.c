@@ -40,7 +40,7 @@ int ltm_toggle_threading(int tid) {
 	return 0;
 }
 
-int ltm_is_line_wrapped(int tid, uint line) {
+int ltm_is_line_wrapped(int tid, ushort line) {
 	DIE_ON_INVAL_TID(tid)
 
 	if(line > descs[tid].height-1) FIXABLE_LTM_ERR(EINVAL)
