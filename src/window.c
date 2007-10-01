@@ -7,6 +7,7 @@
 #include "libterm.h"
 #include "callbacks.h"
 #include "bitarr.h"
+#include "cursor.h"
 
 #ifdef GWINSZ_IN_SYS_IOCTL
 # include <sys/ioctl.h>
@@ -95,7 +96,7 @@ int set_screen_dimensions(int tid, char type, ushort width, ushort height) {
 			memmove(dscreen, &dscreen[diff], height * sizeof(uint *));
 
 			if(type == MAINSCREEN) {
-				descs[tid].cursor.y -= diff;
+				cursor_rel_move(tid, UP, diff);
 
 				bitarr_shift_left(descs[tid].wrapped, descs[tid].height, diff);
 			}
@@ -136,7 +137,7 @@ int set_screen_dimensions(int tid, char type, ushort width, ushort height) {
 			memmove(&dscreen[diff], dscreen, descs[tid].height * sizeof(uint *));
 
 			if(type == MAINSCREEN) {
-				descs[tid].cursor.y += diff;
+				cursor_rel_move(tid, DOWN, diff);
 
 				bitarr_shift_right(descs[tid].wrapped, descs[tid].height, diff);
 			}
