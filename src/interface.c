@@ -5,7 +5,7 @@
 #include "process.h"
 #include "bitarr.h"
 
-int ltm_feed_input_to_program(int tid, char * input, uint n) {
+int DLLEXPORT ltm_feed_input_to_program(int tid, char * input, uint n) {
 	DIE_ON_INVAL_TID(tid)
 
 	if(fwrite(input, 1, n, descs[tid].pty.master) < n)
@@ -14,7 +14,7 @@ int ltm_feed_input_to_program(int tid, char * input, uint n) {
 	return 0;
 }
 
-int ltm_set_shell(int tid, char * shell) {
+int DLLEXPORT ltm_set_shell(int tid, char * shell) {
 	DIE_ON_INVAL_TID(tid)
 
 	descs[tid].shell = strdup(shell);
@@ -24,7 +24,7 @@ int ltm_set_shell(int tid, char * shell) {
 	return 0;
 }
 
-int ltm_get_callbacks_ptr(int tid, struct ltm_callbacks ** cb) {
+int DLLEXPORT ltm_get_callbacks_ptr(int tid, struct ltm_callbacks ** cb) {
 	DIE_ON_INVAL_TID(tid)
 
 	*cb = &descs[tid].cb;
@@ -32,7 +32,7 @@ int ltm_get_callbacks_ptr(int tid, struct ltm_callbacks ** cb) {
 	return 0;
 }
 
-int ltm_toggle_threading(int tid) {
+int DLLEXPORT ltm_toggle_threading(int tid) {
 	DIE_ON_INVAL_TID(tid)
 
 	descs[tid].threading = !descs[tid].threading;
@@ -40,7 +40,7 @@ int ltm_toggle_threading(int tid) {
 	return 0;
 }
 
-int ltm_is_line_wrapped(int tid, ushort line) {
+int DLLEXPORT ltm_is_line_wrapped(int tid, ushort line) {
 	DIE_ON_INVAL_TID(tid)
 
 	if(line > descs[tid].height-1) FIXABLE_LTM_ERR(EINVAL, "line is too large")
@@ -80,7 +80,7 @@ int ltm_is_line_wrapped(int tid, ushort line) {
  * before the function that sets a new handler and unblocking it after
  * ltm_reload_sigchld_handler solves this problem.
  */
-int ltm_reload_sigchld_handler() {
+int DLLEXPORT ltm_reload_sigchld_handler() {
 	if(!init_done) FIXABLE_LTM_ERR(EPERM, "libterm has not yet been inited")
 
 	return reload_handler(SIGCHLD, dontfearthereaper);
@@ -89,13 +89,13 @@ int ltm_reload_sigchld_handler() {
 /* If the application has control over the code that sets the new handler, this is the
  * better function to use as it has no race condition problems.
  */
-int ltm_set_sigchld_handler(struct sigaction * action) {
+int DLLEXPORT ltm_set_sigchld_handler(struct sigaction * action) {
 	if(!init_done) FIXABLE_LTM_ERR(EPERM, "libterm has not yet been inited")
 
 	return set_handler_struct(SIGCHLD, dontfearthereaper, action);
 }
 
-int ltm_get_notifier(FILE ** notifier) {
+int DLLEXPORT ltm_get_notifier(FILE ** notifier) {
 	if(!init_done) FIXABLE_LTM_ERR(EPERM, "libterm has not yet been inited")
 
 	*notifier = pipefiles[0];
@@ -103,6 +103,6 @@ int ltm_get_notifier(FILE ** notifier) {
 	return 0;
 }
 
-void ltm_set_error_dest(FILE * dest) {
+void DLLEXPORT ltm_set_error_dest(FILE * dest) {
 	dump_dest = dest;
 }

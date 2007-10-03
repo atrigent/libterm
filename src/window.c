@@ -181,7 +181,7 @@ int tcsetwinsz(int tid) {
 	return 0;
 }
 
-int ltm_set_window_dimensions(int tid, ushort width, ushort height) {
+int DLLEXPORT ltm_set_window_dimensions(int tid, ushort width, ushort height) {
 	char big_changes;
 	pid_t pgrp;
 

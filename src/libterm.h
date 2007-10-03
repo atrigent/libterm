@@ -17,6 +17,14 @@ typedef unsigned int uint;
 #include "ptydev.h"
 #include "descriptor.h"
 
+#ifdef WIN32
+#  define DLLEXPORT __declspec(dllexport)
+#elif defined(HAVE_GCC_VISIBILITY)
+#  define DLLEXPORT __attribute__ ((visibility("default")))
+#else
+#  define DLLEXPORT
+#endif
+
 extern char init_done;
 
 #endif

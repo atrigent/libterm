@@ -52,6 +52,22 @@ dnl Checks for structures
 
 dnl Checks for compiler characteristics
 
+dnl check whether GCC supports visibility
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -fvisibility=hidden"
+
+AC_MSG_CHECKING(whether $CC accepts -fvisibility=hidden)
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM()], [gcc_visibility="yes"], [gcc_visibility="no"])
+
+CFLAGS="$save_CFLAGS"
+
+AM_CONDITIONAL([HAVE_GCC_VISIBILITY], [test $gcc_visibility = yes])
+AC_MSG_RESULT($gcc_visibility)
+
+if test $gcc_visibility = yes; then
+	AC_DEFINE([HAVE_GCC_VISIBILITY], [1], [Define to 1 if the GCC installed on your system supports controlling symbol visibility (the -fvisibility flag)])
+fi
+
 dnl Checks for library functions
 dnl Checks for pty functions
 AC_CHECK_FUNCS([posix_openpt getpt], [break])

@@ -37,7 +37,7 @@ static int read_into_outputbuf(int tid) {
 	return 0;
 }
 
-int ltm_process_output(int tid) {
+int DLLEXPORT ltm_process_output(int tid) {
 	char *buf;
 	uint i;
 

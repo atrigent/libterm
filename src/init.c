@@ -30,7 +30,7 @@ static int setup_pipe() {
 	return 0;
 }
 
-int ltm_init() {
+int DLLEXPORT ltm_init() {
 	/* this should include some function to set off
 	 * processing of the config file in the future!
 	 */
@@ -51,7 +51,7 @@ int ltm_init() {
 	return 0;
 }
 
-int ltm_uninit() {
+int DLLEXPORT ltm_uninit() {
 	if(!init_done) return 0;
 
 	/* close notification pipe */
@@ -73,7 +73,7 @@ int ltm_uninit() {
  * EPERM (Operation not permitted):
  * 	you neglected to call ltm_init() before calling this, you naughty person!
  */
-int ltm_term_alloc() {
+int DLLEXPORT ltm_term_alloc() {
 	int i, tid;
 
 	if(!init_done) FIXABLE_LTM_ERR(EPERM, "libterm has not yet been inited")
@@ -97,7 +97,7 @@ int ltm_term_alloc() {
 /* errno values:
  * ENODEV: No available PTY devices were found.
  */
-int ltm_term_init(int tid, FILE ** listen) {
+int DLLEXPORT ltm_term_init(int tid, FILE ** listen) {
 	struct passwd * pwd_entry;
 	pid_t pid;
 
@@ -138,7 +138,7 @@ int ltm_term_init(int tid, FILE ** listen) {
 	return 0;
 }
 
-int ltm_close(int tid) {
+int DLLEXPORT ltm_close(int tid) {
 	uint i;
 
 	DIE_ON_INVAL_TID(tid)

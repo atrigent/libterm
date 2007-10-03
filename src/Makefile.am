@@ -9,6 +9,10 @@ else
 endif
 endif
 
+if HAVE_GCC_VISIBILITY
+ AM_CFLAGS += -fvisibility=hidden
+endif
+
 lib_LTLIBRARIES = libterm.la
 libterm_la_SOURCES = callbacks.c cursor.c error.c init.c interface.c window.c \
 		     outputproc.c process.c bitarr.c pty.c \

@@ -4,6 +4,10 @@
 #include <signal.h>
 #include <stdio.h>
 
+#ifdef WIN32
+#  define extern extern __declspec(dllimport)
+#endif
+
 typedef unsigned int uint;
 typedef unsigned short ushort;
 typedef unsigned char uchar;
@@ -50,5 +54,9 @@ extern int ltm_get_notifier(FILE **);
 extern void ltm_set_error_dest(FILE *);
 
 extern int ltm_is_line_wrapped(int, uint);
+
+#ifdef WIN32
+#  undef extern
+#endif
 
 #endif
