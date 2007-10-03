@@ -28,7 +28,7 @@ int bitarr_resize(uchar ** arr, uint oldlen, uint newlen) {
 	if(newn > oldn)
 		for(i = oldn; i < newn; i++) (*arr)[i] = 0;
 	else {
-		for(i = 0; i < (newlen % 8); i++) mask |= (1<<(8-i));
+		for(i = mask = 0; i < (newlen % 8); i++) mask |= (1<<(8-i));
 		(*arr)[newn-1] &= mask;
 	}
 
@@ -52,7 +52,7 @@ void bitarr_shift_left(uchar * arr, uint len, uint num) {
 
 	if(!num) return;
 
-	for(i = 0; i < num; i++) mask |= (1<<(8-i));
+	for(i = mask = 0; i < num; i++) mask |= (1<<(8-i));
 
 	for(i = 0; i < nelems-1; i++) {
 		arr[i] <<= num;
@@ -81,7 +81,7 @@ void bitarr_shift_right(uchar * arr, uint len, uint num) {
 
 	if(!num) return;
 
-	for(i = 0; i < num; i++) mask |= (1<<i);
+	for(i = mask = 0; i < num; i++) mask |= (1<<i);
 
 	for(i = nelems-1; i > initnum/8; i--) {
 		arr[i] >>= num;
