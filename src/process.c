@@ -15,7 +15,7 @@ struct sigaction oldaction;
 FILE * pipefiles[2];
 
 /* Start a program (the shell) using a different I/O source */
-int spawn_unix(char * path, int io_fd) {
+static int spawn_unix(char * path, int io_fd) {
 	sigset_t allsigs;
 	pid_t pid;
 
@@ -134,7 +134,7 @@ int spawn(char * path, FILE * io_file) {
  * SA_NOCLDWAIT in our handler if their handler is set to SIG_IGN.
  */
 
-void simulate_handler_call(int sig, siginfo_t * info, void * data) {
+static void simulate_handler_call(int sig, siginfo_t * info, void * data) {
 	sigset_t oldmask;
 
 	if(

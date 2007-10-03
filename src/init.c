@@ -13,7 +13,7 @@ int next_tid = 0;
 struct ltm_term_desc * descs = 0;
 char init_done = 0;
 
-int setup_pipe() {
+static int setup_pipe() {
 	int pipefds[2];
 
 	if(pipe(pipefds) == -1) FATAL_ERR("pipe", NULL)

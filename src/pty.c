@@ -17,9 +17,9 @@
 # include <pty.h>
 #endif
 
-int alloc_unix98_pty(struct ptydev *);
-int find_unused_bsd_pty(struct ptydev *);
-int alloc_func_pty(struct ptydev *);
+static int alloc_unix98_pty(struct ptydev *);
+static int find_unused_bsd_pty(struct ptydev *);
+static int alloc_func_pty(struct ptydev *);
 
 /* in the future, the user will be able to specify the priority */
 int (*pty_func_prior[])(struct ptydev *) = {
@@ -48,7 +48,7 @@ int choose_pty_method(struct ptydev * pty) {
 	return 0;
 }
 
-int alloc_unix98_pty(struct ptydev * pty) {
+static int alloc_unix98_pty(struct ptydev * pty) {
 	FILE *master, *slave;
 	char slave_path[32]; /* big enough */
 	int unlock = 0, pty_num;
@@ -89,7 +89,7 @@ static int next_bsd_pty(char * ident) {
 	return 1;
 }
 
-int find_unused_bsd_pty(struct ptydev * pty) {
+static int find_unused_bsd_pty(struct ptydev * pty) {
 	FILE *pty_file, *tty_file;
 	char tty_path[11], pty_path[11], tty_spc[2] = "p0";
 	int unlock = 0;
@@ -125,7 +125,7 @@ int find_unused_bsd_pty(struct ptydev * pty) {
 	return 0;
 }
 
-int alloc_func_pty(struct ptydev * pty) {
+static int alloc_func_pty(struct ptydev * pty) {
 	FILE *master, *slave;
 	int master_fd, slave_fd;
 #if defined(HAVE_UNIX98_FUNCS)

@@ -7,7 +7,7 @@
 #include "cursor.h"
 #include "callbacks.h"
 
-int read_into_outputbuf(int tid) {
+static int read_into_outputbuf(int tid) {
 	uint buflen;
 	char *buf;
 

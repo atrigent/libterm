@@ -13,7 +13,7 @@
 # include <sys/ioctl.h>
 #endif
 
-int resize_width(int tid, ushort width, ushort height, uint ** screen) {
+static int resize_width(int tid, ushort width, ushort height, uint ** screen) {
 	ushort i, n;
 
 	if(descs[tid].width != width)
@@ -29,7 +29,7 @@ int resize_width(int tid, ushort width, ushort height, uint ** screen) {
 	return 0;
 }
 
-int set_screen_dimensions(int tid, char type, ushort width, ushort height) {
+static int set_screen_dimensions(int tid, char type, ushort width, ushort height) {
 	uint **dscreen, ***screen;
 	ushort i, diff, n;
 
