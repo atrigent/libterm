@@ -7,6 +7,10 @@
 	if(tid >= next_tid || descs[tid].allocated == 0) \
 		LTM_ERR(EINVAL, "Invalid TID");
 
+#define DIE_ON_INVAL_TID_PTR(tid) \
+	if(tid >= next_tid || descs[tid].allocated == 0) \
+		LTM_ERR_PTR(EINVAL, "Invalid TID");
+
 /* some things won't work if MAINSCREEN isn't zero! don't
  * change this!
  */

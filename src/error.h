@@ -18,6 +18,9 @@
  *      This is used for errors that originate from a system call that libterm
  *      makes, rather than from libterm itself.
  *
+ * There are also variants of these macros ({LTM,SYS}_ERR_PTR) which return
+ * NULL instead of -1.
+ *
  * Here's roughly what a libterm function call should look like (if it
  * returns errors):
  *
@@ -148,10 +151,16 @@
 #define LTM_ERR(err, data) \
 	 ERR_MACRO_TMPL(NULL, err, data, -1);
 
+#define LTM_ERR_PTR(err, data) \
+	 ERR_MACRO_TMPL(NULL, err, data, NULL);
+
 /* used for system call errors
  */
 #define SYS_ERR(name, data) \
 	 ERR_MACRO_TMPL(name, errno, data, -1);
+
+#define SYS_ERR_PTR(name, data) \
+	 ERR_MACRO_TMPL(name, errno, data, NULL);
 
 struct error_info {
 	char * sys_func;
