@@ -6,6 +6,7 @@ read a bunch of stuff that experienced people have written:
 	read some stuff on multithreading because I (might?) need to use it
 	make a proper configure script and makefiles
 figure out what all those weird things in terminfo files do
+	the terminfo man page seems to describe some of the more ambiguous ones...
 what's the best way to use bsd ttys?
 read some source code
 experiment
@@ -13,6 +14,8 @@ experiment
 Useful links
 http://www.gnu.org/software/libc/manual/html_node/Job-Control.html
 	detailed descriptions of sessions and process groups
+http://www.ecma-international.org/publications/standards/Ecma-048.htm
+	free (yes!!) ECMA-48 standard - equivalent to ANSI X3.64 which the VT100 was based on
 
 STRUCTURES:
 
