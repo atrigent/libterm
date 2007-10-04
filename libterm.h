@@ -31,6 +31,12 @@ struct ltm_callbacks {
 	/* many more in the future! */
 };
 
+struct error_info {
+	char * sys_func;
+	const char * ltm_func;
+	int err_no;
+};
+
 extern int ltm_term_alloc();
 extern int ltm_term_init(int, FILE **);
 extern int ltm_close(int);
@@ -54,6 +60,8 @@ extern int ltm_get_notifier(FILE **);
 extern void ltm_set_error_dest(FILE *);
 
 extern int ltm_is_line_wrapped(int, uint);
+
+extern struct error_info ltm_curerr;
 
 #ifdef WIN32
 #  undef extern
