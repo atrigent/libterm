@@ -43,7 +43,7 @@ static int spawn_unix(char * path, int io_fd) {
 
 		exit(EXIT_FAILURE); /* if we get here, execl failed */
 	}
-	else if(pid == -1) FATAL_ERR("fork", NULL);
+	else if(pid == -1) SYS_ERR("fork", NULL);
 
 	return pid;
 }
@@ -210,7 +210,7 @@ int set_handler(int sig, void (*callback)(int, siginfo_t *, void *)) {
 	 * little more atomic
 	 */
 	if(!(oldaction.sa_flags & SA_NODEFER))
-		if(sigaddset(&oldaction.sa_mask, sig) == -1) FATAL_ERR("sigaddset", NULL)
+		if(sigaddset(&oldaction.sa_mask, sig) == -1) SYS_ERR("sigaddset", NULL);
 
 	/* The handler being SIG_IGN causes the same effect as having
 	 * SA_NOCLDWAIT set. We don't need to check whether the signal
@@ -248,7 +248,7 @@ int set_handler(int sig, void (*callback)(int, siginfo_t *, void *)) {
 }
 
 int reload_handler(int sig, void (*callback)(int, siginfo_t *, void *)) {
-	if(sigaction(sig, NULL, &oldaction) == -1) FATAL_ERR("sigaction", NULL)
+	if(sigaction(sig, NULL, &oldaction) == -1) SYS_ERR("sigaction", NULL);
 
 	return set_handler(sig, callback);
 }

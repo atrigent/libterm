@@ -16,12 +16,12 @@ char init_done = 0;
 static int setup_pipe() {
 	int pipefds[2];
 
-	if(pipe(pipefds) == -1) FATAL_ERR("pipe", NULL)
+	if(pipe(pipefds) == -1) SYS_ERR("pipe", NULL);
 
 	pipefiles[0] = fdopen(pipefds[0], "r");
 	pipefiles[1] = fdopen(pipefds[1], "w");
 
-	if(!pipefiles[0] || !pipefiles[1]) FATAL_ERR("fdopen", NULL)
+	if(!pipefiles[0] || !pipefiles[1]) SYS_ERR("fdopen", NULL);
 
 	/* necessary...? */
 	setbuf(pipefiles[0], NULL);
@@ -76,7 +76,7 @@ int DLLEXPORT ltm_uninit() {
 int DLLEXPORT ltm_term_alloc() {
 	int i, tid;
 
-	if(!init_done) FIXABLE_LTM_ERR(EPERM, "libterm has not yet been inited")
+	if(!init_done) LTM_ERR(EPERM, "libterm has not yet been inited");
 
 	for(i = 0; i < next_tid; i++)
 		if(descs[i].allocated == 0) return i;
@@ -85,7 +85,7 @@ int DLLEXPORT ltm_term_alloc() {
 	tid = next_tid;
 
 	descs = realloc(descs, ++next_tid * sizeof(struct ltm_term_desc));
-	if(!descs) FATAL_ERR("realloc", NULL)
+	if(!descs) SYS_ERR("realloc", NULL);
 
 	memset(&descs[tid], 0, sizeof(struct ltm_term_desc));
 
@@ -121,7 +121,7 @@ int DLLEXPORT ltm_term_init(int tid, FILE ** listen) {
 		pid = spawn(config.shell, descs[tid].pty.slave);*/
 	else {
 		pwd_entry = getpwuid(getuid());
-		if(!pwd_entry) FATAL_ERR("getpwuid", NULL)
+		if(!pwd_entry) SYS_ERR("getpwuid", NULL);
 
 		pid = spawn(pwd_entry->pw_shell, descs[tid].pty.slave);
 	}
@@ -156,7 +156,7 @@ int DLLEXPORT ltm_close(int tid) {
 
 	if(tid == next_tid-1) {
 		descs = realloc(descs, --next_tid * sizeof(struct ltm_term_desc));
-		if(!descs && next_tid) FATAL_ERR("realloc", NULL)
+		if(!descs && next_tid) SYS_ERR("realloc", NULL);
 	} else
 		memset(&descs[tid], 0, sizeof(struct ltm_term_desc));
 

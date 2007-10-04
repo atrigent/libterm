@@ -9,7 +9,7 @@ int DLLEXPORT ltm_feed_input_to_program(int tid, char * input, uint n) {
 	DIE_ON_INVAL_TID(tid)
 
 	if(fwrite(input, 1, n, descs[tid].pty.master) < n)
-		FATAL_ERR("fwrite", input)
+		SYS_ERR("fwrite", input);
 
 	return 0;
 }
@@ -19,7 +19,7 @@ int DLLEXPORT ltm_set_shell(int tid, char * shell) {
 
 	descs[tid].shell = strdup(shell);
 
-	if(!descs[tid].shell) FATAL_ERR("strdup", shell)
+	if(!descs[tid].shell) SYS_ERR("strdup", shell);
 
 	return 0;
 }
@@ -43,7 +43,7 @@ int DLLEXPORT ltm_toggle_threading(int tid) {
 int DLLEXPORT ltm_is_line_wrapped(int tid, ushort line) {
 	DIE_ON_INVAL_TID(tid)
 
-	if(line > descs[tid].height-1) FIXABLE_LTM_ERR(EINVAL, "line is too large")
+	if(line > descs[tid].height-1) LTM_ERR(EINVAL, "line is too large");
 
 	return bitarr_test_index(descs[tid].wrapped, line);
 }
@@ -81,7 +81,7 @@ int DLLEXPORT ltm_is_line_wrapped(int tid, ushort line) {
  * ltm_reload_sigchld_handler solves this problem.
  */
 int DLLEXPORT ltm_reload_sigchld_handler() {
-	if(!init_done) FIXABLE_LTM_ERR(EPERM, "libterm has not yet been inited")
+	if(!init_done) LTM_ERR(EPERM, "libterm has not yet been inited");
 
 	return reload_handler(SIGCHLD, dontfearthereaper);
 }
@@ -90,13 +90,13 @@ int DLLEXPORT ltm_reload_sigchld_handler() {
  * better function to use as it has no race condition problems.
  */
 int DLLEXPORT ltm_set_sigchld_handler(struct sigaction * action) {
-	if(!init_done) FIXABLE_LTM_ERR(EPERM, "libterm has not yet been inited")
+	if(!init_done) LTM_ERR(EPERM, "libterm has not yet been inited");
 
 	return set_handler_struct(SIGCHLD, dontfearthereaper, action);
 }
 
 int DLLEXPORT ltm_get_notifier(FILE ** notifier) {
-	if(!init_done) FIXABLE_LTM_ERR(EPERM, "libterm has not yet been inited")
+	if(!init_done) LTM_ERR(EPERM, "libterm has not yet been inited");
 
 	*notifier = pipefiles[0];
 

@@ -23,7 +23,7 @@ int bitarr_resize(uchar ** arr, uint oldlen, uint newlen) {
 	newn = newlen/8 + (newlen % 8 ? 1 : 0);
 
 	*arr = realloc(*arr, newn);
-	if(!*arr) FATAL_ERR("realloc", NULL)
+	if(!*arr) SYS_ERR("realloc", NULL);
 
 	if(newn > oldn)
 		for(i = oldn; i < newn; i++) (*arr)[i] = 0;

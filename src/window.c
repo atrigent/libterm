@@ -19,7 +19,7 @@ static int resize_width(int tid, ushort width, ushort height, uint ** screen) {
 	if(descs[tid].width != width)
 		for(i = 0; i < height; i++) {
 			screen[i] = realloc(screen[i], width * sizeof(uint));
-			if(!screen[i]) FATAL_ERR("realloc", NULL)
+			if(!screen[i]) SYS_ERR("realloc", NULL);
 
 			if(width > descs[tid].width)
 				for(n = descs[tid].width; n < width; n++)
@@ -46,11 +46,11 @@ static int set_screen_dimensions(int tid, char type, ushort width, ushort height
 
 	if(!descs[tid].width || !descs[tid].height) {
 		*screen = dscreen = malloc(height * sizeof(uint *));
-		if(!dscreen) FATAL_ERR("malloc", NULL)
+		if(!dscreen) SYS_ERR("malloc", NULL);
 
 		for(i = 0; i < height; i++) {
 			dscreen[i] = malloc(width * sizeof(uint));
-			if(!dscreen[i]) FATAL_ERR("malloc", NULL)
+			if(!dscreen[i]) SYS_ERR("malloc", NULL);
 
 			for(n = 0; n < width; n++)
 				dscreen[i][n] = ' ';
@@ -103,7 +103,7 @@ static int set_screen_dimensions(int tid, char type, ushort width, ushort height
 		}
 
 		*screen = dscreen = realloc(dscreen, height * sizeof(uint *));
-		if(!dscreen) FATAL_ERR("realloc", NULL)
+		if(!dscreen) SYS_ERR("realloc", NULL);
 
 		if(bitarr_resize(&descs[tid].wrapped, descs[tid].height, height) == -1) return -1;
 
@@ -126,7 +126,7 @@ static int set_screen_dimensions(int tid, char type, ushort width, ushort height
 		if(resize_width(tid, width, descs[tid].height, dscreen) == -1) return -1;
 
 		*screen = dscreen = realloc(dscreen, height * sizeof(uint *));
-		if(!dscreen) FATAL_ERR("realloc", NULL)
+		if(!dscreen) SYS_ERR("realloc", NULL);
 
 		if(bitarr_resize(&descs[tid].wrapped, descs[tid].height, height) == -1) return -1;
 
@@ -146,7 +146,7 @@ static int set_screen_dimensions(int tid, char type, ushort width, ushort height
 		/* probably pop lines off the buffer and put them in here later */
 		for(i = 0; i < diff; i++) {
 			dscreen[i] = malloc(width * sizeof(uint));
-			if(!dscreen[i]) FATAL_ERR("malloc", NULL)
+			if(!dscreen[i]) SYS_ERR("malloc", NULL);
 
 			for(n = 0; n < width; n++)
 				dscreen[i][n] = ' ';
@@ -154,7 +154,7 @@ static int set_screen_dimensions(int tid, char type, ushort width, ushort height
 
 		for(i = descs[tid].height + diff; i < height; i++) {
 			dscreen[i] = malloc(width * sizeof(uint));
-			if(!dscreen[i]) FATAL_ERR("malloc", NULL)
+			if(!dscreen[i]) SYS_ERR("malloc", NULL);
 
 			for(n = 0; n < width; n++)
 				dscreen[i][n] = ' ';
@@ -176,7 +176,7 @@ int tcsetwinsz(int tid) {
 	size.ws_col = descs[tid].width;
 	size.ws_xpixel = size.ws_ypixel = 0; /* necessary? */
 
-	if(ioctl(mfd, TIOCSWINSZ, &size) == -1) FATAL_ERR("ioctl", "TIOCSWINSZ")
+	if(ioctl(mfd, TIOCSWINSZ, &size) == -1) SYS_ERR("ioctl", "TIOCSWINSZ");
 	
 	return 0;
 }
@@ -187,7 +187,7 @@ int DLLEXPORT ltm_set_window_dimensions(int tid, ushort width, ushort height) {
 
 	DIE_ON_INVAL_TID(tid)
 
-	if(!width || !height) FIXABLE_LTM_ERR(EINVAL, "width or height is zero")
+	if(!width || !height) LTM_ERR(EINVAL, "width or height is zero");
 
 	/* if not changing anything, just pretend we did something and exit successfully immediately */
 	if(width == descs[tid].width && height == descs[tid].height) return 0;
@@ -233,7 +233,7 @@ int DLLEXPORT ltm_set_window_dimensions(int tid, ushort width, ushort height) {
 		if(tcsetwinsz(tid) == -1) return -1;
 
 		pgrp = tcgetpgrp(fileno(descs[tid].pty.master));
-		if(pgrp == -1) FATAL_ERR("tcgetpgrp", NULL)
+		if(pgrp == -1) SYS_ERR("tcgetpgrp", NULL);
 
 		/* not caring whether this fails or not
 		 * it can do so if there's currently no

@@ -40,7 +40,7 @@ int choose_pty_method(struct ptydev * pty) {
 		break;
 	}
 
-	if(!pty->master || !pty->slave) FIXABLE_LTM_ERR(ENODEV, "Could not acquire a pseudoterminal pair")
+	if(!pty->master || !pty->slave) LTM_ERR(ENODEV, "Could not acquire a pseudoterminal pair");
 
 	setbuf(pty->master, NULL);
 	setbuf(pty->slave, NULL);
@@ -56,17 +56,17 @@ static int alloc_unix98_pty(struct ptydev * pty) {
 	master = fopen("/dev/ptmx", "r+");
 	/* This should always be successful - if not, there's nothing anyone
 	 * can do about it. */
-	if(!master) FATAL_ERR("fopen", "/dev/ptmx")
+	if(!master) SYS_ERR("fopen", "/dev/ptmx");
 
 	/* all errors from ioctl are weird and unfixable */
-	if(ioctl(fileno(master), TIOCSPTLCK, &unlock) == -1) FATAL_ERR("ioctl", "TIOCSPTLCK")
+	if(ioctl(fileno(master), TIOCSPTLCK, &unlock) == -1) SYS_ERR("ioctl", "TIOCSPTLCK");
 
-	if(ioctl(fileno(master), TIOCGPTN, &pty_num) == -1) FATAL_ERR("ioctl", "TIOCGPTN")
+	if(ioctl(fileno(master), TIOCGPTN, &pty_num) == -1) SYS_ERR("ioctl", "TIOCGPTN");
 
 	sprintf(slave_path, "/dev/pts/%u", pty_num);
 
 	slave = fopen(slave_path, "r+");
-	if(!slave) FATAL_ERR("fopen", slave_path)
+	if(!slave) SYS_ERR("fopen", slave_path);
 
 	pty->type = UNIX98_PTY;
 	pty->master = master;
@@ -136,31 +136,31 @@ static int alloc_func_pty(struct ptydev * pty) {
 # if defined(HAVE_UNIX98_FUNCS)
 #  if defined(HAVE_POSIX_OPENPT)
 	master_fd = posix_openpt(O_RDWR|O_NOCTTY);
-	if(master_fd == -1) FATAL_ERR("posix_openpt", NULL)
+	if(master_fd == -1) SYS_ERR("posix_openpt", NULL);
 #  elif defined(HAVE_GETPT)
 	master_fd = getpt();
-	if(master_fd == -1) FATAL_ERR("getpt", NULL)
+	if(master_fd == -1) SYS_ERR("getpt", NULL);
 #  else
 	master_fd = open("/dev/ptmx", O_RDWR|O_NOCTTY);
-	if(master_fd == -1) FATAL_ERR("open", "/dev/ptmx")
+	if(master_fd == -1) SYS_ERR("open", "/dev/ptmx");
 #  endif
-	if(grantpt(master_fd) == -1) FATAL_ERR("grantpt", NULL)
+	if(grantpt(master_fd) == -1) SYS_ERR("grantpt", NULL);
 
-	if(unlockpt(master_fd) == -1) FATAL_ERR("unlockpt", NULL)
+	if(unlockpt(master_fd) == -1) SYS_ERR("unlockpt", NULL);
 
 	pts_name = ptsname(master_fd);
-	if(!pts_name) FATAL_ERR("ptsname", NULL)
+	if(!pts_name) SYS_ERR("ptsname", NULL);
 
 	slave_fd = open(pts_name, O_RDWR|O_NOCTTY);
-	if(slave_fd == -1) FATAL_ERR("open", pts_name)
+	if(slave_fd == -1) SYS_ERR("open", pts_name);
 # else
-	if(openpty(&master_fd, &slave_fd, NULL, NULL, NULL) == -1) FATAL_ERR("openpty", NULL)
+	if(openpty(&master_fd, &slave_fd, NULL, NULL, NULL) == -1) SYS_ERR("openpty", NULL);
 # endif
 	master = fdopen(master_fd, "r+");
-	if(!master) FATAL_ERR("fdopen", "fdopening master_fd")
+	if(!master) SYS_ERR("fdopen", "fdopening master_fd");
 
 	slave = fdopen(slave_fd, "r+");
-	if(!slave) FATAL_ERR("fdopen", "fdopening slave_fd")
+	if(!slave) SYS_ERR("fdopen", "fdopening slave_fd");
 
 	pty->type = FUNC_PTY;
 	pty->master = master;

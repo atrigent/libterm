@@ -5,13 +5,10 @@
 struct error_info curerr = {0, 0, 0};
 FILE * dump_dest = 0;
 
-void error_info_dump(struct error_info err, char * data, int recover) {
+void error_info_dump(struct error_info err, char * data) {
 	char * err_str;
 
 	fprintf(dump_dest, "libterm ");
-
-	if(!recover) fprintf(dump_dest, "un");
-	fprintf(dump_dest, "recoverable ");
 
 	if(!err.sys_func) fprintf(dump_dest, "non-system ");
 

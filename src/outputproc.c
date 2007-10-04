@@ -12,22 +12,22 @@ static int read_into_outputbuf(int tid) {
 	char *buf;
 
 	if(ioctl(fileno(descs[tid].pty.master), FIONREAD, &buflen) == -1)
-		FATAL_ERR("ioctl", "FIONREAD")
+		SYS_ERR("ioctl", "FIONREAD");
 
 	if(descs[tid].outputbuf) { /* add to the current buffer */
 		buf = realloc(descs[tid].outputbuf, descs[tid].buflen + buflen);
-		if(!buf) FATAL_ERR("realloc", NULL)
+		if(!buf) SYS_ERR("realloc", NULL);
 
 		if(fread(buf + descs[tid].buflen, 1, buflen, descs[tid].pty.master) < buflen)
-			FATAL_ERR("fread", NULL)
+			SYS_ERR("fread", NULL);
 
 		descs[tid].buflen += buflen;
 	} else { /* create a new buffer */
 		buf = malloc(buflen);
-		if(!buf) FATAL_ERR("malloc", NULL)
+		if(!buf) SYS_ERR("malloc", NULL);
 
 		if(fread(buf, 1, buflen, descs[tid].pty.master) < buflen)
-			FATAL_ERR("fread", NULL)
+			SYS_ERR("fread", NULL);
 
 		descs[tid].buflen = buflen;
 	}
@@ -77,10 +77,10 @@ int DLLEXPORT ltm_process_output(int tid) {
 
 		if(descs[tid].areas == NULL || memcmp(&descs[tid].areas[descs[tid].nareas-1]->end, &descs[tid].cursor, sizeof(struct point))) {
 			descs[tid].areas = realloc(descs[tid].areas, ++descs[tid].nareas * sizeof(struct area *));
-			if(!descs[tid].areas) FATAL_ERR("realloc", NULL)
+			if(!descs[tid].areas) SYS_ERR("realloc", NULL);
 
 			descs[tid].areas[descs[tid].nareas-1] = malloc(sizeof(struct area));
-			if(!descs[tid].areas[descs[tid].nareas-1]) FATAL_ERR("malloc", NULL)
+			if(!descs[tid].areas[descs[tid].nareas-1]) SYS_ERR("malloc", NULL);
 
 			descs[tid].areas[descs[tid].nareas-1]->start.y = descs[tid].cursor.y;
 			descs[tid].areas[descs[tid].nareas-1]->start.x = descs[tid].cursor.x;
@@ -109,7 +109,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 		descs[tid].buflen -= i;
 
 		buf = malloc(descs[tid].buflen);
-		if(!buf) FATAL_ERR("malloc", NULL)
+		if(!buf) SYS_ERR("malloc", NULL);
 
 		memcpy(buf, &descs[tid].outputbuf[i], descs[tid].buflen);
 
@@ -119,7 +119,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 		return 0;
 
 	descs[tid].areas = realloc(descs[tid].areas, (descs[tid].nareas+1) * sizeof(struct area *));
-	if(!descs[tid].areas) FATAL_ERR("realloc", NULL)
+	if(!descs[tid].areas) SYS_ERR("realloc", NULL);
 
 	descs[tid].areas[descs[tid].nareas] = NULL;
 

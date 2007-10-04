@@ -2,7 +2,7 @@
 	
 int check_callbacks(int tid) {
 	if(!descs[tid].cb.update_areas)
-		FIXABLE_LTM_ERR(ENOTSUP, "The update_areas callback was not supplied")
+		LTM_ERR(ENOTSUP, "The update_areas callback was not supplied");
 
 	if(!descs[tid].cb.refresh_screen)
 		fprintf(dump_dest, "Warning: The refresh_screen callback was not supplied. It will be emulated with update_areas\n");
