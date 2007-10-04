@@ -97,20 +97,20 @@ int DLLEXPORT ltm_term_alloc() {
 /* errno values:
  * ENODEV: No available PTY devices were found.
  */
-int DLLEXPORT ltm_term_init(int tid, FILE ** listen) {
+FILE DLLEXPORT * ltm_term_init(int tid) {
 	struct passwd * pwd_entry;
 	pid_t pid;
 
-	DIE_ON_INVAL_TID(tid)
+	DIE_ON_INVAL_TID_PTR(tid)
 
-	if(check_callbacks(tid) == -1) return -1;
+	if(check_callbacks(tid) == -1) return NULL;
 
 	if(!descs[tid].width || !descs[tid].height)
-		if(ltm_set_window_dimensions(tid, 80, 24) == -1) return -1;
+		if(ltm_set_window_dimensions(tid, 80, 24) == -1) return NULL;
 
-	if(choose_pty_method(&descs[tid].pty) == -1) return -1;
+	if(choose_pty_method(&descs[tid].pty) == -1) return NULL;
 
-	if(tcsetwinsz(tid) == -1) return -1;
+	if(tcsetwinsz(tid) == -1) return NULL;
 
 	if(descs[tid].shell) {
 		pid = spawn(descs[tid].shell, descs[tid].pty.slave);
@@ -121,21 +121,20 @@ int DLLEXPORT ltm_term_init(int tid, FILE ** listen) {
 		pid = spawn(config.shell, descs[tid].pty.slave);*/
 	else {
 		pwd_entry = getpwuid(getuid());
-		if(!pwd_entry) SYS_ERR("getpwuid", NULL);
+		if(!pwd_entry) SYS_ERR_PTR("getpwuid", NULL);
 
 		pid = spawn(pwd_entry->pw_shell, descs[tid].pty.slave);
 	}
 
 	if(pid == -1)
-		return -1;
+		return NULL;
 
 	if(descs[tid].threading) {
 		/* do a bunch of shit to start up the thread */
-	} else
-		*listen = descs[tid].pty.master;
+	}
 
 	descs[tid].pid = pid;
-	return 0;
+	return descs[tid].pty.master;
 }
 
 int DLLEXPORT ltm_close(int tid) {

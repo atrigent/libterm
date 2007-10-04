@@ -24,12 +24,10 @@ int DLLEXPORT ltm_set_shell(int tid, char * shell) {
 	return 0;
 }
 
-int DLLEXPORT ltm_get_callbacks_ptr(int tid, struct ltm_callbacks ** cb) {
-	DIE_ON_INVAL_TID(tid)
+struct ltm_callbacks DLLEXPORT * ltm_get_callbacks_ptr(int tid) {
+	DIE_ON_INVAL_TID_PTR(tid)
 
-	*cb = &descs[tid].cb;
-
-	return 0;
+	return &descs[tid].cb;
 }
 
 int DLLEXPORT ltm_toggle_threading(int tid) {
@@ -95,12 +93,10 @@ int DLLEXPORT ltm_set_sigchld_handler(struct sigaction * action) {
 	return set_handler_struct(SIGCHLD, dontfearthereaper, action);
 }
 
-int DLLEXPORT ltm_get_notifier(FILE ** notifier) {
-	if(!init_done) LTM_ERR(EPERM, "libterm has not yet been inited");
+FILE DLLEXPORT * ltm_get_notifier() {
+	if(!init_done) LTM_ERR_PTR(EPERM, "libterm has not yet been inited");
 
-	*notifier = pipefiles[0];
-
-	return 0;
+	return pipefiles[0];
 }
 
 void DLLEXPORT ltm_set_error_dest(FILE * dest) {

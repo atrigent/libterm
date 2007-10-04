@@ -38,7 +38,7 @@ struct error_info {
 };
 
 extern int ltm_term_alloc();
-extern int ltm_term_init(int, FILE **);
+extern FILE * ltm_term_init(int);
 extern int ltm_close(int);
 
 extern int ltm_init();
@@ -47,7 +47,7 @@ extern int ltm_uninit();
 extern int ltm_feed_input_to_program(int, char *, uint);
 extern int ltm_set_window_dimensions(int, ushort, ushort);
 extern int ltm_set_shell(int, char *);
-extern int ltm_get_callbacks_ptr(int, struct ltm_callbacks **);
+extern struct ltm_callbacks * ltm_get_callbacks_ptr(int);
 extern int ltm_toggle_threading(int);
 
 extern int ltm_process_output(int);
@@ -55,7 +55,7 @@ extern int ltm_process_output(int);
 extern int ltm_reload_sigchld_handler();
 extern int ltm_set_sigchld_handler(struct sigaction * action);
 
-extern int ltm_get_notifier(FILE **);
+extern FILE * ltm_get_notifier();
 
 extern void ltm_set_error_dest(FILE *);
 
