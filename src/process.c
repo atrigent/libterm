@@ -36,7 +36,7 @@ static int spawn_unix(char * path, int io_fd) {
 		if(dup2(io_fd, 0) == -1) exit(EXIT_FAILURE);
 		if(dup2(io_fd, 1) == -1) exit(EXIT_FAILURE);
 		if(dup2(io_fd, 2) == -1) exit(EXIT_FAILURE);
-		
+
 		if(io_fd > 2) if(close(io_fd) == -1) exit(EXIT_FAILURE);
 
 		execl(path, path, NULL);

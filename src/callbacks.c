@@ -1,5 +1,5 @@
 #include "libterm.h"
-	
+
 int check_callbacks(int tid) {
 	if(!descs[tid].cb.update_areas)
 		LTM_ERR(ENOTSUP, "The update_areas callback was not supplied");
