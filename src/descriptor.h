@@ -60,7 +60,7 @@ struct ltm_term_desc {
 
 	uchar * wrapped;
 
-	char * outputbuf;
+	uchar * outputbuf;
 	uint buflen;
 
 	struct area ** areas;

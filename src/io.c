@@ -9,7 +9,7 @@
 
 static int read_into_outputbuf(int tid) {
 	uint buflen;
-	char *buf;
+	uchar *buf;
 
 	if(ioctl(fileno(descs[tid].pty.master), FIONREAD, &buflen) == -1)
 		SYS_ERR("ioctl", "FIONREAD");
@@ -38,7 +38,7 @@ static int read_into_outputbuf(int tid) {
 }
 
 int DLLEXPORT ltm_process_output(int tid) {
-	char *buf;
+	uchar *buf;
 	uint i;
 
 	DIE_ON_INVAL_TID(tid)
