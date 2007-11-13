@@ -15,6 +15,6 @@ endif
 
 lib_LTLIBRARIES = libterm.la
 libterm_la_SOURCES = callbacks.c cursor.c error.c init.c interface.c window.c \
-		     outputproc.c process.c bitarr.c pty.c \
+		     io.c process.c bitarr.c pty.c \
 		     callbacks.h cursor.h descriptor.h error.h window.h libterm.h \
 		     process.h ptydev.h util.h bitarr.h
