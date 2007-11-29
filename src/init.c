@@ -13,6 +13,8 @@ int next_tid = 0;
 struct ltm_term_desc * descs = 0;
 char init_done = 0;
 
+char threading = 0;
+
 static int setup_pipe() {
 	int pipefds[2];
 
@@ -129,7 +131,7 @@ FILE DLLEXPORT * ltm_term_init(int tid) {
 	if(pid == -1)
 		return NULL;
 
-	if(descs[tid].threading) {
+	if(threading) {
 		/* do a bunch of shit to start up the thread */
 	}
 

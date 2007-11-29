@@ -30,10 +30,14 @@ struct ltm_callbacks DLLEXPORT * ltm_get_callbacks_ptr(int tid) {
 	return &descs[tid].cb;
 }
 
-int DLLEXPORT ltm_toggle_threading(int tid) {
-	DIE_ON_INVAL_TID(tid)
+int DLLEXPORT ltm_set_threading(char val) {
+	if(init_done) LTM_ERR(EPERM, "libterm has been inited");
 
-	descs[tid].threading = !descs[tid].threading;
+#ifdef HAVE_LIBPTHREAD
+	threading = val;
+#elif
+	if(val) LTM_ERR(ENOTSUP, "libterm was not compiled with threading support enabled");
+#endif
 
 	return 0;
 }

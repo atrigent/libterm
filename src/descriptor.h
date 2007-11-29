@@ -42,7 +42,6 @@ struct ltm_term_desc {
 	struct ltm_callbacks cb;
 
 	char allocated;
-	char threading;
 
 	char * shell;
 	pid_t pid;

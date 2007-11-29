@@ -25,6 +25,7 @@ typedef unsigned int uint;
 #  define DLLEXPORT
 #endif
 
+extern char threading;
 extern char init_done;
 
 #endif
