@@ -69,6 +69,8 @@ if test $gcc_visibility = yes; then
 fi
 
 dnl Checks for library functions
+AC_CHECK_LIB([pthread], [pthread_create])
+
 dnl Checks for pty functions
 AC_CHECK_FUNCS([posix_openpt getpt], [break])
 AC_CHECK_FUNCS([open grantpt unlockpt ptsname])
