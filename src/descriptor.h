@@ -32,6 +32,7 @@ struct ltm_callbacks {
 	int (*refresh_screen)(int, uint **);
 	int (*scroll_lines)(int, uint);
 	int (*alert)(int);
+	int (*term_exit)(int);
 
 	/* many more in the future! */
 };

@@ -1,4 +1,5 @@
 #include "libterm.h"
+#include "threading.h"
 
 int check_callbacks(int tid) {
 	if(!descs[tid].cb.update_areas)
@@ -12,6 +13,9 @@ int check_callbacks(int tid) {
 
 	if(!descs[tid].cb.alert)
 		fprintf(dump_dest, "Warning: The alert callback was not supplied. The ASCII bell character will be ignored\n");
+
+	if(!descs[tid].cb.term_exit && threading)
+		LTM_ERR(ENOTSUP, "The term_exit callback was not supplied, it is required when threading is on");
 
 	/* more as the ltm_callbacks struct grows... */
 
@@ -80,6 +84,12 @@ int cb_scroll_lines(int tid, uint lines) {
 int cb_alert(int tid) {
 	if(descs[tid].cb.alert)
 		descs[tid].cb.alert(tid);
+
+	return 0;
+}
+
+int cb_term_exit(int tid) {
+	descs[tid].cb.term_exit(tid);
 
 	return 0;
 }

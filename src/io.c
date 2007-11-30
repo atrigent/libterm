@@ -199,6 +199,8 @@ void *watch_for_events() {
 									break;
 								}
 
+							cb_term_exit(newtid);
+
 							break;
 					}
 
