@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "libterm.h"
+#include "threading.h"
 
 #ifdef GWINSZ_IN_SYS_IOCTL
 # include <sys/ioctl.h>
@@ -159,6 +160,7 @@ static void simulate_handler_call(int sig, siginfo_t * info, void * data) {
 }
 
 void dontfearthereaper(int sig, siginfo_t * info, void * data) {
+	char code;
 	int i;
 
 	simulate_handler_call(sig, info, data);
@@ -178,6 +180,11 @@ void dontfearthereaper(int sig, siginfo_t * info, void * data) {
 			/* do some stuff that notifies various things that
 			 * the shell has exited
 			 */
+			if(threading) {
+				code = DEL_TERM;
+				fwrite(&code, 1, sizeof(char), pipefiles[1]);
+			}
+
 			fwrite(&i, 1, sizeof(int), pipefiles[1]);
 			break;
 		}

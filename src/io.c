@@ -2,10 +2,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <poll.h>
 
 #include "libterm.h"
 #include "cursor.h"
 #include "callbacks.h"
+#include "process.h"
+#include "threading.h"
 
 static int read_into_outputbuf(int tid) {
 	uint buflen;
@@ -132,4 +135,85 @@ int DLLEXPORT ltm_process_output(int tid) {
 	descs[tid].nareas = 0;
 
 	return 0;
+}
+
+/* use poll because there's no limit on the number of fds to watch */
+void *watch_for_events() {
+	int i, n, nfds, ret, newtid;
+	struct pollfd *fds;
+	char code, running = 1;
+
+	/* start out with just the pipe fd... */
+	fds = malloc(sizeof(struct pollfd));
+	if(!fds) SYS_ERR_PTR("malloc", NULL);
+
+	fds[0].fd = fileno(pipefiles[0]);
+	fds[0].events = POLLIN;
+
+	nfds = 1;
+
+	while(running) {
+		ret = poll(fds, nfds, -1);
+
+		if(!ret || (ret == -1 && errno == EINTR)) continue;
+		else if(ret == -1) SYS_ERR_PTR("poll", NULL);
+
+		/* Go backwards to make sure that all unhandled stuff in a terminal that just exited
+		 * is handled before it is removed from the struct pollfd array. Also, this doesn't
+		 * mess with the nfds variable or the struct pollfd array when the main part of the
+		 * loop is running. Everybody wins!
+		 */
+		for(i = nfds-1; i >= 0; i--)
+			if(fds[i].revents) {
+				if(!i) {
+					/* got a new term, delete term, or exit notification... */
+					if(fread(&code, 1, sizeof(char), pipefiles[0]) < sizeof(char))
+						SYS_ERR_PTR("fread", NULL);
+
+					if(code == EXIT_THREAD) {
+						running = 0;
+						break;
+					}
+
+					if(fread(&newtid, 1, sizeof(int), pipefiles[0]) < sizeof(int))
+						SYS_ERR_PTR("fread", NULL);
+
+					switch(code) {
+						case NEW_TERM:
+							fds = realloc(fds, (++nfds) * sizeof(struct pollfd));
+							if(!fds) SYS_ERR_PTR("realloc", NULL);
+
+							fds[nfds-1].fd = fileno(descs[newtid].pty.master);
+							fds[nfds-1].events = POLLIN;
+							break;
+						case DEL_TERM:
+							/* find the one which will be deleted... */
+							for(n = 1; n < nfds; n++)
+								if(fds[n].fd == fileno(descs[newtid].pty.master)) {
+									/* remove from the array */
+									memmove(&fds[n], &fds[n+1], (nfds-n-1) * sizeof(struct pollfd));
+
+									fds = realloc(fds, (--nfds) * sizeof(struct pollfd));
+									if(!fds) SYS_ERR_PTR("realloc", NULL);
+
+									break;
+								}
+
+							break;
+					}
+
+				}
+				else for(n = 0; n < next_tid; n++)
+					if(descs[n].allocated && fds[i].fd == fileno(descs[n].pty.master)) {
+						if(ltm_process_output(n) == -1) return NULL;
+						break;
+					}
+
+				fds[i].revents = 0;
+			}
+	}
+
+	free(fds);
+
+	return (void*)1;
 }

@@ -4,6 +4,7 @@
 #include "libterm.h"
 #include "process.h"
 #include "bitarr.h"
+#include "threading.h"
 
 int DLLEXPORT ltm_feed_input_to_program(int tid, char * input, uint n) {
 	DIE_ON_INVAL_TID(tid)

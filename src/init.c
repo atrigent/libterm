@@ -8,11 +8,13 @@
 #include "process.h"
 #include "window.h"
 #include "callbacks.h"
+#include "threading.h"
 
 int next_tid = 0;
 struct ltm_term_desc * descs = 0;
 char init_done = 0;
 
+pthread_t watchthread;
 char threading = 0;
 
 static int setup_pipe() {
@@ -48,13 +50,47 @@ int DLLEXPORT ltm_init() {
 	 */
 	if(reload_handler(SIGCHLD, dontfearthereaper) == -1) return -1;
 
+	if(threading)
+		if((errno = pthread_create(&watchthread, NULL, watch_for_events, NULL)))
+			SYS_ERR("pthread_create", NULL);
+
 	init_done = 1;
 
 	return 0;
 }
 
 int DLLEXPORT ltm_uninit() {
+	void *ret;
+	char code;
+
 	if(!init_done) return 0;
+
+	/* tell the thread to exit and then wait for it... */
+	if(threading) {
+		code = EXIT_THREAD;
+
+		if(fwrite(&code, 1, sizeof(char), pipefiles[1]) < sizeof(char))
+			SYS_ERR("fwrite", NULL);
+
+		/* pthread_join man page basically says that something
+		 * other than zero will be returned on error
+		 *
+		 * also, the error is not set in errno but rather
+		 * return. manually put it in errno.
+		 */
+		if((errno = pthread_join(watchthread, &ret)))
+			SYS_ERR("pthread_join", NULL);
+
+		/* FIXME!!!!!!!!!!
+		 *
+		 * this is WRONG. since the watch thread sets ltm_curerr just like
+		 * any other thread, there is no way of knowing whether some other
+		 * thread has been set an error condition between when the watch thread exited
+		 * and now. therefore, if the program checks ltm_curerr after ltm_uninit
+		 * returns, ltm_curerr might contain info for the wrong error!!!
+		 */
+		if(!ret) return -1;
+	}
 
 	/* close notification pipe */
 	fclose(pipefiles[0]);
@@ -101,6 +137,7 @@ int DLLEXPORT ltm_term_alloc() {
  */
 FILE DLLEXPORT * ltm_term_init(int tid) {
 	struct passwd * pwd_entry;
+	char code;
 	pid_t pid;
 
 	DIE_ON_INVAL_TID_PTR(tid)
@@ -132,7 +169,12 @@ FILE DLLEXPORT * ltm_term_init(int tid) {
 		return NULL;
 
 	if(threading) {
-		/* do a bunch of shit to start up the thread */
+		code = NEW_TERM;
+		if(fwrite(&code, 1, sizeof(char), pipefiles[1]) < sizeof(char))
+			SYS_ERR_PTR("fwrite", NULL);
+
+		if(fwrite(&tid, 1, sizeof(int), pipefiles[1]) < sizeof(int))
+			SYS_ERR_PTR("fwrite", NULL);
 	}
 
 	descs[tid].pid = pid;
