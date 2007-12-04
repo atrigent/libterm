@@ -5,6 +5,7 @@
 #include "process.h"
 #include "bitarr.h"
 #include "threading.h"
+#include "callbacks.h"
 
 int DLLEXPORT ltm_feed_input_to_program(int tid, char * input, uint n) {
 	DIE_ON_INVAL_TID(tid)
@@ -25,10 +26,14 @@ int DLLEXPORT ltm_set_shell(int tid, char * shell) {
 	return 0;
 }
 
-struct ltm_callbacks DLLEXPORT * ltm_get_callbacks_ptr(int tid) {
-	DIE_ON_INVAL_TID_PTR(tid)
+int DLLEXPORT ltm_set_callbacks(struct ltm_callbacks *callbacks) {
+	if(!init_done) LTM_ERR(EPERM, "libterm has not yet been inited");
 
-	return &descs[tid].cb;
+	if(check_callbacks(callbacks) == -1) return -1;
+
+	memcpy(&cbs, callbacks, sizeof(struct ltm_callbacks));
+
+	return 0;
 }
 
 int DLLEXPORT ltm_set_threading(char val) {

@@ -1,20 +1,21 @@
 #include "libterm.h"
 #include "threading.h"
+#include "callbacks.h"
 
-int check_callbacks(int tid) {
-	if(!descs[tid].cb.update_areas)
+int check_callbacks(struct ltm_callbacks *callbacks) {
+	if(!callbacks->update_areas)
 		LTM_ERR(ENOTSUP, "The update_areas callback was not supplied");
 
-	if(!descs[tid].cb.refresh_screen)
+	if(!callbacks->refresh_screen)
 		fprintf(dump_dest, "Warning: The refresh_screen callback was not supplied. It will be emulated with update_areas\n");
 
-	if(!descs[tid].cb.scroll_lines)
+	if(!callbacks->scroll_lines)
 		fprintf(dump_dest, "Warning: The scroll_lines callback was not supplied. It will be emulated with update_areas\n");
 
-	if(!descs[tid].cb.alert)
+	if(!callbacks->alert)
 		fprintf(dump_dest, "Warning: The alert callback was not supplied. The ASCII bell character will be ignored\n");
 
-	if(!descs[tid].cb.term_exit && threading)
+	if(!callbacks->term_exit && threading)
 		LTM_ERR(ENOTSUP, "The term_exit callback was not supplied, it is required when threading is on");
 
 	/* more as the ltm_callbacks struct grows... */
@@ -31,7 +32,7 @@ int cb_update_areas(int tid) {
 		curs = NULL;
 
 	/* assuming descs[tid].areas has been set up and is null terminated... */
-	descs[tid].cb.update_areas(tid, descs[tid].screen, curs, descs[tid].areas);
+	cbs.update_areas(tid, descs[tid].screen, curs, descs[tid].areas);
 
 	descs[tid].curs_changed = 0;
 
@@ -41,8 +42,8 @@ int cb_update_areas(int tid) {
 int cb_refresh_screen(int tid) {
 	struct area * areas[2], area;
 
-	if(descs[tid].cb.refresh_screen)
-		descs[tid].cb.refresh_screen(tid, descs[tid].screen);
+	if(cbs.refresh_screen)
+		cbs.refresh_screen(tid, descs[tid].screen);
 	else {
 		area.start.y = area.start.x = 0;
 
@@ -65,8 +66,8 @@ int cb_refresh_screen(int tid) {
 int cb_scroll_lines(int tid, uint lines) {
 	/*struct area area;*/
 
-	if(descs[tid].cb.scroll_lines)
-		descs[tid].cb.scroll_lines(tid, lines);
+	if(cbs.scroll_lines)
+		cbs.scroll_lines(tid, lines);
 	else {
 		/*area.start.y = area.start.x = 0;
 
@@ -82,14 +83,14 @@ int cb_scroll_lines(int tid, uint lines) {
 }
 
 int cb_alert(int tid) {
-	if(descs[tid].cb.alert)
-		descs[tid].cb.alert(tid);
+	if(cbs.alert)
+		cbs.alert(tid);
 
 	return 0;
 }
 
 int cb_term_exit(int tid) {
-	descs[tid].cb.term_exit(tid);
+	cbs.term_exit(tid);
 
 	return 0;
 }

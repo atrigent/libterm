@@ -14,6 +14,8 @@ int next_tid = 0;
 struct ltm_term_desc * descs = 0;
 char init_done = 0;
 
+struct ltm_callbacks cbs;
+
 pthread_t watchthread;
 char threading = 0;
 
@@ -53,6 +55,8 @@ int DLLEXPORT ltm_init() {
 	if(threading)
 		if((errno = pthread_create(&watchthread, NULL, watch_for_events, NULL)))
 			SYS_ERR("pthread_create", NULL);
+
+	memset(&cbs, 0, sizeof(struct ltm_callbacks));
 
 	init_done = 1;
 
@@ -142,7 +146,7 @@ FILE DLLEXPORT * ltm_term_init(int tid) {
 
 	DIE_ON_INVAL_TID_PTR(tid)
 
-	if(check_callbacks(tid) == -1) return NULL;
+	if(!cbs.update_areas) LTM_ERR_PTR(EPERM, "Terminal init cannot happen; callbacks haven't been set yet");
 
 	if(!descs[tid].width || !descs[tid].height)
 		if(ltm_set_window_dimensions(tid, 80, 24) == -1) return NULL;

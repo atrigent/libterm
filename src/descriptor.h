@@ -27,20 +27,8 @@ struct area {
 	struct point end;
 };
 
-struct ltm_callbacks {
-	int (*update_areas)(int, uint **, struct point *, struct area **);
-	int (*refresh_screen)(int, uint **);
-	int (*scroll_lines)(int, uint);
-	int (*alert)(int);
-	int (*term_exit)(int);
-
-	/* many more in the future! */
-};
-
 struct ltm_term_desc {
 	struct ptydev pty;
-
-	struct ltm_callbacks cb;
 
 	char allocated;
 
