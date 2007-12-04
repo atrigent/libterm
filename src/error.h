@@ -152,6 +152,8 @@
 		prefix##_curerr.sys_func = sysfunc; \
 		prefix##_curerr.ltm_func = __func__; \
 		prefix##_curerr.err_no = err; \
+		prefix##_curerr.file = __FILE__; \
+		prefix##_curerr.line = __LINE__; \
 		error_info_dump(prefix##_curerr, data); \
 		if(prefix##_STORAGE == thr_STORAGE) \
 			cb_thread_died(thr_curerr); \
@@ -185,8 +187,12 @@
 	ERR_MACRO_TMPL(name, errno, data, NULL, thr);
 
 struct error_info {
-	char * sys_func;
+	const char *file;
+	uint line;
+
 	const char * ltm_func;
+	char * sys_func;
+
 	int err_no;
 };
 

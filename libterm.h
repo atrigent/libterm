@@ -23,8 +23,12 @@ struct area {
 };
 
 struct error_info {
-	char * sys_func;
+	const char *file;
+	uint line;
+
 	const char * ltm_func;
+	char * sys_func;
+
 	int err_no;
 };
 
