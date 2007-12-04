@@ -5,7 +5,6 @@
 #include <unistd.h>
 
 #include "libterm.h"
-#include "callbacks.h"
 #include "bitarr.h"
 #include "cursor.h"
 

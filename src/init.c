@@ -7,7 +7,6 @@
 #include "libterm.h"
 #include "process.h"
 #include "window.h"
-#include "callbacks.h"
 #include "threading.h"
 
 int next_tid = 0;
@@ -85,15 +84,16 @@ int DLLEXPORT ltm_uninit() {
 		if((errno = pthread_join(watchthread, &ret)))
 			SYS_ERR("pthread_join", NULL);
 
-		/* FIXME!!!!!!!!!!
-		 *
-		 * this is WRONG. since the watch thread sets ltm_curerr just like
-		 * any other thread, there is no way of knowing whether some other
-		 * thread has been set an error condition between when the watch thread exited
-		 * and now. therefore, if the program checks ltm_curerr after ltm_uninit
-		 * returns, ltm_curerr might contain info for the wrong error!!!
-		 */
-		if(!ret) return -1;
+		if(!ret) {
+			/* errors from the thread are put into a different
+			 * struct error_info variable so that they aren't
+			 * clobbered when another thread sets an error.
+			 * Copy that error into ltm_curerr so that it'll
+			 * be visible to the program.
+			 */
+			memcpy(&ltm_curerr, &thr_curerr, sizeof(struct error_info));
+			return -1;
+		}
 	}
 
 	/* close notification pipe */

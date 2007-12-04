@@ -6,7 +6,6 @@
 
 #include "libterm.h"
 #include "cursor.h"
-#include "callbacks.h"
 #include "process.h"
 #include "threading.h"
 
@@ -145,7 +144,7 @@ void *watch_for_events() {
 
 	/* start out with just the pipe fd... */
 	fds = malloc(sizeof(struct pollfd));
-	if(!fds) SYS_ERR_PTR("malloc", NULL);
+	if(!fds) SYS_ERR_THR("malloc", NULL);
 
 	fds[0].fd = fileno(pipefiles[0]);
 	fds[0].events = POLLIN;
@@ -156,7 +155,7 @@ void *watch_for_events() {
 		ret = poll(fds, nfds, -1);
 
 		if(!ret || (ret == -1 && errno == EINTR)) continue;
-		else if(ret == -1) SYS_ERR_PTR("poll", NULL);
+		else if(ret == -1) SYS_ERR_THR("poll", NULL);
 
 		/* Go backwards to make sure that all unhandled stuff in a terminal that just exited
 		 * is handled before it is removed from the struct pollfd array. Also, this doesn't
@@ -168,7 +167,7 @@ void *watch_for_events() {
 				if(!i) {
 					/* got a new term, delete term, or exit notification... */
 					if(fread(&code, 1, sizeof(char), pipefiles[0]) < sizeof(char))
-						SYS_ERR_PTR("fread", NULL);
+						SYS_ERR_THR("fread", NULL);
 
 					if(code == EXIT_THREAD) {
 						running = 0;
@@ -176,12 +175,12 @@ void *watch_for_events() {
 					}
 
 					if(fread(&newtid, 1, sizeof(int), pipefiles[0]) < sizeof(int))
-						SYS_ERR_PTR("fread", NULL);
+						SYS_ERR_THR("fread", NULL);
 
 					switch(code) {
 						case NEW_TERM:
 							fds = realloc(fds, (++nfds) * sizeof(struct pollfd));
-							if(!fds) SYS_ERR_PTR("realloc", NULL);
+							if(!fds) SYS_ERR_THR("realloc", NULL);
 
 							fds[nfds-1].fd = fileno(descs[newtid].pty.master);
 							fds[nfds-1].events = POLLIN;
@@ -194,7 +193,7 @@ void *watch_for_events() {
 									memmove(&fds[n], &fds[n+1], (nfds-n-1) * sizeof(struct pollfd));
 
 									fds = realloc(fds, (--nfds) * sizeof(struct pollfd));
-									if(!fds) SYS_ERR_PTR("realloc", NULL);
+									if(!fds) SYS_ERR_THR("realloc", NULL);
 
 									break;
 								}

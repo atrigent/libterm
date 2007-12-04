@@ -1,6 +1,5 @@
 #include "libterm.h"
 #include "threading.h"
-#include "callbacks.h"
 
 int check_callbacks(struct ltm_callbacks *callbacks) {
 	if(!callbacks->update_areas)
@@ -15,8 +14,13 @@ int check_callbacks(struct ltm_callbacks *callbacks) {
 	if(!callbacks->alert)
 		fprintf(dump_dest, "Warning: The alert callback was not supplied. The ASCII bell character will be ignored\n");
 
-	if(!callbacks->term_exit && threading)
-		LTM_ERR(ENOTSUP, "The term_exit callback was not supplied, it is required when threading is on");
+	if(threading) {
+		if(!callbacks->term_exit)
+			LTM_ERR(ENOTSUP, "The term_exit callback was not supplied, it is required when threading is on");
+
+		if(!callbacks->thread_died)
+			LTM_ERR(ENOTSUP, "The thread_died callback was not supplied, it is required when threading is on");
+	}
 
 	/* more as the ltm_callbacks struct grows... */
 
@@ -91,6 +95,12 @@ int cb_alert(int tid) {
 
 int cb_term_exit(int tid) {
 	cbs.term_exit(tid);
+
+	return 0;
+}
+
+int cb_thread_died(struct error_info err) {
+	cbs.thread_died(err);
 
 	return 0;
 }

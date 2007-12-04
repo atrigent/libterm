@@ -3,6 +3,7 @@
 #include "libterm.h"
 
 struct error_info DLLEXPORT ltm_curerr = {0, 0, 0};
+struct error_info thr_curerr = {0, 0, 0};
 FILE * dump_dest = 0;
 
 void error_info_dump(struct error_info err, char * data) {

@@ -22,20 +22,23 @@ struct area {
 	struct point end;
 };
 
+struct error_info {
+	char * sys_func;
+	const char * ltm_func;
+	int err_no;
+};
+
 struct ltm_callbacks {
 	int (*update_areas)(int, uint **, struct point *, struct area **);
 	int (*refresh_screen)(int, uint **);
 	int (*scroll_lines)(int, uint);
 	int (*alert)(int);
+
+	/* threading stuff */
 	int (*term_exit)(int);
+	int (*thread_died)(struct error_info);
 
 	/* many more in the future! */
-};
-
-struct error_info {
-	char * sys_func;
-	const char * ltm_func;
-	int err_no;
 };
 
 extern int ltm_term_alloc();

@@ -16,6 +16,7 @@ typedef unsigned int uint;
 #include "error.h"
 #include "ptydev.h"
 #include "descriptor.h"
+#include "callbacks.h"
 
 #ifdef WIN32
 #  define DLLEXPORT __declspec(dllexport)

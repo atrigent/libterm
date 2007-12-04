@@ -136,12 +136,25 @@
 # endif
 #endif
 
-#define ERR_MACRO_TMPL(sysfunc, err, data, ret) \
+/* Bit of a nasty (or nice) hack...
+ *
+ * These are used in ERR_MACRO_TMPL to check
+ * for which struct error_info var the info
+ * is being stored in and (hopefully) optimize
+ * out the cb_thread_died call if we're not
+ * in the thread.
+ */
+#define ltm_STORAGE 0
+#define thr_STORAGE 1
+
+#define ERR_MACRO_TMPL(sysfunc, err, data, ret, prefix) \
 	do { \
-		ltm_curerr.sys_func = sysfunc; \
-		ltm_curerr.ltm_func = __func__; \
-		ltm_curerr.err_no = err; \
-		error_info_dump(ltm_curerr, data); \
+		prefix##_curerr.sys_func = sysfunc; \
+		prefix##_curerr.ltm_func = __func__; \
+		prefix##_curerr.err_no = err; \
+		error_info_dump(prefix##_curerr, data); \
+		if(prefix##_STORAGE == thr_STORAGE) \
+			cb_thread_died(thr_curerr); \
 		errno = err; \
 		return ret; \
 	} while(0);
@@ -149,18 +162,27 @@
 /* used for errors set by a libterm function
  */
 #define LTM_ERR(err, data) \
-	 ERR_MACRO_TMPL(NULL, err, data, -1);
+	ERR_MACRO_TMPL(NULL, err, data, -1, ltm);
 
 #define LTM_ERR_PTR(err, data) \
-	 ERR_MACRO_TMPL(NULL, err, data, NULL);
+	ERR_MACRO_TMPL(NULL, err, data, NULL, ltm);
 
 /* used for system call errors
  */
 #define SYS_ERR(name, data) \
-	 ERR_MACRO_TMPL(name, errno, data, -1);
+	ERR_MACRO_TMPL(name, errno, data, -1, ltm);
 
 #define SYS_ERR_PTR(name, data) \
-	 ERR_MACRO_TMPL(name, errno, data, NULL);
+	ERR_MACRO_TMPL(name, errno, data, NULL, ltm);
+
+ /* these are only for use within watch_for_events()!!!
+  */
+
+#define LTM_ERR_THR(err, data) \
+	ERR_MACRO_TMPL(NULL, err, data, NULL, thr);
+
+#define SYS_ERR_THR(name, data) \
+	ERR_MACRO_TMPL(name, errno, data, NULL, thr);
 
 struct error_info {
 	char * sys_func;
@@ -169,6 +191,7 @@ struct error_info {
 };
 
 extern struct error_info ltm_curerr;
+extern struct error_info thr_curerr;
 extern FILE * dump_dest;
 
 extern void error_info_dump(struct error_info, char *);
