@@ -209,3 +209,31 @@ int DLLEXPORT ltm_close(int tid) {
 
 	return 0;
 }
+
+int DLLEXPORT ltm_set_shell(int tid, char * shell) {
+	DIE_ON_INVAL_TID(tid)
+
+	descs[tid].shell = strdup(shell);
+
+	if(!descs[tid].shell) SYS_ERR("strdup", shell);
+
+	return 0;
+}
+
+int DLLEXPORT ltm_set_threading(char val) {
+	if(init_done) LTM_ERR(EPERM, "libterm has been inited");
+
+#ifdef HAVE_LIBPTHREAD
+	threading = val;
+#elif
+	if(val) LTM_ERR(ENOTSUP, "libterm was not compiled with threading support enabled");
+#endif
+
+	return 0;
+}
+
+FILE DLLEXPORT * ltm_get_notifier() {
+	if(!init_done) LTM_ERR_PTR(EPERM, "libterm has not yet been inited");
+
+	return pipefiles[0];
+}

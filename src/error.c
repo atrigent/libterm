@@ -28,3 +28,7 @@ void error_info_dump(struct error_info err, char * data) {
 	/* FIXME: this should use some sort of hex dumping function */
 	if(data) fprintf(dump_dest, "\tData: %s\n", data);
 }
+
+void DLLEXPORT ltm_set_error_dest(FILE * dest) {
+	dump_dest = dest;
+}

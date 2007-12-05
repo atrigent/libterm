@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "libterm.h"
 #include "threading.h"
 
@@ -23,6 +25,16 @@ int check_callbacks(struct ltm_callbacks *callbacks) {
 	}
 
 	/* more as the ltm_callbacks struct grows... */
+
+	return 0;
+}
+
+int DLLEXPORT ltm_set_callbacks(struct ltm_callbacks *callbacks) {
+	if(!init_done) LTM_ERR(EPERM, "libterm has not yet been inited");
+
+	if(check_callbacks(callbacks) == -1) return -1;
+
+	memcpy(&cbs, callbacks, sizeof(struct ltm_callbacks));
 
 	return 0;
 }

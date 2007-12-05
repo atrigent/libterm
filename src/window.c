@@ -12,6 +12,14 @@
 # include <sys/ioctl.h>
 #endif
 
+int DLLEXPORT ltm_is_line_wrapped(int tid, ushort line) {
+	DIE_ON_INVAL_TID(tid)
+
+	if(line > descs[tid].height-1) LTM_ERR(EINVAL, "line is too large");
+
+	return bitarr_test_index(descs[tid].wrapped, line);
+}
+
 static int resize_width(int tid, ushort width, ushort height, uint ** screen) {
 	ushort i, n;
 
