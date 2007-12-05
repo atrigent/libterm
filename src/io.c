@@ -18,6 +18,15 @@ int DLLEXPORT ltm_feed_input_to_program(int tid, char * input, uint n) {
 	return 0;
 }
 
+int DLLEXPORT ltm_simulate_output(int tid, char *input, uint n) {
+	DIE_ON_INVAL_TID(tid)
+
+	if(fwrite(input, 1, n, descs[tid].pty.slave) < n)
+		SYS_ERR("fwrite", input);
+
+	return 0;
+}
+
 static int read_into_outputbuf(int tid) {
 	uint buflen;
 	uchar *buf;
