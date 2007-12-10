@@ -32,6 +32,7 @@ struct ltm_term_desc {
 
 	char allocated;
 
+	char shell_disabled;
 	char * shell;
 	pid_t pid;
 

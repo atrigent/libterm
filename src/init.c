@@ -142,7 +142,7 @@ int DLLEXPORT ltm_term_alloc() {
 FILE DLLEXPORT * ltm_term_init(int tid) {
 	struct passwd * pwd_entry;
 	char code;
-	pid_t pid;
+	pid_t pid = -1;
 
 	DIE_ON_INVAL_TID_PTR(tid)
 
@@ -155,22 +155,24 @@ FILE DLLEXPORT * ltm_term_init(int tid) {
 
 	if(tcsetwinsz(tid) == -1) return NULL;
 
-	if(descs[tid].shell) {
-		pid = spawn(descs[tid].shell, descs[tid].pty.slave);
+	if(!descs[tid].shell_disabled) {
+		if(descs[tid].shell) {
+			pid = spawn(descs[tid].shell, descs[tid].pty.slave);
 
-		free(descs[tid].shell);
-		descs[tid].shell = 0;
-	} /*else if(config.shell)
-		pid = spawn(config.shell, descs[tid].pty.slave);*/
-	else {
-		pwd_entry = getpwuid(getuid());
-		if(!pwd_entry) SYS_ERR_PTR("getpwuid", NULL);
+			free(descs[tid].shell);
+			descs[tid].shell = 0;
+		} /*else if(config.shell)
+			pid = spawn(config.shell, descs[tid].pty.slave);*/
+		else {
+			pwd_entry = getpwuid(getuid());
+			if(!pwd_entry) SYS_ERR_PTR("getpwuid", NULL);
 
-		pid = spawn(pwd_entry->pw_shell, descs[tid].pty.slave);
+			pid = spawn(pwd_entry->pw_shell, descs[tid].pty.slave);
+		}
+
+		if(pid == -1)
+			return NULL;
 	}
-
-	if(pid == -1)
-		return NULL;
 
 	if(threading) {
 		code = NEW_TERM;
@@ -213,9 +215,11 @@ int DLLEXPORT ltm_close(int tid) {
 int DLLEXPORT ltm_set_shell(int tid, char * shell) {
 	DIE_ON_INVAL_TID(tid)
 
-	descs[tid].shell = strdup(shell);
-
-	if(!descs[tid].shell) SYS_ERR("strdup", shell);
+	if(!shell) descs[tid].shell_disabled = 1;
+	else {
+		descs[tid].shell = strdup(shell);
+		if(!descs[tid].shell) SYS_ERR("strdup", shell);
+	}
 
 	return 0;
 }
