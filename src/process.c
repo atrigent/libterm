@@ -6,7 +6,6 @@
 #include <stdlib.h>
 
 #include "libterm.h"
-#include "threading.h"
 
 #ifdef GWINSZ_IN_SYS_IOCTL
 # include <sys/ioctl.h>

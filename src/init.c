@@ -7,7 +7,6 @@
 #include "libterm.h"
 #include "process.h"
 #include "window.h"
-#include "threading.h"
 
 int next_tid = 0;
 struct ltm_term_desc * descs = 0;

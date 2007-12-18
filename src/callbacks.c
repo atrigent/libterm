@@ -1,7 +1,6 @@
 #include <string.h>
 
 #include "libterm.h"
-#include "threading.h"
 
 int check_callbacks(struct ltm_callbacks *callbacks) {
 	if(!callbacks->update_areas)
