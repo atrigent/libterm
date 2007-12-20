@@ -9,20 +9,26 @@
 #include "process.h"
 
 int DLLEXPORT ltm_feed_input_to_program(int tid, char * input, uint n) {
+	LOCK_BIG_MUTEX;
+
 	DIE_ON_INVAL_TID(tid)
 
 	if(fwrite(input, 1, n, descs[tid].pty.master) < n)
 		SYS_ERR("fwrite", input);
 
+	UNLOCK_BIG_MUTEX;
 	return 0;
 }
 
 int DLLEXPORT ltm_simulate_output(int tid, char *input, uint n) {
+	LOCK_BIG_MUTEX;
+
 	DIE_ON_INVAL_TID(tid)
 
 	if(fwrite(input, 1, n, descs[tid].pty.slave) < n)
 		SYS_ERR("fwrite", input);
 
+	UNLOCK_BIG_MUTEX;
 	return 0;
 }
 
@@ -59,6 +65,8 @@ static int read_into_outputbuf(int tid) {
 int DLLEXPORT ltm_process_output(int tid) {
 	uchar *buf;
 	uint i;
+
+	LOCK_BIG_MUTEX;
 
 	DIE_ON_INVAL_TID(tid)
 
@@ -150,6 +158,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 	descs[tid].areas = NULL;
 	descs[tid].nareas = 0;
 
+	UNLOCK_BIG_MUTEX;
 	return 0;
 }
 
@@ -158,6 +167,8 @@ void *watch_for_events() {
 	int i, n, nfds, ret, newtid;
 	struct pollfd *fds;
 	char code, running = 1;
+
+	LOCK_BIG_MUTEX_THR;
 
 	/* start out with just the pipe fd... */
 	fds = malloc(sizeof(struct pollfd));
@@ -169,10 +180,14 @@ void *watch_for_events() {
 	nfds = 1;
 
 	while(running) {
+		UNLOCK_BIG_MUTEX_THR;
+
 		ret = poll(fds, nfds, -1);
 
 		if(!ret || (ret == -1 && errno == EINTR)) continue;
 		else if(ret == -1) SYS_ERR_THR("poll", NULL);
+
+		LOCK_BIG_MUTEX_THR;
 
 		/* Go backwards to make sure that all unhandled stuff in a terminal that just exited
 		 * is handled before it is removed from the struct pollfd array. Also, this doesn't
@@ -233,5 +248,6 @@ void *watch_for_events() {
 
 	free(fds);
 
+	UNLOCK_BIG_MUTEX_THR;
 	return (void*)1;
 }

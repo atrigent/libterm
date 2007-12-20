@@ -29,12 +29,15 @@ int check_callbacks(struct ltm_callbacks *callbacks) {
 }
 
 int DLLEXPORT ltm_set_callbacks(struct ltm_callbacks *callbacks) {
+	LOCK_BIG_MUTEX;
+
 	if(!init_done) LTM_ERR(EPERM, "libterm has not yet been inited");
 
 	if(check_callbacks(callbacks) == -1) return -1;
 
 	memcpy(&cbs, callbacks, sizeof(struct ltm_callbacks));
 
+	UNLOCK_BIG_MUTEX;
 	return 0;
 }
 

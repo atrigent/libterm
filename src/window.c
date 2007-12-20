@@ -13,11 +13,17 @@
 #endif
 
 int DLLEXPORT ltm_is_line_wrapped(int tid, ushort line) {
+	int ret;
+
+	LOCK_BIG_MUTEX;
+
 	DIE_ON_INVAL_TID(tid)
 
 	if(line > descs[tid].height-1) LTM_ERR(EINVAL, "line is too large");
 
-	return bitarr_test_index(descs[tid].wrapped, line);
+	ret = bitarr_test_index(descs[tid].wrapped, line);
+	UNLOCK_BIG_MUTEX;
+	return ret;
 }
 
 static int resize_width(int tid, ushort width, ushort height, uint ** screen) {
@@ -192,6 +198,8 @@ int DLLEXPORT ltm_set_window_dimensions(int tid, ushort width, ushort height) {
 	char big_changes;
 	pid_t pgrp;
 
+	LOCK_BIG_MUTEX;
+
 	DIE_ON_INVAL_TID(tid)
 
 	if(!width || !height) LTM_ERR(EINVAL, "width or height is zero");
@@ -262,6 +270,7 @@ int DLLEXPORT ltm_set_window_dimensions(int tid, ushort width, ushort height) {
 			cb_refresh_screen(tid);
 	}
 
+	UNLOCK_BIG_MUTEX;
 	return 0;
 }
 

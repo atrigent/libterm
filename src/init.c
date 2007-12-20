@@ -14,6 +14,7 @@ char init_done = 0;
 
 struct ltm_callbacks cbs;
 
+pthread_mutex_t the_big_mutex;
 pthread_t watchthread;
 char threading = 0;
 
@@ -35,11 +36,22 @@ static int setup_pipe() {
 }
 
 int DLLEXPORT ltm_init() {
+	pthread_mutexattr_t big_mutex_attrs;
+
 	/* this should include some function to set off
 	 * processing of the config file in the future!
 	 */
 
 	if(init_done) return 0;
+
+	PTHREAD_CALL(pthread_mutexattr_init, (&big_mutex_attrs), NULL);
+	PTHREAD_CALL(pthread_mutexattr_settype, (&big_mutex_attrs, PTHREAD_MUTEX_RECURSIVE), "PTHREAD_MUTEX_RECURSIVE");
+	PTHREAD_CALL(pthread_mutex_init, (&the_big_mutex, &big_mutex_attrs), NULL);
+
+	/* lock ASAP */
+	LOCK_BIG_MUTEX;
+
+	PTHREAD_CALL(pthread_mutexattr_destroy, (&big_mutex_attrs), NULL);
 
 	if(!dump_dest) dump_dest = stderr;
 
@@ -58,12 +70,15 @@ int DLLEXPORT ltm_init() {
 
 	init_done = 1;
 
+	UNLOCK_BIG_MUTEX;
 	return 0;
 }
 
 int DLLEXPORT ltm_uninit() {
 	void *ret;
 	char code;
+
+	LOCK_BIG_MUTEX;
 
 	if(!init_done) return 0;
 
@@ -79,9 +94,13 @@ int DLLEXPORT ltm_uninit() {
 		 *
 		 * also, the error is not set in errno but rather
 		 * return. manually put it in errno.
+		 *
+		 * AAAAlso, we need to temporarily unlock the mutex so that
+		 * the thread will have a chance to process the event
 		 */
-		if((errno = pthread_join(watchthread, &ret)))
-			SYS_ERR("pthread_join", NULL);
+		UNLOCK_BIG_MUTEX;
+		PTHREAD_CALL(pthread_join, (watchthread, &ret), NULL);
+		LOCK_BIG_MUTEX;
 
 		if(!ret) {
 			/* errors from the thread are put into a different
@@ -107,6 +126,10 @@ int DLLEXPORT ltm_uninit() {
 	/* init not done now */
 	init_done = 0;
 
+	UNLOCK_BIG_MUTEX;
+
+	PTHREAD_CALL(pthread_mutex_destroy, (&the_big_mutex), NULL);
+
 	return 0;
 }
 
@@ -116,6 +139,8 @@ int DLLEXPORT ltm_uninit() {
  */
 int DLLEXPORT ltm_term_alloc() {
 	int i, tid;
+
+	LOCK_BIG_MUTEX;
 
 	if(!init_done) LTM_ERR(EPERM, "libterm has not yet been inited");
 
@@ -132,6 +157,7 @@ int DLLEXPORT ltm_term_alloc() {
 
 	descs[tid].allocated = 1;
 
+	UNLOCK_BIG_MUTEX;
 	return tid;
 }
 
@@ -140,8 +166,11 @@ int DLLEXPORT ltm_term_alloc() {
  */
 FILE DLLEXPORT * ltm_term_init(int tid) {
 	struct passwd * pwd_entry;
-	char code;
 	pid_t pid = -1;
+	FILE *ret;
+	char code;
+
+	LOCK_BIG_MUTEX_PTR;
 
 	DIE_ON_INVAL_TID_PTR(tid)
 
@@ -183,11 +212,15 @@ FILE DLLEXPORT * ltm_term_init(int tid) {
 	}
 
 	descs[tid].pid = pid;
-	return descs[tid].pty.master;
+	ret = descs[tid].pty.master;
+	UNLOCK_BIG_MUTEX_PTR;
+	return ret;
 }
 
 int DLLEXPORT ltm_close(int tid) {
 	uint i;
+
+	LOCK_BIG_MUTEX;
 
 	DIE_ON_INVAL_TID(tid)
 
@@ -208,10 +241,13 @@ int DLLEXPORT ltm_close(int tid) {
 	} else
 		memset(&descs[tid], 0, sizeof(struct ltm_term_desc));
 
+	UNLOCK_BIG_MUTEX;
 	return 0;
 }
 
 int DLLEXPORT ltm_set_shell(int tid, char * shell) {
+	LOCK_BIG_MUTEX;
+
 	DIE_ON_INVAL_TID(tid)
 
 	if(!shell) descs[tid].shell_disabled = 1;
@@ -220,23 +256,33 @@ int DLLEXPORT ltm_set_shell(int tid, char * shell) {
 		if(!descs[tid].shell) SYS_ERR("strdup", shell);
 	}
 
+	UNLOCK_BIG_MUTEX;
 	return 0;
 }
 
 int DLLEXPORT ltm_set_threading(char val) {
+	LOCK_BIG_MUTEX;
+
 	if(init_done) LTM_ERR(EPERM, "libterm has been inited");
 
 #ifdef HAVE_LIBPTHREAD
 	threading = val;
-#elif
+#else
 	if(val) LTM_ERR(ENOTSUP, "libterm was not compiled with threading support enabled");
 #endif
 
+	UNLOCK_BIG_MUTEX;
 	return 0;
 }
 
 FILE DLLEXPORT * ltm_get_notifier() {
+	FILE *ret;
+
+	LOCK_BIG_MUTEX_PTR;
+
 	if(!init_done) LTM_ERR_PTR(EPERM, "libterm has not yet been inited");
 
-	return pipefiles[0];
+	ret = pipefiles[0];
+	UNLOCK_BIG_MUTEX_PTR;
+	return ret;
 }

@@ -298,16 +298,28 @@ int set_handler_struct(int sig, void (*callback)(int, siginfo_t *, void *), stru
  * ltm_reload_sigchld_handler solves this problem.
  */
 int DLLEXPORT ltm_reload_sigchld_handler() {
+	int ret;
+
+	LOCK_BIG_MUTEX;
+
 	if(!init_done) LTM_ERR(EPERM, "libterm has not yet been inited");
 
-	return reload_handler(SIGCHLD, dontfearthereaper);
+	ret = reload_handler(SIGCHLD, dontfearthereaper);
+	UNLOCK_BIG_MUTEX;
+	return ret;
 }
 
 /* If the application has control over the code that sets the new handler, this is the
  * better function to use as it has no race condition problems.
  */
 int DLLEXPORT ltm_set_sigchld_handler(struct sigaction * action) {
+	int ret;
+
+	LOCK_BIG_MUTEX;
+
 	if(!init_done) LTM_ERR(EPERM, "libterm has not yet been inited");
 
-	return set_handler_struct(SIGCHLD, dontfearthereaper, action);
+	ret = set_handler_struct(SIGCHLD, dontfearthereaper, action);
+	UNLOCK_BIG_MUTEX;
+	return ret;
 }
