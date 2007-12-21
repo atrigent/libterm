@@ -14,9 +14,11 @@ char init_done = 0;
 
 struct ltm_callbacks cbs;
 
+#ifdef HAVE_LIBPTHREAD
 pthread_mutex_t the_big_mutex;
 pthread_t watchthread;
 char threading = 0;
+#endif
 
 static int setup_pipe() {
 	int pipefds[2];
@@ -36,7 +38,9 @@ static int setup_pipe() {
 }
 
 int DLLEXPORT ltm_init() {
+#ifdef HAVE_LIBPTHREAD
 	pthread_mutexattr_t big_mutex_attrs;
+#endif
 
 	/* this should include some function to set off
 	 * processing of the config file in the future!
@@ -75,13 +79,16 @@ int DLLEXPORT ltm_init() {
 }
 
 int DLLEXPORT ltm_uninit() {
+#ifdef HAVE_LIBPTHREAD
 	void *ret;
 	char code;
+#endif
 
 	LOCK_BIG_MUTEX;
 
 	if(!init_done) return 0;
 
+#ifdef HAVE_LIBPTHREAD
 	/* tell the thread to exit and then wait for it... */
 	if(threading) {
 		code = EXIT_THREAD;
@@ -113,6 +120,7 @@ int DLLEXPORT ltm_uninit() {
 			return -1;
 		}
 	}
+#endif
 
 	/* close notification pipe */
 	fclose(pipefiles[0]);
@@ -168,7 +176,9 @@ FILE DLLEXPORT * ltm_term_init(int tid) {
 	struct passwd * pwd_entry;
 	pid_t pid = -1;
 	FILE *ret;
+#ifdef HAVE_LIBPTHREAD
 	char code;
+#endif
 
 	LOCK_BIG_MUTEX_PTR;
 
@@ -202,6 +212,7 @@ FILE DLLEXPORT * ltm_term_init(int tid) {
 			return NULL;
 	}
 
+#ifdef HAVE_LIBPTHREAD
 	if(threading) {
 		code = NEW_TERM;
 		if(fwrite(&code, 1, sizeof(char), pipefiles[1]) < sizeof(char))
@@ -210,6 +221,7 @@ FILE DLLEXPORT * ltm_term_init(int tid) {
 		if(fwrite(&tid, 1, sizeof(int), pipefiles[1]) < sizeof(int))
 			SYS_ERR_PTR("fwrite", NULL);
 	}
+#endif
 
 	descs[tid].pid = pid;
 	ret = descs[tid].pty.master;

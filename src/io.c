@@ -162,6 +162,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 	return 0;
 }
 
+#ifdef HAVE_LIBPTHREAD
 /* use poll because there's no limit on the number of fds to watch */
 void *watch_for_events() {
 	int i, n, nfds, ret, newtid;
@@ -251,3 +252,4 @@ void *watch_for_events() {
 	UNLOCK_BIG_MUTEX_THR;
 	return (void*)1;
 }
+#endif

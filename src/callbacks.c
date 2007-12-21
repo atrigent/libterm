@@ -15,6 +15,7 @@ int check_callbacks(struct ltm_callbacks *callbacks) {
 	if(!callbacks->alert)
 		fprintf(dump_dest, "Warning: The alert callback was not supplied. The ASCII bell character will be ignored\n");
 
+#ifdef HAVE_LIBPTHREAD
 	if(threading) {
 		if(!callbacks->term_exit)
 			LTM_ERR(ENOTSUP, "The term_exit callback was not supplied, it is required when threading is on");
@@ -22,6 +23,7 @@ int check_callbacks(struct ltm_callbacks *callbacks) {
 		if(!callbacks->thread_died)
 			LTM_ERR(ENOTSUP, "The thread_died callback was not supplied, it is required when threading is on");
 	}
+#endif
 
 	/* more as the ltm_callbacks struct grows... */
 

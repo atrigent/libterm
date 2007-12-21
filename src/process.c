@@ -159,7 +159,9 @@ static void simulate_handler_call(int sig, siginfo_t * info, void * data) {
 }
 
 void dontfearthereaper(int sig, siginfo_t * info, void * data) {
+#ifdef HAVE_LIBPTHREAD
 	char code;
+#endif
 	int i;
 
 	simulate_handler_call(sig, info, data);
@@ -179,10 +181,12 @@ void dontfearthereaper(int sig, siginfo_t * info, void * data) {
 			/* do some stuff that notifies various things that
 			 * the shell has exited
 			 */
+#ifdef HAVE_LIBPTHREAD
 			if(threading) {
 				code = DEL_TERM;
 				fwrite(&code, 1, sizeof(char), pipefiles[1]);
 			}
+#endif
 
 			fwrite(&i, 1, sizeof(int), pipefiles[1]);
 			break;
