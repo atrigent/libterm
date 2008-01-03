@@ -283,15 +283,12 @@ int DLLEXPORT ltm_set_shell(int tid, char * shell) {
 int DLLEXPORT ltm_set_threading(char val) {
 	CHECK_NOT_INITED;
 
-	LOCK_BIG_MUTEX;
-
 #ifdef HAVE_LIBPTHREAD
 	threading = val;
 #else
 	if(val) LTM_ERR(ENOTSUP, "libterm was not compiled with threading support enabled");
 #endif
 
-	UNLOCK_BIG_MUTEX;
 	return 0;
 }
 
