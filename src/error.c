@@ -23,7 +23,7 @@ void error_info_dump(struct error_info err, char * data) {
 		fprintf(dump_dest, "\tOriginating system function: %s\n", err.sys_func);
 
 	err_str = strerror(err.err_no);
-	fprintf(dump_dest, "\tError: %s (%i numerical)\n", err_str, err.err_no);
+	fprintf(dump_dest ? dump_dest : stderr, "\tError: %s (%i numerical)\n", err_str, err.err_no);
 
 	/* FIXME: this should use some sort of hex dumping function */
 	if(data) fprintf(dump_dest, "\tData: %s\n", data);
