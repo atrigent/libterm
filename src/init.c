@@ -10,7 +10,7 @@
 
 int next_tid = 0;
 struct ltm_term_desc * descs = 0;
-char init_done = 0;
+char init_state = INIT_NOT_DONE;
 
 struct ltm_callbacks cbs;
 
@@ -46,7 +46,8 @@ int DLLEXPORT ltm_init() {
 	 * processing of the config file in the future!
 	 */
 
-	if(init_done) return 0;
+	if(init_state != INIT_NOT_DONE) return 0;
+	init_state = INIT_IN_PROGRESS;
 
 	PTHREAD_CALL(pthread_mutexattr_init, (&big_mutex_attrs), NULL);
 	PTHREAD_CALL(pthread_mutexattr_settype, (&big_mutex_attrs, PTHREAD_MUTEX_RECURSIVE), "PTHREAD_MUTEX_RECURSIVE");
@@ -72,7 +73,7 @@ int DLLEXPORT ltm_init() {
 
 	memset(&cbs, 0, sizeof(struct ltm_callbacks));
 
-	init_done = 1;
+	init_state = INIT_DONE;
 
 	UNLOCK_BIG_MUTEX;
 	return 0;
@@ -84,9 +85,10 @@ int DLLEXPORT ltm_uninit() {
 	char code;
 #endif
 
-	LOCK_BIG_MUTEX;
+	if(init_state != INIT_DONE) return 0;
+	init_state = INIT_IN_PROGRESS;
 
-	if(!init_done) return 0;
+	LOCK_BIG_MUTEX;
 
 #ifdef HAVE_LIBPTHREAD
 	/* tell the thread to exit and then wait for it... */
@@ -131,12 +133,12 @@ int DLLEXPORT ltm_uninit() {
 	 */
 	sigaction(SIGCHLD, &oldaction, NULL);
 
-	/* init not done now */
-	init_done = 0;
-
 	UNLOCK_BIG_MUTEX;
 
 	PTHREAD_CALL(pthread_mutex_destroy, (&the_big_mutex), NULL);
+
+	/* init not done now */
+	init_state = INIT_NOT_DONE;
 
 	return 0;
 }
@@ -148,9 +150,9 @@ int DLLEXPORT ltm_uninit() {
 int DLLEXPORT ltm_term_alloc() {
 	int i, tid;
 
-	LOCK_BIG_MUTEX;
+	CHECK_INITED;
 
-	if(!init_done) LTM_ERR(EPERM, "libterm has not yet been inited");
+	LOCK_BIG_MUTEX;
 
 	for(i = 0; i < next_tid; i++)
 		if(descs[i].allocated == 0) return i;
@@ -179,6 +181,8 @@ FILE DLLEXPORT * ltm_term_init(int tid) {
 #ifdef HAVE_LIBPTHREAD
 	char code;
 #endif
+
+	CHECK_INITED_PTR;
 
 	LOCK_BIG_MUTEX_PTR;
 
@@ -232,6 +236,8 @@ FILE DLLEXPORT * ltm_term_init(int tid) {
 int DLLEXPORT ltm_close(int tid) {
 	uint i;
 
+	CHECK_INITED;
+
 	LOCK_BIG_MUTEX;
 
 	DIE_ON_INVAL_TID(tid)
@@ -258,6 +264,8 @@ int DLLEXPORT ltm_close(int tid) {
 }
 
 int DLLEXPORT ltm_set_shell(int tid, char * shell) {
+	CHECK_INITED;
+
 	LOCK_BIG_MUTEX;
 
 	DIE_ON_INVAL_TID(tid)
@@ -273,9 +281,9 @@ int DLLEXPORT ltm_set_shell(int tid, char * shell) {
 }
 
 int DLLEXPORT ltm_set_threading(char val) {
-	LOCK_BIG_MUTEX;
+	CHECK_NOT_INITED;
 
-	if(init_done) LTM_ERR(EPERM, "libterm has been inited");
+	LOCK_BIG_MUTEX;
 
 #ifdef HAVE_LIBPTHREAD
 	threading = val;
@@ -290,9 +298,9 @@ int DLLEXPORT ltm_set_threading(char val) {
 FILE DLLEXPORT * ltm_get_notifier() {
 	FILE *ret;
 
-	LOCK_BIG_MUTEX_PTR;
+	CHECK_INITED_PTR;
 
-	if(!init_done) LTM_ERR_PTR(EPERM, "libterm has not yet been inited");
+	LOCK_BIG_MUTEX_PTR;
 
 	ret = pipefiles[0];
 	UNLOCK_BIG_MUTEX_PTR;

@@ -304,9 +304,9 @@ int set_handler_struct(int sig, void (*callback)(int, siginfo_t *, void *), stru
 int DLLEXPORT ltm_reload_sigchld_handler() {
 	int ret;
 
-	LOCK_BIG_MUTEX;
+	CHECK_INITED;
 
-	if(!init_done) LTM_ERR(EPERM, "libterm has not yet been inited");
+	LOCK_BIG_MUTEX;
 
 	ret = reload_handler(SIGCHLD, dontfearthereaper);
 	UNLOCK_BIG_MUTEX;
@@ -319,9 +319,9 @@ int DLLEXPORT ltm_reload_sigchld_handler() {
 int DLLEXPORT ltm_set_sigchld_handler(struct sigaction * action) {
 	int ret;
 
-	LOCK_BIG_MUTEX;
+	CHECK_INITED;
 
-	if(!init_done) LTM_ERR(EPERM, "libterm has not yet been inited");
+	LOCK_BIG_MUTEX;
 
 	ret = set_handler_struct(SIGCHLD, dontfearthereaper, action);
 	UNLOCK_BIG_MUTEX;

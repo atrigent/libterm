@@ -15,6 +15,8 @@
 int DLLEXPORT ltm_is_line_wrapped(int tid, ushort line) {
 	int ret;
 
+	CHECK_INITED;
+
 	LOCK_BIG_MUTEX;
 
 	DIE_ON_INVAL_TID(tid)
@@ -197,6 +199,8 @@ int tcsetwinsz(int tid) {
 int DLLEXPORT ltm_set_window_dimensions(int tid, ushort width, ushort height) {
 	char big_changes;
 	pid_t pgrp;
+
+	CHECK_INITED;
 
 	LOCK_BIG_MUTEX;
 

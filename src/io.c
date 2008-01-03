@@ -9,6 +9,8 @@
 #include "process.h"
 
 int DLLEXPORT ltm_feed_input_to_program(int tid, char * input, uint n) {
+	CHECK_INITED;
+
 	LOCK_BIG_MUTEX;
 
 	DIE_ON_INVAL_TID(tid)
@@ -21,6 +23,8 @@ int DLLEXPORT ltm_feed_input_to_program(int tid, char * input, uint n) {
 }
 
 int DLLEXPORT ltm_simulate_output(int tid, char *input, uint n) {
+	CHECK_INITED;
+
 	LOCK_BIG_MUTEX;
 
 	DIE_ON_INVAL_TID(tid)
@@ -65,6 +69,8 @@ static int read_into_outputbuf(int tid) {
 int DLLEXPORT ltm_process_output(int tid) {
 	uchar *buf;
 	uint i;
+
+	CHECK_INITED;
 
 	LOCK_BIG_MUTEX;
 
