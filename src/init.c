@@ -96,13 +96,7 @@ int DLLEXPORT ltm_uninit() {
 		if(fwrite(&code, 1, sizeof(char), pipefiles[1]) < sizeof(char))
 			SYS_ERR("fwrite", NULL);
 
-		/* pthread_join man page basically says that something
-		 * other than zero will be returned on error
-		 *
-		 * also, the error is not set in errno but rather
-		 * return. manually put it in errno.
-		 *
-		 * AAAAlso, we need to temporarily unlock the mutex so that
+		/* we need to temporarily unlock the mutex so that
 		 * the thread will have a chance to process the event
 		 */
 		UNLOCK_BIG_MUTEX;
