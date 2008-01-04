@@ -25,23 +25,43 @@
 
 /* locking and unlocking */
 
+#define MUTEX_LOCK(mutex) \
+	PTHREAD_CALL(pthread_mutex_lock, (&mutex), NULL);
+
+#define MUTEX_UNLOCK(mutex) \
+	PTHREAD_CALL(pthread_mutex_unlock, (&mutex), NULL);
+
+#define MUTEX_LOCK_PTR(mutex) \
+	PTHREAD_CALL_PTR(pthread_mutex_lock, (&mutex), NULL);
+
+#define MUTEX_UNLOCK_PTR(mutex) \
+	PTHREAD_CALL_PTR(pthread_mutex_unlock, (&mutex), NULL);
+
+#define MUTEX_LOCK_THR(mutex) \
+	PTHREAD_CALL_THR(pthread_mutex_lock, (&mutex), NULL);
+
+#define MUTEX_UNLOCK_THR(mutex) \
+	PTHREAD_CALL_THR(pthread_mutex_unlock, (&mutex), NULL);
+
+/* locking and unlocking of the "big mutex" */
+
 # define LOCK_BIG_MUTEX \
-	PTHREAD_CALL(pthread_mutex_lock, (&the_big_mutex), NULL)
+	MUTEX_LOCK(the_big_mutex);
 
 # define UNLOCK_BIG_MUTEX \
-	PTHREAD_CALL(pthread_mutex_unlock, (&the_big_mutex), NULL)
+	MUTEX_UNLOCK(the_big_mutex);
 
 # define LOCK_BIG_MUTEX_THR \
-	PTHREAD_CALL_THR(pthread_mutex_lock, (&the_big_mutex), NULL)
+	MUTEX_LOCK_THR(the_big_mutex);
 
 # define UNLOCK_BIG_MUTEX_THR \
-	PTHREAD_CALL_THR(pthread_mutex_unlock, (&the_big_mutex), NULL)
+	MUTEX_UNLOCK_THR(the_big_mutex);
 
 # define LOCK_BIG_MUTEX_PTR \
-	PTHREAD_CALL_PTR(pthread_mutex_lock, (&the_big_mutex), NULL)
+	MUTEX_LOCK_PTR(the_big_mutex);
 
 # define UNLOCK_BIG_MUTEX_PTR \
-	PTHREAD_CALL_PTR(pthread_mutex_unlock, (&the_big_mutex), NULL)
+	MUTEX_UNLOCK_PTR(the_big_mutex);
 
 extern pthread_mutex_t the_big_mutex;
 extern void *watch_for_events();
@@ -52,6 +72,13 @@ extern char threading;
 # define PTHREAD_CALL(func, args, data)
 # define PTHREAD_CALL_PTR(func, args, data)
 # define PTHREAD_CALL_THR(func, args, data)
+
+# define MUTEX_LOCK(mutex)
+# define MUTEX_UNLOCK(mutex)
+# define MUTEX_LOCK_PTR(mutex)
+# define MUTEX_UNLOCK_THR(mutex)
+# define MUTEX_LOCK_THR(mutex)
+# define MUTEX_UNLOCK_THR(mutex)
 
 # define LOCK_BIG_MUTEX
 # define UNLOCK_BIG_MUTEX
