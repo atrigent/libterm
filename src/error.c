@@ -29,6 +29,16 @@ void error_info_dump(struct error_info err, char * data) {
 	if(data) fprintf(dump_dest, "\tData: %s\n", data);
 }
 
-void DLLEXPORT ltm_set_error_dest(FILE * dest) {
+int DLLEXPORT ltm_set_error_dest(FILE * dest) {
+	if(init_state == INIT_DONE) {
+		LOCK_BIG_MUTEX;
+	}
+
 	dump_dest = dest;
+
+	if(init_state == INIT_DONE) {
+		UNLOCK_BIG_MUTEX;
+	}
+
+	return 0;
 }

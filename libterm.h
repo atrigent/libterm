@@ -66,7 +66,7 @@ extern int ltm_set_sigchld_handler(struct sigaction * action);
 
 extern FILE * ltm_get_notifier();
 
-extern void ltm_set_error_dest(FILE *);
+extern int ltm_set_error_dest(FILE *);
 
 extern int ltm_is_line_wrapped(int, uint);
 
