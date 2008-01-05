@@ -294,6 +294,9 @@ FILE DLLEXPORT * ltm_get_notifier() {
 
 	CHECK_INITED_PTR;
 
+	if(threading)
+		LTM_ERR(ENOTSUP, "Threading is on, so you may not get the notification pipe");
+
 	LOCK_BIG_MUTEX_PTR;
 
 	ret = pipefiles[0];

@@ -72,6 +72,9 @@ int DLLEXPORT ltm_process_output(int tid) {
 
 	CHECK_INITED;
 
+	if(threading)
+		LTM_ERR(ENOTSUP, "Threading is on, so you may not manually tell libterm to process the output");
+
 	LOCK_BIG_MUTEX;
 
 	DIE_ON_INVAL_TID(tid)
