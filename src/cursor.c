@@ -6,53 +6,6 @@
 #include "window.h"
 #include "bitarr.h"
 
-void cursor_rel_move(int tid, char direction, uint num) {
-	if(!num) return;
-
-	switch(direction) {
-		case UP:
-			if(descs[tid].cursor.y > num)
-				descs[tid].cursor.y -= num;
-			else if(descs[tid].cursor.y)
-				descs[tid].cursor.y = 0;
-			else
-				return;
-
-			break;
-		case DOWN:
-			if(descs[tid].cursor.y + num < descs[tid].height)
-				descs[tid].cursor.y += num;
-			else if(descs[tid].cursor.y != descs[tid].height-1)
-				descs[tid].cursor.y = descs[tid].height-1;
-			else
-				return;
-			
-			break;
-		case LEFT:
-			if(descs[tid].cursor.x > num)
-				descs[tid].cursor.x -= num;
-			else if(descs[tid].cursor.x)
-				descs[tid].cursor.x = 0;
-			else
-				return;
-
-			break;
-		case RIGHT:
-			if(descs[tid].cursor.x + num < descs[tid].width)
-				descs[tid].cursor.x += num;
-			else if(descs[tid].cursor.x != descs[tid].width-1)
-				descs[tid].cursor.x = descs[tid].width-1;
-			else
-				return;
-
-			break;
-		default:
-			return;
-	}
-
-	descs[tid].curs_changed = 1;
-}
-
 void cursor_abs_move(int tid, char axis, uint num) {
 	switch(axis) {
 		case X:
@@ -72,6 +25,41 @@ void cursor_abs_move(int tid, char axis, uint num) {
 	}
 
 	descs[tid].curs_changed = 1;
+}
+
+void cursor_rel_move(int tid, char direction, uint num) {
+	if(!num) return;
+
+	switch(direction) {
+		case UP:
+			if(descs[tid].cursor.y >= num)
+				cursor_abs_move(tid, Y, descs[tid].cursor.y - num);
+			else
+				cursor_abs_move(tid, Y, 0);
+
+			break;
+		case DOWN:
+			if(descs[tid].cursor.y + num < descs[tid].height)
+				cursor_abs_move(tid, Y, descs[tid].cursor.y + num);
+			else
+				cursor_abs_move(tid, Y, descs[tid].height-1);
+
+			break;
+		case LEFT:
+			if(descs[tid].cursor.x >= num)
+				cursor_abs_move(tid, X, descs[tid].cursor.x - num);
+			else
+				cursor_abs_move(tid, X, 0);
+
+			break;
+		case RIGHT:
+			if(descs[tid].cursor.x + num < descs[tid].width)
+				cursor_abs_move(tid, X, descs[tid].cursor.x + num);
+			else
+				cursor_abs_move(tid, X, descs[tid].width-1);
+
+			break;
+	}
 }
 
 void cursor_horiz_tab(int tid) {
