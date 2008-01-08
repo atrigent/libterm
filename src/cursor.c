@@ -69,15 +69,17 @@ void cursor_horiz_tab(int tid) {
 	cursor_rel_move(tid, RIGHT, dist);
 }
 
-void cursor_vertical_tab(int tid) {
+void cursor_down(int tid) {
 	/* scroll the screen, but only in the main screen */
 	if(descs[tid].cursor.y == descs[tid].height-1 && descs[tid].cur_screen == MAINSCREEN)
 		scroll_screen(tid);
-	else {
+	else
 		cursor_rel_move(tid, DOWN, 1);
+}
 
-		bitarr_unset_index(descs[tid].wrapped, descs[tid].cursor.y);
-	}
+void cursor_vertical_tab(int tid) {
+	cursor_down(tid);
+	bitarr_unset_index(descs[tid].wrapped, descs[tid].cursor.y);
 }
 
 void cursor_line_break(int tid) {
@@ -85,11 +87,15 @@ void cursor_line_break(int tid) {
 	cursor_abs_move(tid, X, 0);
 }
 
+void cursor_wrap(int tid) {
+	cursor_down(tid);
+	bitarr_set_index(descs[tid].wrapped, descs[tid].cursor.y);
+	cursor_abs_move(tid, X, 0);
+}
+
 void cursor_advance(int tid) {
 	if(descs[tid].cursor.x == descs[tid].width-1) {
-		cursor_line_break(tid);
-
-		bitarr_set_index(descs[tid].wrapped, descs[tid].cursor.y);
+		cursor_wrap(tid);
 	} else
 		cursor_rel_move(tid, RIGHT, 1);
 }

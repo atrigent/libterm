@@ -12,6 +12,8 @@
 extern void cursor_rel_move(int, char, uint);
 extern void cursor_abs_move(int, char, uint);
 
+extern void cursor_down(int);
+extern void cursor_wrap(int);
 extern void cursor_line_break(int);
 extern void cursor_advance(int);
 extern void cursor_vertical_tab(int);
