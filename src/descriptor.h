@@ -41,6 +41,7 @@ struct ltm_term_desc {
 
 	struct point cursor;
 	char curs_changed;
+	char curs_prev_not_set;
 
 	char cur_screen;
 	uint ** screen;

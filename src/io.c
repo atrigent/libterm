@@ -113,6 +113,9 @@ int DLLEXPORT ltm_process_output(int tid) {
 			continue;
 		}
 
+		if(descs[tid].cursor.x == descs[tid].width-1 && descs[tid].curs_prev_not_set)
+			cursor_wrap(tid);
+
 		if(descs[tid].areas == NULL || memcmp(&descs[tid].areas[descs[tid].nareas-1]->end, &descs[tid].cursor, sizeof(struct point))) {
 			descs[tid].areas = realloc(descs[tid].areas, ++descs[tid].nareas * sizeof(struct area *));
 			if(!descs[tid].areas) SYS_ERR("realloc", NULL);
