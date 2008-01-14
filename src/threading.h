@@ -76,7 +76,7 @@ extern char threading;
 # define MUTEX_LOCK(mutex)
 # define MUTEX_UNLOCK(mutex)
 # define MUTEX_LOCK_PTR(mutex)
-# define MUTEX_UNLOCK_THR(mutex)
+# define MUTEX_UNLOCK_PTR(mutex)
 # define MUTEX_LOCK_THR(mutex)
 # define MUTEX_UNLOCK_THR(mutex)
 
