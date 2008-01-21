@@ -65,6 +65,7 @@
 
 extern pthread_mutex_t the_big_mutex;
 extern void *watch_for_events();
+extern pthread_t watchthread;
 extern char threading;
 
 #else /* HAVE_LIBPTHREAD */
