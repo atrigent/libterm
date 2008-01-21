@@ -22,51 +22,56 @@ char threading = 0;
 #endif
 
 static int setup_pipe() {
-	int pipefds[2];
+	int pipefds[2], ret = 0;
 
-	if(pipe(pipefds) == -1) SYS_ERR("pipe", NULL);
+	if(pipe(pipefds) == -1) SYS_ERR("pipe", NULL, error);
 
 	pipefiles[0] = fdopen(pipefds[0], "r");
 	pipefiles[1] = fdopen(pipefds[1], "w");
 
-	if(!pipefiles[0] || !pipefiles[1]) SYS_ERR("fdopen", NULL);
+	if(!pipefiles[0] || !pipefiles[1]) SYS_ERR("fdopen", NULL, error);
 
 	/* necessary...? */
 	setbuf(pipefiles[0], NULL);
 	setbuf(pipefiles[1], NULL);
 
-	return 0;
+error:
+	return ret;
 }
 
 int DLLEXPORT ltm_init() {
 #ifdef HAVE_LIBPTHREAD
 	pthread_mutexattr_t big_mutex_attrs;
 #endif
+	int ret = 0;
 
 	/* this should include some function to set off
 	 * processing of the config file in the future!
 	 */
 
-	MUTEX_LOCK(init_mutex);
-	if(init_state != INIT_NOT_DONE) return 0;
+	MUTEX_LOCK(init_mutex, before_anything);
+	if(init_state != INIT_NOT_DONE) {
+		MUTEX_UNLOCK(init_mutex, before_anything);
+		return 0;
+	}
 	init_state = INIT_IN_PROGRESS;
-	MUTEX_UNLOCK(init_mutex);
+	MUTEX_UNLOCK(init_mutex, before_anything);
 
-	PTHREAD_CALL(pthread_mutexattr_init, (&big_mutex_attrs), NULL);
-	PTHREAD_CALL(pthread_mutexattr_settype, (&big_mutex_attrs, PTHREAD_MUTEX_RECURSIVE), "PTHREAD_MUTEX_RECURSIVE");
-	PTHREAD_CALL(pthread_mutex_init, (&the_big_mutex, &big_mutex_attrs), NULL);
+	PTHREAD_CALL(pthread_mutexattr_init, (&big_mutex_attrs), NULL, before_anything);
+	PTHREAD_CALL(pthread_mutexattr_settype, (&big_mutex_attrs, PTHREAD_MUTEX_RECURSIVE), "PTHREAD_MUTEX_RECURSIVE", before_anything);
+	PTHREAD_CALL(pthread_mutex_init, (&the_big_mutex, &big_mutex_attrs), NULL, before_anything);
 
 	/* lock ASAP */
 	LOCK_BIG_MUTEX;
 
-	PTHREAD_CALL(pthread_mutexattr_destroy, (&big_mutex_attrs), NULL);
+	PTHREAD_CALL(pthread_mutexattr_destroy, (&big_mutex_attrs), NULL, after_lock);
 
-	if(setup_pipe() == -1) return -1;
+	if(setup_pipe() == -1) PASS_ERR(after_lock);
 
 	/* we're not really reloading it, but this does
 	 * what we want to do, so use it
 	 */
-	if(reload_handler(SIGCHLD, dontfearthereaper) == -1) return -1;
+	if(reload_handler(SIGCHLD, dontfearthereaper) == -1) PASS_ERR(after_lock);
 
 	if(threading)
 		if((errno = pthread_create(&watchthread, NULL, watch_for_events, NULL)))
@@ -76,20 +81,26 @@ int DLLEXPORT ltm_init() {
 
 	init_state = INIT_DONE;
 
+after_lock:
 	UNLOCK_BIG_MUTEX;
-	return 0;
+before_anything:
+	return ret;
 }
 
 int DLLEXPORT ltm_uninit() {
 #ifdef HAVE_LIBPTHREAD
-	void *ret;
+	void *thr_ret;
 	char code;
 #endif
+	int ret = 0;
 
-	MUTEX_LOCK(init_mutex);
-	if(init_state != INIT_DONE) return 0;
+	MUTEX_LOCK(init_mutex, before_anything);
+	if(init_state != INIT_DONE) {
+		MUTEX_UNLOCK(init_mutex, before_anything);
+		return 0;
+	}
 	init_state = INIT_IN_PROGRESS;
-	MUTEX_UNLOCK(init_mutex);
+	MUTEX_UNLOCK(init_mutex, before_anything);
 
 	LOCK_BIG_MUTEX;
 
@@ -99,16 +110,16 @@ int DLLEXPORT ltm_uninit() {
 		code = EXIT_THREAD;
 
 		if(fwrite(&code, 1, sizeof(char), pipefiles[1]) < sizeof(char))
-			SYS_ERR("fwrite", NULL);
+			SYS_ERR("fwrite", NULL, after_lock);
 
 		/* we need to temporarily unlock the mutex so that
 		 * the thread will have a chance to process the event
 		 */
 		UNLOCK_BIG_MUTEX;
-		PTHREAD_CALL(pthread_join, (watchthread, &ret), NULL);
+		PTHREAD_CALL(pthread_join, (watchthread, &thr_ret), NULL, before_anything);
 		LOCK_BIG_MUTEX;
 
-		if(!ret) {
+		if(!thr_ret) {
 			/* errors from the thread are put into a different
 			 * struct error_info variable so that they aren't
 			 * clobbered when another thread sets an error.
@@ -116,7 +127,7 @@ int DLLEXPORT ltm_uninit() {
 			 * be visible to the program.
 			 */
 			memcpy(&ltm_curerr, &thr_curerr, sizeof(struct error_info));
-			return -1;
+			PASS_ERR(after_lock);
 		}
 	}
 #endif
@@ -130,14 +141,20 @@ int DLLEXPORT ltm_uninit() {
 	 */
 	sigaction(SIGCHLD, &oldaction, NULL);
 
+after_lock:
 	UNLOCK_BIG_MUTEX;
 
-	PTHREAD_CALL(pthread_mutex_destroy, (&the_big_mutex), NULL);
+	/* if we're here because of error, we don't want to set
+	 * INIT_STATE or destroy the mutex */
+	if(ret == -1) goto before_anything;
+
+	PTHREAD_CALL(pthread_mutex_destroy, (&the_big_mutex), NULL, before_anything);
 
 	/* init not done now */
 	init_state = INIT_NOT_DONE;
 
-	return 0;
+before_anything:
+	return ret;
 }
 
 /* errno values:
@@ -145,27 +162,32 @@ int DLLEXPORT ltm_uninit() {
  * 	you neglected to call ltm_init() before calling this, you naughty person!
  */
 int DLLEXPORT ltm_term_alloc() {
-	int i, tid;
+	int i, ret;
 
 	CHECK_INITED;
 
 	LOCK_BIG_MUTEX;
 
 	for(i = 0; i < next_tid; i++)
-		if(descs[i].allocated == 0) return i;
+		if(descs[i].allocated == 0) {
+			ret = i;
+			goto after_lock;
+		}
 
 	/* no unused slots found, make a new one... */
-	tid = next_tid;
+	ret = next_tid;
 
 	descs = realloc(descs, ++next_tid * sizeof(struct ltm_term_desc));
-	if(!descs) SYS_ERR("realloc", NULL);
+	if(!descs) SYS_ERR("realloc", NULL, after_lock);
 
-	memset(&descs[tid], 0, sizeof(struct ltm_term_desc));
+	memset(&descs[ret], 0, sizeof(struct ltm_term_desc));
 
-	descs[tid].allocated = 1;
+	descs[ret].allocated = 1;
 
+after_lock:
 	UNLOCK_BIG_MUTEX;
-	return tid;
+before_anything:
+	return ret;
 }
 
 /* errno values:
@@ -185,14 +207,14 @@ FILE DLLEXPORT * ltm_term_init(int tid) {
 
 	DIE_ON_INVAL_TID_PTR(tid)
 
-	if(!cbs.update_areas) LTM_ERR_PTR(EPERM, "Terminal init cannot happen; callbacks haven't been set yet");
+	if(!cbs.update_areas) LTM_ERR_PTR(EPERM, "Terminal init cannot happen; callbacks haven't been set yet", after_lock);
 
 	if(!descs[tid].width || !descs[tid].height)
-		if(ltm_set_window_dimensions(tid, 80, 24) == -1) return NULL;
+		if(ltm_set_window_dimensions(tid, 80, 24) == -1) PASS_ERR_PTR(after_lock);
 
-	if(choose_pty_method(&descs[tid].pty) == -1) return NULL;
+	if(choose_pty_method(&descs[tid].pty) == -1) PASS_ERR_PTR(after_lock);
 
-	if(tcsetwinsz(tid) == -1) return NULL;
+	if(tcsetwinsz(tid) == -1) PASS_ERR_PTR(after_lock);
 
 	if(!descs[tid].shell_disabled) {
 		if(descs[tid].shell) {
@@ -204,33 +226,35 @@ FILE DLLEXPORT * ltm_term_init(int tid) {
 			pid = spawn(config.shell, descs[tid].pty.slave);*/
 		else {
 			pwd_entry = getpwuid(getuid());
-			if(!pwd_entry) SYS_ERR_PTR("getpwuid", NULL);
+			if(!pwd_entry) SYS_ERR_PTR("getpwuid", NULL, after_lock);
 
 			pid = spawn(pwd_entry->pw_shell, descs[tid].pty.slave);
 		}
 
-		if(pid == -1)
-			return NULL;
+		if(pid == -1) PASS_ERR_PTR(after_lock);
 	}
 
 #ifdef HAVE_LIBPTHREAD
 	if(threading) {
 		code = NEW_TERM;
 		if(fwrite(&code, 1, sizeof(char), pipefiles[1]) < sizeof(char))
-			SYS_ERR_PTR("fwrite", NULL);
+			SYS_ERR_PTR("fwrite", NULL, after_lock);
 
 		if(fwrite(&tid, 1, sizeof(int), pipefiles[1]) < sizeof(int))
-			SYS_ERR_PTR("fwrite", NULL);
+			SYS_ERR_PTR("fwrite", NULL, after_lock);
 	}
 #endif
 
 	descs[tid].pid = pid;
 	ret = descs[tid].pty.master;
+after_lock:
 	UNLOCK_BIG_MUTEX_PTR;
+before_anything:
 	return ret;
 }
 
 int DLLEXPORT ltm_close(int tid) {
+	int ret = 0;
 	uint i;
 
 	CHECK_INITED;
@@ -252,15 +276,19 @@ int DLLEXPORT ltm_close(int tid) {
 
 	if(tid == next_tid-1) {
 		descs = realloc(descs, --next_tid * sizeof(struct ltm_term_desc));
-		if(!descs && next_tid) SYS_ERR("realloc", NULL);
+		if(!descs && next_tid) SYS_ERR("realloc", NULL, after_lock);
 	} else
 		memset(&descs[tid], 0, sizeof(struct ltm_term_desc));
 
+after_lock:
 	UNLOCK_BIG_MUTEX;
-	return 0;
+before_anything:
+	return ret;
 }
 
 int DLLEXPORT ltm_set_shell(int tid, char * shell) {
+	int ret = 0;
+
 	CHECK_INITED;
 
 	LOCK_BIG_MUTEX;
@@ -270,23 +298,28 @@ int DLLEXPORT ltm_set_shell(int tid, char * shell) {
 	if(!shell) descs[tid].shell_disabled = 1;
 	else {
 		descs[tid].shell = strdup(shell);
-		if(!descs[tid].shell) SYS_ERR("strdup", shell);
+		if(!descs[tid].shell) SYS_ERR("strdup", shell, after_lock);
 	}
 
+after_lock:
 	UNLOCK_BIG_MUTEX;
-	return 0;
+before_anything:
+	return ret;
 }
 
 int DLLEXPORT ltm_set_threading(char val) {
+	int ret = 0;
+
 	CHECK_NOT_INITED;
 
 #ifdef HAVE_LIBPTHREAD
 	threading = val;
 #else
-	if(val) LTM_ERR(ENOTSUP, "libterm was not compiled with threading support enabled");
+	if(val) LTM_ERR(ENOTSUP, "libterm was not compiled with threading support enabled", before_anything);
 #endif
 
-	return 0;
+before_anything:
+	return ret;
 }
 
 FILE DLLEXPORT * ltm_get_notifier() {
@@ -296,12 +329,13 @@ FILE DLLEXPORT * ltm_get_notifier() {
 
 #ifdef HAVE_LIBPTHREAD
 	if(threading)
-		LTM_ERR_PTR(ENOTSUP, "Threading is on, so you may not get the notification pipe");
+		LTM_ERR_PTR(ENOTSUP, "Threading is on, so you may not get the notification pipe", before_anything);
 #endif
 
 	LOCK_BIG_MUTEX_PTR;
 
 	ret = pipefiles[0];
 	UNLOCK_BIG_MUTEX_PTR;
+before_anything:
 	return ret;
 }

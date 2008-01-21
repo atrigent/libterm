@@ -18,12 +18,13 @@ int bitarr_test_index(uchar * arr, uint index) {
 int bitarr_resize(uchar ** arr, uint oldlen, uint newlen) {
 	uint i, oldn, newn;
 	uchar mask;
+	int ret = 0;
 
 	oldn = oldlen/8 + (oldlen % 8 ? 1 : 0);
 	newn = newlen/8 + (newlen % 8 ? 1 : 0);
 
 	*arr = realloc(*arr, newn);
-	if(!*arr) SYS_ERR("realloc", NULL);
+	if(!*arr) SYS_ERR("realloc", NULL, error);
 
 	if(newn > oldn)
 		for(i = oldn; i < newn; i++) (*arr)[i] = 0;
@@ -32,7 +33,8 @@ int bitarr_resize(uchar ** arr, uint oldlen, uint newlen) {
 		(*arr)[newn-1] &= mask;
 	}
 
-	return 0;
+error:
+	return ret;
 }
 
 void bitarr_shift_left(uchar * arr, uint len, uint num) {

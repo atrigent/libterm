@@ -30,6 +30,8 @@ void error_info_dump(struct error_info err, char * data) {
 }
 
 int DLLEXPORT ltm_set_error_dest(FILE * dest) {
+	int ret = 0;
+
 	if(init_state == INIT_DONE) {
 		LOCK_BIG_MUTEX;
 	}
@@ -40,5 +42,6 @@ int DLLEXPORT ltm_set_error_dest(FILE * dest) {
 		UNLOCK_BIG_MUTEX;
 	}
 
-	return 0;
+before_anything:
+	return ret;
 }

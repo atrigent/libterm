@@ -32,13 +32,13 @@ typedef unsigned int uint;
 #define INIT_DONE 2
 
 #define CHECK_INITED \
-	if(init_state != INIT_DONE) LTM_ERR(EPERM, "libterm has not yet been inited");
+	if(init_state != INIT_DONE) LTM_ERR(EPERM, "libterm has not yet been inited", before_anything);
 
 #define CHECK_INITED_PTR \
-	if(init_state != INIT_DONE) LTM_ERR_PTR(EPERM, "libterm has not yet been inited");
+	if(init_state != INIT_DONE) LTM_ERR_PTR(EPERM, "libterm has not yet been inited", before_anything);
 
 #define CHECK_NOT_INITED \
-	if(init_state != INIT_NOT_DONE) LTM_ERR(EPERM, "libterm has been inited");
+	if(init_state != INIT_NOT_DONE) LTM_ERR(EPERM, "libterm has been inited", before_anything);
 
 extern char init_state;
 

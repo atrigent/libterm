@@ -17,12 +17,12 @@ FILE * pipefiles[2];
 /* Start a program (the shell) using a different I/O source */
 static int spawn_unix(char * path, int io_fd) {
 	sigset_t allsigs;
-	pid_t pid;
+	pid_t ret;
 
 	sigfillset(&allsigs);
 
-	pid = fork();
-	if(!pid) {
+	ret = fork();
+	if(!ret) {
 		/* We can't use normal error handling in here.
 		 * Instead, just use exit(EXIT_FAILURE)
 		 */
@@ -43,9 +43,10 @@ static int spawn_unix(char * path, int io_fd) {
 
 		exit(EXIT_FAILURE); /* if we get here, execl failed */
 	}
-	else if(pid == -1) SYS_ERR("fork", NULL);
+	else if(ret == -1) SYS_ERR("fork", NULL, error);
 
-	return pid;
+error:
+	return ret;
 }
 
 int spawn(char * path, FILE * io_file) {
@@ -196,6 +197,7 @@ void dontfearthereaper(int sig, siginfo_t * info, void * data) {
 /* don't call this before setting oldaction! */
 int set_handler(int sig, void (*callback)(int, siginfo_t *, void *)) {
 	struct sigaction action;
+	int ret = 0;
 
 	action.sa_sigaction = callback;
 	sigemptyset(&action.sa_mask);
@@ -220,7 +222,7 @@ int set_handler(int sig, void (*callback)(int, siginfo_t *, void *)) {
 	 * little more atomic
 	 */
 	if(!(oldaction.sa_flags & SA_NODEFER))
-		if(sigaddset(&oldaction.sa_mask, sig) == -1) SYS_ERR("sigaddset", NULL);
+		if(sigaddset(&oldaction.sa_mask, sig) == -1) SYS_ERR("sigaddset", NULL, error);
 
 	/* The handler being SIG_IGN causes the same effect as having
 	 * SA_NOCLDWAIT set. We don't need to check whether the signal
@@ -254,13 +256,19 @@ int set_handler(int sig, void (*callback)(int, siginfo_t *, void *)) {
 	 */
 	sigaction(sig, &action, NULL);
 
-	return 0;
+error:
+	return ret;
 }
 
 int reload_handler(int sig, void (*callback)(int, siginfo_t *, void *)) {
-	if(sigaction(sig, NULL, &oldaction) == -1) SYS_ERR("sigaction", NULL);
+	int ret;
 
-	return set_handler(sig, callback);
+	if(sigaction(sig, NULL, &oldaction) == -1) SYS_ERR("sigaction", NULL, error);
+
+	ret = set_handler(sig, callback);
+
+error:
+	return ret;
 }
 
 int set_handler_struct(int sig, void (*callback)(int, siginfo_t *, void *), struct sigaction * action) {
@@ -309,7 +317,9 @@ int DLLEXPORT ltm_reload_sigchld_handler() {
 	LOCK_BIG_MUTEX;
 
 	ret = reload_handler(SIGCHLD, dontfearthereaper);
+
 	UNLOCK_BIG_MUTEX;
+before_anything:
 	return ret;
 }
 
@@ -324,6 +334,8 @@ int DLLEXPORT ltm_set_sigchld_handler(struct sigaction * action) {
 	LOCK_BIG_MUTEX;
 
 	ret = set_handler_struct(SIGCHLD, dontfearthereaper, action);
+
 	UNLOCK_BIG_MUTEX;
+before_anything:
 	return ret;
 }

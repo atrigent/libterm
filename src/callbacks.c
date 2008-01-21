@@ -3,8 +3,10 @@
 #include "libterm.h"
 
 int check_callbacks(struct ltm_callbacks *callbacks) {
+	int ret = 0;
+
 	if(!callbacks->update_areas)
-		LTM_ERR(ENOTSUP, "The update_areas callback was not supplied");
+		LTM_ERR(ENOTSUP, "The update_areas callback was not supplied", error);
 
 	if(!callbacks->refresh_screen)
 		fprintf(dump_dest, "Warning: The refresh_screen callback was not supplied. It will be emulated with update_areas\n");
@@ -18,29 +20,34 @@ int check_callbacks(struct ltm_callbacks *callbacks) {
 #ifdef HAVE_LIBPTHREAD
 	if(threading) {
 		if(!callbacks->term_exit)
-			LTM_ERR(ENOTSUP, "The term_exit callback was not supplied, it is required when threading is on");
+			LTM_ERR(ENOTSUP, "The term_exit callback was not supplied, it is required when threading is on", error);
 
 		if(!callbacks->thread_died)
-			LTM_ERR(ENOTSUP, "The thread_died callback was not supplied, it is required when threading is on");
+			LTM_ERR(ENOTSUP, "The thread_died callback was not supplied, it is required when threading is on", error);
 	}
 #endif
 
 	/* more as the ltm_callbacks struct grows... */
 
-	return 0;
+error:
+	return ret;
 }
 
 int DLLEXPORT ltm_set_callbacks(struct ltm_callbacks *callbacks) {
+	int ret = 0;
+
 	CHECK_INITED;
 
 	LOCK_BIG_MUTEX;
 
-	if(check_callbacks(callbacks) == -1) return -1;
+	if(check_callbacks(callbacks) == -1) PASS_ERR(after_lock);
 
 	memcpy(&cbs, callbacks, sizeof(struct ltm_callbacks));
 
+after_lock:
 	UNLOCK_BIG_MUTEX;
-	return 0;
+before_anything:
+	return ret;
 }
 
 int cb_update_areas(int tid) {
