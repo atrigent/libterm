@@ -1,4 +1,4 @@
-AM_CFLAGS = -Wall -Wextra -Werror-implicit-function-declaration
+AM_CFLAGS = -Wall -Wextra -Werror-implicit-function-declaration -Wno-unused-label
 AM_LIBTOOLFLAGS = --silent
 
 if HAVE_UNIX98_FUNCS
