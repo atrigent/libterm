@@ -7,26 +7,27 @@ struct error_info thr_curerr = {0, 0, 0, 0, 0};
 FILE * dump_dest = 0;
 
 void error_info_dump(struct error_info err, char * data) {
-	char * err_str;
+	FILE *err_dest = dump_dest ? dump_dest : stderr;
+	char *err_str;
 
-	fprintf(dump_dest, "libterm ");
+	fprintf(err_dest, "libterm ");
 
-	if(!err.sys_func) fprintf(dump_dest, "non-system ");
+	if(!err.sys_func) fprintf(err_dest, "non-system ");
 
-	fprintf(dump_dest, "error:\n");
+	fprintf(err_dest, "error:\n");
 
-	fprintf(dump_dest, "\tFile and line #: %s:%u\n", err.file, err.line);
+	fprintf(err_dest, "\tFile and line #: %s:%u\n", err.file, err.line);
 
-	fprintf(dump_dest, "\tOriginating libterm function: %s\n", err.ltm_func);
+	fprintf(err_dest, "\tOriginating libterm function: %s\n", err.ltm_func);
 
 	if(err.sys_func)
-		fprintf(dump_dest, "\tOriginating system function: %s\n", err.sys_func);
+		fprintf(err_dest, "\tOriginating system function: %s\n", err.sys_func);
 
 	err_str = strerror(err.err_no);
-	fprintf(dump_dest ? dump_dest : stderr, "\tError: %s (%i numerical)\n", err_str, err.err_no);
+	fprintf(err_dest, "\tError: %s (%i numerical)\n", err_str, err.err_no);
 
 	/* FIXME: this should use some sort of hex dumping function */
-	if(data) fprintf(dump_dest, "\tData: %s\n", data);
+	if(data) fprintf(err_dest, "\tData: %s\n", data);
 }
 
 int DLLEXPORT ltm_set_error_dest(FILE * dest) {

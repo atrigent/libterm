@@ -66,6 +66,8 @@ int DLLEXPORT ltm_init() {
 
 	PTHREAD_CALL(pthread_mutexattr_destroy, (&big_mutex_attrs), NULL, after_lock);
 
+	if(!dump_dest) dump_dest = stderr;
+
 	if(setup_pipe() == -1) PASS_ERR(after_lock);
 
 	/* we're not really reloading it, but this does
