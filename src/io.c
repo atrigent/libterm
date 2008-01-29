@@ -266,7 +266,7 @@ void *watch_for_events() {
 
 				}
 				else for(n = 0; n < next_tid; n++)
-					if(descs[n].allocated && fds[i].fd == fileno(descs[n].pty.master)) {
+					if(descs[n].pid && fds[i].fd == fileno(descs[n].pty.master)) {
 						if(ltm_process_output(n) == -1) PASS_ERR_PTR(after_lock);
 						break;
 					}
