@@ -15,7 +15,7 @@ char init_state = INIT_NOT_DONE;
 struct ltm_callbacks cbs;
 
 #ifdef HAVE_LIBPTHREAD
-pthread_mutex_t init_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t test_and_set_mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t the_big_mutex;
 pthread_t watchthread;
 char threading = 0;
@@ -49,13 +49,13 @@ int DLLEXPORT ltm_init() {
 	 * processing of the config file in the future!
 	 */
 
-	MUTEX_LOCK(init_mutex, before_anything);
+	MUTEX_LOCK(test_and_set_mutex, before_anything);
 	if(init_state != INIT_NOT_DONE) {
-		MUTEX_UNLOCK(init_mutex, before_anything);
+		MUTEX_UNLOCK(test_and_set_mutex, before_anything);
 		return 0;
 	}
 	init_state = INIT_IN_PROGRESS;
-	MUTEX_UNLOCK(init_mutex, before_anything);
+	MUTEX_UNLOCK(test_and_set_mutex, before_anything);
 
 	PTHREAD_CALL(pthread_mutexattr_init, (&big_mutex_attrs), NULL, before_anything);
 	PTHREAD_CALL(pthread_mutexattr_settype, (&big_mutex_attrs, PTHREAD_MUTEX_RECURSIVE), "PTHREAD_MUTEX_RECURSIVE", before_anything);
@@ -96,13 +96,13 @@ int DLLEXPORT ltm_uninit() {
 #endif
 	int ret = 0;
 
-	MUTEX_LOCK(init_mutex, before_anything);
+	MUTEX_LOCK(test_and_set_mutex, before_anything);
 	if(init_state != INIT_DONE) {
-		MUTEX_UNLOCK(init_mutex, before_anything);
+		MUTEX_UNLOCK(test_and_set_mutex, before_anything);
 		return 0;
 	}
 	init_state = INIT_IN_PROGRESS;
-	MUTEX_UNLOCK(init_mutex, before_anything);
+	MUTEX_UNLOCK(test_and_set_mutex, before_anything);
 
 	LOCK_BIG_MUTEX;
 
