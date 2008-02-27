@@ -67,24 +67,26 @@ int cb_update_areas(int tid) {
 }
 
 int cb_refresh_screen(int tid) {
-	struct area * areas[2], area;
+	struct area *new_areas[2], **areas_save, area;
 
 	if(cbs.refresh_screen)
 		cbs.refresh_screen(tid, descs[tid].screen);
 	else {
+		areas_save = descs[tid].areas;
+
 		area.start.y = area.start.x = 0;
 
 		area.end.y = descs[tid].height-1;
 		area.end.x = descs[tid].width;
 
-		areas[0] = &area;
-		areas[1] = NULL;
+		new_areas[0] = &area;
+		new_areas[1] = NULL;
 
-		descs[tid].areas = areas;
+		descs[tid].areas = new_areas;
 
 		cb_update_areas(tid);
 
-		descs[tid].areas = 0;
+		descs[tid].areas = areas_save;
 	}
 
 	return 0;
