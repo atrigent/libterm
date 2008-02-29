@@ -92,11 +92,11 @@ int cb_refresh_screen(int tid) {
 	return 0;
 }
 
-int cb_scroll_lines(int tid, uint lines) {
+int cb_scroll_lines(int tid) {
 	/*struct area area;*/
 
 	if(cbs.scroll_lines)
-		cbs.scroll_lines(tid, lines);
+		cbs.scroll_lines(tid, descs[tid].lines_scrolled);
 	else {
 		/*area.start.y = area.start.x = 0;
 

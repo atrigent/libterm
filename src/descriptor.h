@@ -55,6 +55,8 @@ struct ltm_term_desc {
 
 	struct area ** areas;
 	uint nareas;
+
+	uint lines_scrolled;
 };
 
 extern struct ltm_term_desc * descs;

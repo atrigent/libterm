@@ -301,8 +301,6 @@ int scroll_screen(int tid) {
 
 	descs[tid].screen[descs[tid].height-1] = linesave;
 
-	cb_scroll_lines(tid, 1);
-
 	bitarr_shift_left(descs[tid].wrapped, descs[tid].height, 1);
 
 	for(i = 0; i < descs[tid].nareas;)
@@ -331,6 +329,8 @@ int scroll_screen(int tid) {
 
 			i++;
 		}
+
+	descs[tid].lines_scrolled++;
 
 	return 0;
 }

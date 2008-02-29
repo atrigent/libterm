@@ -170,14 +170,28 @@ int DLLEXPORT ltm_process_output(int tid) {
 	} else /* nothing done, exit */
 		goto after_lock;
 
-	descs[tid].areas = realloc(descs[tid].areas, (descs[tid].nareas+1) * sizeof(struct area *));
-	if(!descs[tid].areas) SYS_ERR("realloc", NULL, after_lock);
+	if(descs[tid].lines_scrolled < descs[tid].height) {
+		/* this is the case where the original content has *not* been completely scrolled
+		 * off the screen, and so it makes sense to tell the app to scroll the screen and
+		 * only update things that have changed
+		 */
 
-	descs[tid].areas[descs[tid].nareas] = NULL;
+		descs[tid].areas = realloc(descs[tid].areas, (descs[tid].nareas+1) * sizeof(struct area *));
+		if(!descs[tid].areas) SYS_ERR("realloc", NULL, after_lock);
 
-	cb_update_areas(tid);
+		descs[tid].areas[descs[tid].nareas] = NULL;
 
-	for(i = 0; descs[tid].areas[i]; i++) free(descs[tid].areas[i]);
+		cb_scroll_lines(tid);
+		cb_update_areas(tid);
+	} else
+		/* this is the case in which the entirety of the original content *has* been
+		 * scrolled off the screen, so we might as well just reload the entire thing
+		 */
+		cb_refresh_screen(tid);
+
+	descs[tid].lines_scrolled = 0;
+
+	for(i = 0; i < descs[tid].nareas; i++) free(descs[tid].areas[i]);
 	free(descs[tid].areas);
 
 	descs[tid].areas = NULL;

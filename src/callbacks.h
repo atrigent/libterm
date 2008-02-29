@@ -18,7 +18,7 @@ extern int check_callbacks(struct ltm_callbacks *);
 
 extern int cb_update_areas(int);
 extern int cb_refresh_screen(int);
-extern int cb_scroll_lines(int, uint);
+extern int cb_scroll_lines(int);
 extern int cb_alert(int);
 extern int cb_term_exit(int);
 extern int cb_thread_died(struct error_info);
