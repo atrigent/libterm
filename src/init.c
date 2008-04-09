@@ -76,8 +76,7 @@ int DLLEXPORT ltm_init() {
 	if(reload_handler(SIGCHLD, dontfearthereaper) == -1) PASS_ERR(after_lock);
 
 	if(threading)
-		if((errno = pthread_create(&watchthread, NULL, watch_for_events, NULL)))
-			SYS_ERR("pthread_create", NULL);
+		PTHREAD_CALL(pthread_create, (&watchthread, NULL, watch_for_events, NULL), NULL, after_lock);
 
 	memset(&cbs, 0, sizeof(struct ltm_callbacks));
 
