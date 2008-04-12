@@ -148,32 +148,32 @@
 		errno = err; \
 		ret = _ret; \
 		goto label; \
-	} while(0);
+	} while(0)
 
 /* used for errors set by a libterm function
  */
 #define LTM_ERR(err, data, label) \
-	ERR_MACRO_TMPL(NULL, err, data, -1, ltm, label);
+	ERR_MACRO_TMPL(NULL, err, data, -1, ltm, label)
 
 #define LTM_ERR_PTR(err, data, label) \
-	ERR_MACRO_TMPL(NULL, err, data, NULL, ltm, label);
+	ERR_MACRO_TMPL(NULL, err, data, NULL, ltm, label)
 
 /* used for system call errors
  */
 #define SYS_ERR(name, data, label) \
-	ERR_MACRO_TMPL(name, errno, data, -1, ltm, label);
+	ERR_MACRO_TMPL(name, errno, data, -1, ltm, label)
 
 #define SYS_ERR_PTR(name, data, label) \
-	ERR_MACRO_TMPL(name, errno, data, NULL, ltm, label);
+	ERR_MACRO_TMPL(name, errno, data, NULL, ltm, label)
 
  /* these are only for use within watch_for_events()!!!
   */
 
 #define LTM_ERR_THR(err, data, label) \
-	ERR_MACRO_TMPL(NULL, err, data, NULL, thr, label);
+	ERR_MACRO_TMPL(NULL, err, data, NULL, thr, label)
 
 #define SYS_ERR_THR(name, data, label) \
-	ERR_MACRO_TMPL(name, errno, data, NULL, thr, label);
+	ERR_MACRO_TMPL(name, errno, data, NULL, thr, label)
 
 /* these are for passing errors on when an internal libterm
  * function returns with an error
