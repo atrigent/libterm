@@ -14,6 +14,7 @@ dnl Options
 dnl Checks for programs
 AC_PROG_LIBTOOL
 AC_PROG_CC
+AM_PROG_CC_C_O
 
 dnl Checks for libraries
 
@@ -69,7 +70,11 @@ if test $gcc_visibility = yes; then
 fi
 
 dnl Checks for library functions
-AC_CHECK_LIB([pthread], [pthread_create])
+AC_CHECK_LIB([pthread], [pthread_create], 
+		[AC_DEFINE([HAVE_LIBPTHREAD], [1], [Define to 1 if you have the 'pthread' library (-lpthread).])],
+		[AC_MSG_WARN([The pthread library was not found; libterm will be built without threading support.])])
+
+AM_CONDITIONAL([HAVE_PTHREAD], [test $ac_cv_lib_pthread_pthread_create = yes])
 
 dnl Checks for pty functions
 AC_CHECK_FUNCS([posix_openpt getpt], [break])
@@ -101,6 +106,8 @@ AM_CONDITIONAL([HAVE_POSIX_OPENPT], [test $ac_cv_func_posix_openpt = yes])
 
 dnl Checks for system services
 
+CFLAGS="-Wall -Wextra -Werror-implicit-function-declaration $CFLAGS"
+AC_SUBST([libtoolflags], [--silent])
 AC_CONFIG_FILES([Makefile src/Makefile])
 
 AC_OUTPUT
