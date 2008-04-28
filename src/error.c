@@ -12,7 +12,7 @@ void error_info_dump(struct error_info err, char * data) {
 
 	fprintf(err_dest, "libterm ");
 
-	if(!err.sys_func) fprintf(err_dest, "non-system ");
+	if(err.sys_func) fprintf(err_dest, "system ");
 
 	fprintf(err_dest, "error:\n");
 
