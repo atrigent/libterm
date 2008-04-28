@@ -8,7 +8,6 @@ FILE * dump_dest = 0;
 
 void error_info_dump(struct error_info err, char * data) {
 	FILE *err_dest = dump_dest ? dump_dest : stderr;
-	char *err_str;
 
 	fprintf(err_dest, "libterm ");
 
@@ -23,8 +22,7 @@ void error_info_dump(struct error_info err, char * data) {
 	if(err.sys_func)
 		fprintf(err_dest, "\tOriginating system function: %s\n", err.sys_func);
 
-	err_str = strerror(err.err_no);
-	fprintf(err_dest, "\tError: %s (%i numerical)\n", err_str, err.err_no);
+	fprintf(err_dest, "\tError: %s (%i numerical)\n", strerror(err.err_no), err.err_no);
 
 	/* FIXME: this should use some sort of hex dumping function */
 	if(data) fprintf(err_dest, "\tData: %s\n", data);
