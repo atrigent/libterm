@@ -8,6 +8,8 @@
 #  define extern extern __declspec(dllimport)
 #endif
 
+#define ERROR_DATA_LEN 256
+
 typedef unsigned int uint;
 typedef unsigned short ushort;
 typedef unsigned char uchar;
@@ -29,6 +31,7 @@ struct error_info {
 	const char * ltm_func;
 	char * sys_func;
 
+	char data[ERROR_DATA_LEN];
 	int err_no;
 };
 

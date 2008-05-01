@@ -2,11 +2,11 @@
 
 #include "libterm.h"
 
-struct error_info DLLEXPORT ltm_curerr = {0, 0, 0, 0, 0};
-struct error_info thr_curerr = {0, 0, 0, 0, 0};
+struct error_info DLLEXPORT ltm_curerr = {0, 0, 0, 0, "", 0};
+struct error_info thr_curerr = {0, 0, 0, 0, "", 0};
 FILE * dump_dest = 0;
 
-void error_info_dump(struct error_info err, char * data) {
+void error_info_dump(struct error_info err) {
 	FILE *err_dest = dump_dest ? dump_dest : stderr;
 
 	fprintf(err_dest, "libterm ");
@@ -25,7 +25,7 @@ void error_info_dump(struct error_info err, char * data) {
 	fprintf(err_dest, "\tError: %s (%i numerical)\n", strerror(err.err_no), err.err_no);
 
 	/* FIXME: this should use some sort of hex dumping function */
-	if(data) fprintf(err_dest, "\tData: %s\n", data);
+	if(err.data) fprintf(err_dest, "\tData: %.*s\n", ERROR_DATA_LEN, err.data);
 }
 
 int DLLEXPORT ltm_set_error_dest(FILE * dest) {
