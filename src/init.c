@@ -74,8 +74,10 @@ int DLLEXPORT ltm_init() {
 	 */
 	if(reload_handler(SIGCHLD, dontfearthereaper) == -1) PASS_ERR(after_lock);
 
+#ifdef HAVE_PTHREAD
 	if(threading)
 		PTHREAD_CALL(pthread_create, (&watchthread, NULL, watch_for_events, NULL), NULL, after_lock);
+#endif
 
 	memset(&cbs, 0, sizeof(struct ltm_callbacks));
 
