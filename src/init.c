@@ -7,6 +7,7 @@
 #include "libterm.h"
 #include "process.h"
 #include "window.h"
+#include "conf.h"
 
 int next_tid = 0;
 struct ltm_term_desc * descs = 0;
@@ -45,10 +46,6 @@ int DLLEXPORT ltm_init() {
 #endif
 	int ret = 0;
 
-	/* this should include some function to set off
-	 * processing of the config file in the future!
-	 */
-
 	MUTEX_LOCK(test_and_set_mutex, before_anything);
 	if(init_state != INIT_NOT_DONE) {
 		MUTEX_UNLOCK(test_and_set_mutex, before_anything);
@@ -67,6 +64,8 @@ int DLLEXPORT ltm_init() {
 	PTHREAD_CALL(pthread_mutexattr_destroy, (&big_mutex_attrs), NULL, after_lock);
 
 	if(!dump_dest) dump_dest = stderr;
+
+	if(config_parse_files() == -1) PASS_ERR(after_lock);
 
 	if(setup_pipe() == -1) PASS_ERR(after_lock);
 
@@ -141,6 +140,8 @@ int DLLEXPORT ltm_uninit() {
 	 * to the sigaction struct used for simulation
 	 */
 	sigaction(SIGCHLD, &oldaction, NULL);
+
+	config_free();
 
 after_lock:
 	UNLOCK_BIG_MUTEX;

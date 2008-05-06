@@ -71,6 +71,8 @@ extern FILE * ltm_get_notifier();
 
 extern int ltm_set_error_dest(FILE *);
 
+extern int ltm_parse_config_text(char *);
+
 extern int ltm_is_line_wrapped(int, uint);
 
 extern struct error_info ltm_curerr;
