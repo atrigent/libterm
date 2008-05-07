@@ -7,6 +7,7 @@
 #include "libterm.h"
 #include "process.h"
 #include "window.h"
+#include "idarr.h"
 #include "conf.h"
 
 int next_tid = 0;
@@ -166,29 +167,14 @@ before_anything:
  * 	you neglected to call ltm_init() before calling this, you naughty person!
  */
 int DLLEXPORT ltm_term_alloc() {
-	int i, ret;
+	int ret;
 
 	CHECK_INITED;
 
 	LOCK_BIG_MUTEX;
 
-	for(i = 0; i < next_tid; i++)
-		if(descs[i].allocated == 0) {
-			ret = i;
-			goto after_lock;
-		}
+	ret = IDARR_ID_ALLOC(descs, next_tid);
 
-	/* no unused slots found, make a new one... */
-	ret = next_tid;
-
-	descs = realloc(descs, ++next_tid * sizeof(struct ltm_term_desc));
-	if(!descs) SYS_ERR("realloc", NULL, after_lock);
-
-	memset(&descs[ret], 0, sizeof(struct ltm_term_desc));
-
-	descs[ret].allocated = 1;
-
-after_lock:
 	UNLOCK_BIG_MUTEX;
 before_anything:
 	return ret;
@@ -278,11 +264,8 @@ int DLLEXPORT ltm_close(int tid) {
 
 	free(descs[tid].wrapped);
 
-	if(tid == next_tid-1) {
-		descs = realloc(descs, --next_tid * sizeof(struct ltm_term_desc));
-		if(!descs && next_tid) SYS_ERR("realloc", NULL, after_lock);
-	} else
-		memset(&descs[tid], 0, sizeof(struct ltm_term_desc));
+	if(IDARR_ID_DEALLOC(descs, next_tid, tid) == -1)
+		PASS_ERR(after_lock);
 
 after_lock:
 	UNLOCK_BIG_MUTEX;

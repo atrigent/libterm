@@ -28,9 +28,9 @@ struct area {
 };
 
 struct ltm_term_desc {
-	struct ptydev pty;
-
 	char allocated;
+
+	struct ptydev pty;
 
 	char shell_disabled;
 	char * shell;
