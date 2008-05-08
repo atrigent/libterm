@@ -9,6 +9,6 @@ extern int reload_handler(int, void (*)(int, siginfo_t *, void *));
 extern int set_handler_struct(int, void (*)(int, siginfo_t *, void *), struct sigaction *);
 
 extern struct sigaction oldaction;
-extern FILE * pipefiles[];
+extern FILE *pipefiles[];
 
 #endif

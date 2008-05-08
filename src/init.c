@@ -11,7 +11,7 @@
 #include "conf.h"
 
 int next_tid = 0;
-struct ltm_term_desc * descs = 0;
+struct ltm_term_desc *descs = 0;
 char init_state = INIT_NOT_DONE;
 
 struct ltm_callbacks cbs;
@@ -183,8 +183,8 @@ before_anything:
 /* errno values:
  * ENODEV: No available PTY devices were found.
  */
-FILE DLLEXPORT * ltm_term_init(int tid) {
-	struct passwd * pwd_entry;
+FILE DLLEXPORT *ltm_term_init(int tid) {
+	struct passwd *pwd_entry;
 	pid_t pid = -1;
 	FILE *ret;
 #ifdef HAVE_LIBPTHREAD
@@ -195,11 +195,11 @@ FILE DLLEXPORT * ltm_term_init(int tid) {
 
 	LOCK_BIG_MUTEX_PTR;
 
-	DIE_ON_INVAL_TID_PTR(tid)
+	DIE_ON_INVAL_TID_PTR(tid);
 
 	if(!cbs.update_areas) LTM_ERR_PTR(EPERM, "Terminal init cannot happen; callbacks haven't been set yet", after_lock);
 
-	if(!descs[tid].width || !descs[tid].height)
+	if(!descs[tid].cols || !descs[tid].lines)
 		if(ltm_set_window_dimensions(tid, 80, 24) == -1) PASS_ERR_PTR(after_lock);
 
 	if(choose_pty_method(&descs[tid].pty) == -1) PASS_ERR_PTR(after_lock);
@@ -251,7 +251,7 @@ int DLLEXPORT ltm_close(int tid) {
 
 	LOCK_BIG_MUTEX;
 
-	DIE_ON_INVAL_TID(tid)
+	DIE_ON_INVAL_TID(tid);
 
 	/* is this the right way to close these...? */
 	fclose(descs[tid].pty.master);
@@ -273,14 +273,14 @@ before_anything:
 	return ret;
 }
 
-int DLLEXPORT ltm_set_shell(int tid, char * shell) {
+int DLLEXPORT ltm_set_shell(int tid, char *shell) {
 	int ret = 0;
 
 	CHECK_INITED;
 
 	LOCK_BIG_MUTEX;
 
-	DIE_ON_INVAL_TID(tid)
+	DIE_ON_INVAL_TID(tid);
 
 	if(!shell) descs[tid].shell_disabled = 1;
 	else {
@@ -309,7 +309,7 @@ before_anything:
 	return ret;
 }
 
-FILE DLLEXPORT * ltm_get_notifier() {
+FILE DLLEXPORT *ltm_get_notifier() {
 	FILE *ret;
 
 	CHECK_INITED_PTR;

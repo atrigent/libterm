@@ -3,19 +3,19 @@
 
 #include "libterm.h"
 
-void bitarr_unset_index(uchar * arr, uint index) {
+void bitarr_unset_index(uchar *arr, uint index) {
 	arr[index/8] &= ~(1 << (7 - (index%8)));
 }
 
-void bitarr_set_index(uchar * arr, uint index) {
+void bitarr_set_index(uchar *arr, uint index) {
 	arr[index/8] |= (1 << (7 - (index%8)));
 }
 
-int bitarr_test_index(uchar * arr, uint index) {
+int bitarr_test_index(uchar *arr, uint index) {
 	return arr[index/8] & (1 << (7 - (index%8)));
 }
 
-int bitarr_resize(uchar ** arr, uint oldlen, uint newlen) {
+int bitarr_resize(uchar **arr, uint oldlen, uint newlen) {
 	uint i, oldn, newn;
 	uchar mask;
 	int ret = 0;
@@ -37,7 +37,7 @@ error:
 	return ret;
 }
 
-void bitarr_shift_left(uchar * arr, uint len, uint num) {
+void bitarr_shift_left(uchar *arr, uint len, uint num) {
 	uint i, nelems;
 	uchar mask;
 
@@ -65,7 +65,7 @@ void bitarr_shift_left(uchar * arr, uint len, uint num) {
 	arr[i] <<= num;
 }
 
-void bitarr_shift_right(uchar * arr, uint len, uint num) {
+void bitarr_shift_right(uchar *arr, uint len, uint num) {
 	uint i, nelems, initnum;
 	uchar mask;
 

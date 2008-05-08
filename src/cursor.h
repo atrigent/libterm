@@ -9,8 +9,8 @@
 #define X 0
 #define Y 1
 
-extern void cursor_rel_move(int, char, uint);
-extern void cursor_abs_move(int, char, uint);
+extern void cursor_rel_move(int, char, ushort);
+extern void cursor_abs_move(int, char, ushort);
 
 extern void cursor_down(int);
 extern void cursor_wrap(int);

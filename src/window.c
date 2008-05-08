@@ -19,9 +19,9 @@ int DLLEXPORT ltm_is_line_wrapped(int tid, ushort line) {
 
 	LOCK_BIG_MUTEX;
 
-	DIE_ON_INVAL_TID(tid)
+	DIE_ON_INVAL_TID(tid);
 
-	if(line > descs[tid].height-1) LTM_ERR(EINVAL, "line is too large", after_lock);
+	if(line > descs[tid].lines-1) LTM_ERR(EINVAL, "line is too large", after_lock);
 
 	ret = bitarr_test_index(descs[tid].wrapped, line);
 
@@ -31,17 +31,17 @@ before_anything:
 	return ret;
 }
 
-static int resize_width(int tid, ushort width, ushort height, uint ** screen) {
+static int resize_cols(int tid, ushort lines, ushort cols, uint **screen) {
 	ushort i, n;
 	int ret = 0;
 
-	if(descs[tid].width != width)
-		for(i = 0; i < height; i++) {
-			screen[i] = realloc(screen[i], width * sizeof(uint));
+	if(descs[tid].cols != cols)
+		for(i = 0; i < lines; i++) {
+			screen[i] = realloc(screen[i], cols * sizeof(screen[0][0]));
 			if(!screen[i]) SYS_ERR("realloc", NULL, error);
 
-			if(width > descs[tid].width)
-				for(n = descs[tid].width; n < width; n++)
+			if(cols > descs[tid].cols)
+				for(n = descs[tid].cols; n < cols; n++)
 					screen[i][n] = ' ';
 		}
 
@@ -49,7 +49,7 @@ error:
 	return ret;
 }
 
-static int set_screen_dimensions(int tid, char type, ushort width, ushort height) {
+static int set_screen_dimensions(int tid, char type, ushort lines, ushort cols) {
 	uint **dscreen, ***screen;
 	ushort i, diff, n;
 	int ret = 0;
@@ -65,41 +65,41 @@ static int set_screen_dimensions(int tid, char type, ushort width, ushort height
 
 	dscreen = *screen;
 
-	if(!descs[tid].width || !descs[tid].height) {
-		*screen = dscreen = malloc(height * sizeof(uint *));
+	if(!descs[tid].cols || !descs[tid].lines) {
+		*screen = dscreen = malloc(lines * sizeof(dscreen[0]));
 		if(!dscreen) SYS_ERR("malloc", NULL, error);
 
-		for(i = 0; i < height; i++) {
-			dscreen[i] = malloc(width * sizeof(uint));
+		for(i = 0; i < lines; i++) {
+			dscreen[i] = malloc(cols * sizeof(dscreen[0][0]));
 			if(!dscreen[i]) SYS_ERR("malloc", NULL, error);
 
-			for(n = 0; n < width; n++)
+			for(n = 0; n < cols; n++)
 				dscreen[i][n] = ' ';
 		}
 
-		if(bitarr_resize(&descs[tid].wrapped, 0, height) == -1) PASS_ERR(error);
-	} else if(height < descs[tid].height) {
+		if(bitarr_resize(&descs[tid].wrapped, 0, lines) == -1) PASS_ERR(error);
+	} else if(lines < descs[tid].lines) {
 		/* in order to minimize the work that's done,
 		 * here are some orders in which to do things:
 		 *
-		 * if the height is being decreased:
+		 * if lines is being decreased:
 		 * 	the lines at the top should be freed
 		 * 	the lines should be moved up
 		 * 	the lines array should be realloced
-		 * 	the lines should be realloced (if the width is changing)
+		 * 	the lines should be realloced (if cols is changing)
 		 *
-		 * if the height is being increased:
-		 * 	the lines should be realloced (if the width is changing)
+		 * if lines is being increased:
+		 * 	the lines should be realloced (if cols is changing)
 		 * 	the lines array should be realloced
 		 * 	the lines should be moved down
 		 * 	the lines at the top should be malloced
 		 *
-		 * if the height is not changing:
-		 * 	the lines should be realloced (if the width is changing)
+		 * if lines is not changing:
+		 * 	the lines should be realloced (if cols is changing)
 		 */
 
-		if(descs[tid].cursor.y >= height)
-			diff = descs[tid].cursor.y - (height-1);
+		if(descs[tid].cursor.y >= lines)
+			diff = descs[tid].cursor.y - (lines-1);
 		else
 			diff = 0;
 
@@ -107,33 +107,33 @@ static int set_screen_dimensions(int tid, char type, ushort width, ushort height
 			/* probably push lines into the buffer later */
 			free(dscreen[i]);
 
-		for(i = height + diff; i < descs[tid].height; i++)
+		for(i = lines + diff; i < descs[tid].lines; i++)
 			free(dscreen[i]);
 
-/*		for(i = 0; i < height; i++)
+/*		for(i = 0; i < lines; i++)
 			dscreen[i] = dscreen[i+diff];*/
 
 		if(diff) {
-			memmove(dscreen, &dscreen[diff], height * sizeof(uint *));
+			memmove(dscreen, &dscreen[diff], lines * sizeof(dscreen[0]));
 
 			if(type == MAINSCREEN) {
 				cursor_rel_move(tid, UP, diff);
 
-				bitarr_shift_left(descs[tid].wrapped, descs[tid].height, diff);
+				bitarr_shift_left(descs[tid].wrapped, descs[tid].lines, diff);
 			}
 		}
 
-		*screen = dscreen = realloc(dscreen, height * sizeof(uint *));
+		*screen = dscreen = realloc(dscreen, lines * sizeof(dscreen[0]));
 		if(!dscreen) SYS_ERR("realloc", NULL, error);
 
-		if(bitarr_resize(&descs[tid].wrapped, descs[tid].height, height) == -1) PASS_ERR(error);
+		if(bitarr_resize(&descs[tid].wrapped, descs[tid].lines, lines) == -1) PASS_ERR(error);
 
-		if(resize_width(tid, width, height, dscreen) == -1) PASS_ERR(error);
-	} else if(height > descs[tid].height) {
+		if(resize_cols(tid, lines, cols, dscreen) == -1) PASS_ERR(error);
+	} else if(lines > descs[tid].lines) {
 		/* in the future this will look something like this:
 		 *
 		 * if(lines_in_buffer(tid)) {
-		 * 	diff = height - descs[tid].height;
+		 * 	diff = lines - descs[tid].lines;
 		 *
 		 * 	if(lines_in_buffer(tid) < diff) diff = lines_in_buffer(tid);
 		 * } else
@@ -144,44 +144,44 @@ static int set_screen_dimensions(int tid, char type, ushort width, ushort height
 
 		diff = 0;
 
-		if(resize_width(tid, width, descs[tid].height, dscreen) == -1) PASS_ERR(error);
+		if(resize_cols(tid, descs[tid].lines, cols, dscreen) == -1) PASS_ERR(error);
 
-		*screen = dscreen = realloc(dscreen, height * sizeof(uint *));
+		*screen = dscreen = realloc(dscreen, lines * sizeof(dscreen[0]));
 		if(!dscreen) SYS_ERR("realloc", NULL, error);
 
-		if(bitarr_resize(&descs[tid].wrapped, descs[tid].height, height) == -1) PASS_ERR(error);
+		if(bitarr_resize(&descs[tid].wrapped, descs[tid].lines, lines) == -1) PASS_ERR(error);
 
-/*		for(i = diff; i < height; i++)
+/*		for(i = diff; i < lines; i++)
 			dscreen[i] = dscreen[i-diff];*/
 
 		if(diff) {
-			memmove(&dscreen[diff], dscreen, descs[tid].height * sizeof(uint *));
+			memmove(&dscreen[diff], dscreen, descs[tid].lines * sizeof(dscreen[0]));
 
 			if(type == MAINSCREEN) {
 				cursor_rel_move(tid, DOWN, diff);
 
-				bitarr_shift_right(descs[tid].wrapped, descs[tid].height, diff);
+				bitarr_shift_right(descs[tid].wrapped, descs[tid].lines, diff);
 			}
 		}
 
 		/* probably pop lines off the buffer and put them in here later */
 		for(i = 0; i < diff; i++) {
-			dscreen[i] = malloc(width * sizeof(uint));
+			dscreen[i] = malloc(cols * sizeof(dscreen[0][0]));
 			if(!dscreen[i]) SYS_ERR("malloc", NULL, error);
 
-			for(n = 0; n < width; n++)
+			for(n = 0; n < cols; n++)
 				dscreen[i][n] = ' ';
 		}
 
-		for(i = descs[tid].height + diff; i < height; i++) {
-			dscreen[i] = malloc(width * sizeof(uint));
+		for(i = descs[tid].lines + diff; i < lines; i++) {
+			dscreen[i] = malloc(cols * sizeof(dscreen[0][0]));
 			if(!dscreen[i]) SYS_ERR("malloc", NULL, error);
 
-			for(n = 0; n < width; n++)
+			for(n = 0; n < cols; n++)
 				dscreen[i][n] = ' ';
 		}
 	} else
-		if(resize_width(tid, width, height, dscreen) == -1) PASS_ERR(error);
+		if(resize_cols(tid, lines, cols, dscreen) == -1) PASS_ERR(error);
 
 error:
 	return ret;
@@ -194,8 +194,8 @@ int tcsetwinsz(int tid) {
 	int mfd = fileno(descs[tid].pty.master), ret = 0;
 	struct winsize size;
 
-	size.ws_row = descs[tid].height;
-	size.ws_col = descs[tid].width;
+	size.ws_row = descs[tid].lines;
+	size.ws_col = descs[tid].cols;
 	size.ws_xpixel = size.ws_ypixel = 0; /* necessary? */
 
 	if(ioctl(mfd, TIOCSWINSZ, &size) == -1) SYS_ERR("ioctl", "TIOCSWINSZ", error);
@@ -204,7 +204,7 @@ error:
 	return ret;
 }
 
-int DLLEXPORT ltm_set_window_dimensions(int tid, ushort width, ushort height) {
+int DLLEXPORT ltm_set_window_dimensions(int tid, ushort cols, ushort lines) {
 	char big_changes;
 	pid_t pgrp;
 	int ret = 0;
@@ -213,23 +213,23 @@ int DLLEXPORT ltm_set_window_dimensions(int tid, ushort width, ushort height) {
 
 	LOCK_BIG_MUTEX;
 
-	DIE_ON_INVAL_TID(tid)
+	DIE_ON_INVAL_TID(tid);
 
-	if(!width || !height) LTM_ERR(EINVAL, "width or height is zero", after_lock);
+	if(!cols || !lines) LTM_ERR(EINVAL, "cols or lines is zero", after_lock);
 
 	/* if not changing anything, just pretend we did something and exit successfully immediately */
-	if(width == descs[tid].width && height == descs[tid].height) goto after_lock;
+	if(cols == descs[tid].cols && lines == descs[tid].lines) goto after_lock;
 
-	if(height > descs[tid].height && 0 /* lines_in_buffer(tid) */)
+	if(lines > descs[tid].lines && 0 /* lines_in_buffer(tid) */)
 		big_changes = 1;
-	else if(height < descs[tid].height && descs[tid].cursor.y >= height)
+	else if(lines < descs[tid].lines && descs[tid].cursor.y >= lines)
 		big_changes = 1;
 	else
 		big_changes = 0;
 
-	if(set_screen_dimensions(tid, MAINSCREEN, width, height) == -1) PASS_ERR(after_lock);
+	if(set_screen_dimensions(tid, MAINSCREEN, lines, cols) == -1) PASS_ERR(after_lock);
 	/* probably:
-	 * set_screen_dimensions(tid, ALTSCREEN, width, height);
+	 * set_screen_dimensions(tid, ALTSCREEN, lines, cols);
 	 * in the future
 	 * ... or more! (who knows?)
 	 *
@@ -238,8 +238,8 @@ int DLLEXPORT ltm_set_window_dimensions(int tid, ushort width, ushort height) {
 	 * what's the point of enabling it if it's not actually used yet?
 	 */
 
-	descs[tid].height = height;
-	descs[tid].width = width;
+	descs[tid].lines = lines;
+	descs[tid].cols = cols;
 
 	/* since the memory for a descriptor gets zero'd out and MAINSCREEN
 	 * evaluates to zero, this should work even when cur_screen hasn't
@@ -294,14 +294,14 @@ int scroll_screen(int tid) {
 
 	/* push this line into the buffer later... */
 	linesave = descs[tid].screen[0];
-	for(i = 0; i < descs[tid].width; i++)
+	for(i = 0; i < descs[tid].cols; i++)
 		linesave[i] = ' ';
 
-	memmove(descs[tid].screen, &descs[tid].screen[1], sizeof(uint *) * (descs[tid].height-1));
+	memmove(descs[tid].screen, &descs[tid].screen[1], sizeof(linesave) * (descs[tid].lines-1));
 
-	descs[tid].screen[descs[tid].height-1] = linesave;
+	descs[tid].screen[descs[tid].lines-1] = linesave;
 
-	bitarr_shift_left(descs[tid].wrapped, descs[tid].height, 1);
+	bitarr_shift_left(descs[tid].wrapped, descs[tid].lines, 1);
 
 	for(i = 0; i < descs[tid].nareas;)
 		if(!descs[tid].areas[i]->end.y) {

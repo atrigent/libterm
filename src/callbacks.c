@@ -51,7 +51,7 @@ before_anything:
 }
 
 int cb_update_areas(int tid) {
-	struct point * curs;
+	struct point *curs;
 
 	if(descs[tid].curs_changed)
 		curs = &descs[tid].cursor;
@@ -76,8 +76,8 @@ int cb_refresh_screen(int tid) {
 
 		area.start.y = area.start.x = 0;
 
-		area.end.y = descs[tid].height-1;
-		area.end.x = descs[tid].width;
+		area.end.y = descs[tid].lines-1;
+		area.end.x = descs[tid].cols;
 
 		new_areas[0] = &area;
 		new_areas[1] = NULL;
@@ -100,8 +100,8 @@ int cb_scroll_lines(int tid) {
 	else {
 		/*area.start.y = area.start.x = 0;
 
-		area.end.y = descs[tid].height - lines - 1;
-		area.end.x = descs[tid].width;
+		area.end.y = descs[tid].lines - lines - 1;
+		area.end.x = descs[tid].cols;
 
 		descs[tid].cb.update_areas(tid, descs[tid].screen, NULL, &area, 1);*/
 

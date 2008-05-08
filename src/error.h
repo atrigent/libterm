@@ -199,8 +199,8 @@ struct error_info {
 	const char *file;
 	uint line;
 
-	const char * ltm_func;
-	char * sys_func;
+	const char *ltm_func;
+	char *sys_func;
 
 	char data[ERROR_DATA_LEN];
 	int err_no;
@@ -208,7 +208,7 @@ struct error_info {
 
 extern struct error_info ltm_curerr;
 extern struct error_info thr_curerr;
-extern FILE * dump_dest;
+extern FILE *dump_dest;
 
 extern void error_info_dump(struct error_info);
 

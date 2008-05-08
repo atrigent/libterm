@@ -6,10 +6,10 @@
 #include "window.h"
 #include "bitarr.h"
 
-void cursor_abs_move(int tid, char axis, uint num) {
+void cursor_abs_move(int tid, char axis, ushort num) {
 	switch(axis) {
 		case X:
-			if(num < descs[tid].width) {
+			if(num < descs[tid].cols) {
 				if(num != descs[tid].cursor.x)
 					descs[tid].cursor.x = num;
 				else
@@ -19,7 +19,7 @@ void cursor_abs_move(int tid, char axis, uint num) {
 
 			break;
 		case Y:
-			if(num < descs[tid].height) {
+			if(num < descs[tid].lines) {
 				if(num != descs[tid].cursor.y)
 					descs[tid].cursor.y = num;
 				else
@@ -35,7 +35,7 @@ not_moved:
 	descs[tid].curs_prev_not_set = 0;
 }
 
-void cursor_rel_move(int tid, char direction, uint num) {
+void cursor_rel_move(int tid, char direction, ushort num) {
 	if(!num) return;
 
 	switch(direction) {
@@ -47,10 +47,10 @@ void cursor_rel_move(int tid, char direction, uint num) {
 
 			break;
 		case DOWN:
-			if(descs[tid].cursor.y + num < descs[tid].height)
+			if(descs[tid].cursor.y + num < descs[tid].lines)
 				cursor_abs_move(tid, Y, descs[tid].cursor.y + num);
 			else
-				cursor_abs_move(tid, Y, descs[tid].height-1);
+				cursor_abs_move(tid, Y, descs[tid].lines-1);
 
 			break;
 		case LEFT:
@@ -61,10 +61,10 @@ void cursor_rel_move(int tid, char direction, uint num) {
 
 			break;
 		case RIGHT:
-			if(descs[tid].cursor.x + num < descs[tid].width)
+			if(descs[tid].cursor.x + num < descs[tid].cols)
 				cursor_abs_move(tid, X, descs[tid].cursor.x + num);
 			else
-				cursor_abs_move(tid, X, descs[tid].width-1);
+				cursor_abs_move(tid, X, descs[tid].cols-1);
 
 			break;
 	}
@@ -79,7 +79,7 @@ void cursor_horiz_tab(int tid) {
 
 void cursor_down(int tid) {
 	/* scroll the screen, but only in the main screen */
-	if(descs[tid].cursor.y == descs[tid].height-1 && descs[tid].cur_screen == MAINSCREEN)
+	if(descs[tid].cursor.y == descs[tid].lines-1 && descs[tid].cur_screen == MAINSCREEN)
 		scroll_screen(tid);
 	else
 		cursor_rel_move(tid, DOWN, 1);
@@ -102,7 +102,7 @@ void cursor_wrap(int tid) {
 }
 
 void cursor_advance(int tid) {
-	if(descs[tid].cursor.x == descs[tid].width-1) {
+	if(descs[tid].cursor.x == descs[tid].cols-1) {
 		if(!descs[tid].curs_prev_not_set) {
 			descs[tid].curs_prev_not_set = 1;
 			return;

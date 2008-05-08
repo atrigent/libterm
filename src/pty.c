@@ -29,7 +29,7 @@ int (*pty_func_prior[])(struct ptydev *) = {
 	NULL
 };
 
-int choose_pty_method(struct ptydev * pty) {
+int choose_pty_method(struct ptydev *pty) {
 	int i, result, ret = 0;
 
 	for(i = 0; pty_func_prior[i]; i++) {
@@ -49,7 +49,7 @@ error:
 	return ret;
 }
 
-static int alloc_unix98_pty(struct ptydev * pty) {
+static int alloc_unix98_pty(struct ptydev *pty) {
 	FILE *master, *slave;
 	char slave_path[32]; /* big enough */
 	int unlock = 0, pty_num, ret = 1;
@@ -77,7 +77,7 @@ error:
 	return ret;
 }
 
-static int next_bsd_pty(char * ident) {
+static int next_bsd_pty(char *ident) {
 	if(ident[1] == 'f') {
 		if(ident[0] == 'z') ident[0] = 'a';
 		else if(ident[0] == 'e') return 0;
@@ -91,7 +91,7 @@ static int next_bsd_pty(char * ident) {
 	return 1;
 }
 
-static int find_unused_bsd_pty(struct ptydev * pty) {
+static int find_unused_bsd_pty(struct ptydev *pty) {
 	FILE *pty_file, *tty_file;
 	char tty_path[11], pty_path[11], tty_spc[2] = "p0";
 	int unlock = 0;
@@ -127,12 +127,12 @@ static int find_unused_bsd_pty(struct ptydev * pty) {
 	return 0;
 }
 
-static int alloc_func_pty(struct ptydev * pty) {
+static int alloc_func_pty(struct ptydev *pty) {
 	FILE *master, *slave;
 	int master_fd, slave_fd;
 #if defined(HAVE_OPENPTY) || defined(HAVE_UNIX98_FUNCS)
 #if defined(HAVE_UNIX98_FUNCS)
-	char * pts_name;
+	char *pts_name;
 #endif
 	int ret = 1;
 #endif

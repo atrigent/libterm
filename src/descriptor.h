@@ -33,33 +33,33 @@ struct ltm_term_desc {
 	struct ptydev pty;
 
 	char shell_disabled;
-	char * shell;
+	char *shell;
 	pid_t pid;
 
-	ushort width;
-	ushort height;
+	ushort lines;
+	ushort cols;
 
 	struct point cursor;
 	char curs_changed;
 	char curs_prev_not_set;
 
 	char cur_screen;
-	uint ** screen;
-	uint ** main_screen;
-	uint ** alt_screen;
+	uint **screen;
+	uint **main_screen;
+	uint **alt_screen;
 
-	uchar * wrapped;
+	uchar *wrapped;
 
-	uchar * outputbuf;
+	uchar *outputbuf;
 	uint buflen;
 
-	struct area ** areas;
+	struct area **areas;
 	uint nareas;
 
 	uint lines_scrolled;
 };
 
-extern struct ltm_term_desc * descs;
+extern struct ltm_term_desc *descs;
 extern int next_tid;
 
 #endif

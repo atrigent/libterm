@@ -36,8 +36,8 @@
 
 struct ptydev {
 	char type;
-	FILE * master;
-	FILE * slave;
+	FILE *master;
+	FILE *slave;
 };
 
 extern int choose_pty_method(struct ptydev *);

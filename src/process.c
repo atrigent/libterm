@@ -12,10 +12,10 @@
 #endif
 
 struct sigaction oldaction;
-FILE * pipefiles[2];
+FILE *pipefiles[2];
 
 /* Start a program (the shell) using a different I/O source */
-static int spawn_unix(char * path, int io_fd) {
+static int spawn_unix(char *path, int io_fd) {
 	sigset_t allsigs;
 	pid_t ret;
 
@@ -49,7 +49,7 @@ error:
 	return ret;
 }
 
-int spawn(char * path, FILE * io_file) {
+int spawn(char *path, FILE *io_file) {
 	return spawn_unix(path, fileno(io_file));
 }
 
@@ -135,7 +135,7 @@ int spawn(char * path, FILE * io_file) {
  * SA_NOCLDWAIT in our handler if their handler is set to SIG_IGN.
  */
 
-static void simulate_handler_call(int sig, siginfo_t * info, void * data) {
+static void simulate_handler_call(int sig, siginfo_t *info, void *data) {
 	sigset_t oldmask;
 
 	if(
@@ -159,7 +159,7 @@ static void simulate_handler_call(int sig, siginfo_t * info, void * data) {
 	}
 }
 
-void dontfearthereaper(int sig, siginfo_t * info, void * data) {
+void dontfearthereaper(int sig, siginfo_t *info, void *data) {
 #ifdef HAVE_LIBPTHREAD
 	char code;
 #endif
@@ -271,7 +271,7 @@ error:
 	return ret;
 }
 
-int set_handler_struct(int sig, void (*callback)(int, siginfo_t *, void *), struct sigaction * action) {
+int set_handler_struct(int sig, void (*callback)(int, siginfo_t *, void *), struct sigaction *action) {
 	memcpy(&oldaction, action, sizeof(struct sigaction));
 
 	return set_handler(sig, callback);
@@ -326,7 +326,7 @@ before_anything:
 /* If the application has control over the code that sets the new handler, this is the
  * better function to use as it has no race condition problems.
  */
-int DLLEXPORT ltm_set_sigchld_handler(struct sigaction * action) {
+int DLLEXPORT ltm_set_sigchld_handler(struct sigaction *action) {
 	int ret;
 
 	CHECK_INITED;

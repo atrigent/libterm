@@ -4,7 +4,7 @@
 
 struct error_info DLLEXPORT ltm_curerr = {0, 0, 0, 0, "", 0};
 struct error_info thr_curerr = {0, 0, 0, 0, "", 0};
-FILE * dump_dest = 0;
+FILE *dump_dest = 0;
 
 void error_info_dump(struct error_info err) {
 	FILE *err_dest = dump_dest ? dump_dest : stderr;
@@ -28,7 +28,7 @@ void error_info_dump(struct error_info err) {
 	if(err.data) fprintf(err_dest, "\tData: %.*s\n", ERROR_DATA_LEN, err.data);
 }
 
-int DLLEXPORT ltm_set_error_dest(FILE * dest) {
+int DLLEXPORT ltm_set_error_dest(FILE *dest) {
 	int ret = 0;
 
 	if(init_state == INIT_DONE) {

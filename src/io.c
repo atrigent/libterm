@@ -8,7 +8,7 @@
 #include "cursor.h"
 #include "process.h"
 
-int DLLEXPORT ltm_feed_input_to_program(int tid, char * input, uint n) {
+int DLLEXPORT ltm_feed_input_to_program(int tid, char *input, uint n) {
 	int ret = 0;
 
 	CHECK_INITED;
@@ -124,7 +124,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 			continue;
 		}
 
-		if(descs[tid].cursor.x == descs[tid].width-1 && descs[tid].curs_prev_not_set)
+		if(descs[tid].cursor.x == descs[tid].cols-1 && descs[tid].curs_prev_not_set)
 			cursor_wrap(tid);
 
 		if(descs[tid].areas == NULL || descs[tid].nareas == 0 || memcmp(&descs[tid].areas[descs[tid].nareas-1]->end, &descs[tid].cursor, sizeof(struct point))) {
@@ -170,7 +170,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 	} else /* nothing done, exit */
 		goto after_lock;
 
-	if(descs[tid].lines_scrolled < descs[tid].height) {
+	if(descs[tid].lines_scrolled < descs[tid].lines) {
 		/* this is the case where the original content has *not* been completely scrolled
 		 * off the screen, and so it makes sense to tell the app to scroll the screen and
 		 * only update things that have changed
