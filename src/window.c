@@ -204,7 +204,7 @@ error:
 	return ret;
 }
 
-int DLLEXPORT ltm_set_window_dimensions(int tid, ushort cols, ushort lines) {
+int DLLEXPORT ltm_set_window_dimensions(int tid, ushort lines, ushort cols) {
 	char big_changes;
 	pid_t pgrp;
 	int ret = 0;
