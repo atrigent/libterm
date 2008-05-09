@@ -9,23 +9,23 @@
 void cursor_abs_move(int tid, char axis, ushort num) {
 	switch(axis) {
 		case X:
-			if(num < descs[tid].cols) {
-				if(num != descs[tid].cursor.x)
-					descs[tid].cursor.x = num;
-				else
-					goto not_moved;
-			} else
-				return;
+			if(num == descs[tid].cursor.x)
+				goto not_moved;
+
+			if(num < descs[tid].cols)
+				descs[tid].cursor.x = num;
+			else
+				descs[tid].cursor.x = descs[tid].cols-1;
 
 			break;
 		case Y:
-			if(num < descs[tid].lines) {
-				if(num != descs[tid].cursor.y)
-					descs[tid].cursor.y = num;
-				else
-					goto not_moved;
-			} else
-				return;
+			if(num == descs[tid].cursor.y)
+				goto not_moved;
+
+			if(num < descs[tid].lines)
+				descs[tid].cursor.y = num;
+			else
+				descs[tid].cursor.y = descs[tid].lines-1;
 
 			break;
 	}
@@ -40,31 +40,19 @@ void cursor_rel_move(int tid, char direction, ushort num) {
 
 	switch(direction) {
 		case UP:
-			if(descs[tid].cursor.y >= num)
-				cursor_abs_move(tid, Y, descs[tid].cursor.y - num);
-			else
-				cursor_abs_move(tid, Y, 0);
+			cursor_abs_move(tid, Y, num <= descs[tid].cursor.y ? descs[tid].cursor.y - num : 0);
 
 			break;
 		case DOWN:
-			if(descs[tid].cursor.y + num < descs[tid].lines)
-				cursor_abs_move(tid, Y, descs[tid].cursor.y + num);
-			else
-				cursor_abs_move(tid, Y, descs[tid].lines-1);
+			cursor_abs_move(tid, Y, descs[tid].cursor.y + num);
 
 			break;
 		case LEFT:
-			if(descs[tid].cursor.x >= num)
-				cursor_abs_move(tid, X, descs[tid].cursor.x - num);
-			else
-				cursor_abs_move(tid, X, 0);
+			cursor_abs_move(tid, Y, num <= descs[tid].cursor.x ? descs[tid].cursor.x - num : 0);
 
 			break;
 		case RIGHT:
-			if(descs[tid].cursor.x + num < descs[tid].cols)
-				cursor_abs_move(tid, X, descs[tid].cursor.x + num);
-			else
-				cursor_abs_move(tid, X, descs[tid].cols-1);
+			cursor_abs_move(tid, X, descs[tid].cursor.x + num);
 
 			break;
 	}
