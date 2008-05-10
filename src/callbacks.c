@@ -67,7 +67,7 @@ int cb_update_areas(int tid) {
 }
 
 int cb_refresh_screen(int tid) {
-	struct area *new_areas[2], **areas_save, area;
+	struct range *new_areas[2], **areas_save, area;
 
 	if(cbs.refresh_screen)
 		cbs.refresh_screen(tid, descs[tid].screen);
@@ -93,7 +93,7 @@ int cb_refresh_screen(int tid) {
 }
 
 int cb_scroll_lines(int tid) {
-	/*struct area area;*/
+	/*struct range area;*/
 
 	if(cbs.scroll_lines)
 		cbs.scroll_lines(tid, descs[tid].lines_scrolled);

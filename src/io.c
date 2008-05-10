@@ -128,10 +128,10 @@ int DLLEXPORT ltm_process_output(int tid) {
 			cursor_wrap(tid);
 
 		if(descs[tid].areas == NULL || descs[tid].nareas == 0 || memcmp(&descs[tid].areas[descs[tid].nareas-1]->end, &descs[tid].cursor, sizeof(struct point))) {
-			descs[tid].areas = realloc(descs[tid].areas, ++descs[tid].nareas * sizeof(struct area *));
+			descs[tid].areas = realloc(descs[tid].areas, ++descs[tid].nareas * sizeof(struct range *));
 			if(!descs[tid].areas) SYS_ERR("realloc", NULL, after_lock);
 
-			descs[tid].areas[descs[tid].nareas-1] = malloc(sizeof(struct area));
+			descs[tid].areas[descs[tid].nareas-1] = malloc(sizeof(struct range));
 			if(!descs[tid].areas[descs[tid].nareas-1]) SYS_ERR("malloc", NULL, after_lock);
 
 			descs[tid].areas[descs[tid].nareas-1]->start.y = descs[tid].cursor.y;
@@ -176,7 +176,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 		 * only update things that have changed
 		 */
 
-		descs[tid].areas = realloc(descs[tid].areas, (descs[tid].nareas+1) * sizeof(struct area *));
+		descs[tid].areas = realloc(descs[tid].areas, (descs[tid].nareas+1) * sizeof(struct range *));
 		if(!descs[tid].areas) SYS_ERR("realloc", NULL, after_lock);
 
 		descs[tid].areas[descs[tid].nareas] = NULL;

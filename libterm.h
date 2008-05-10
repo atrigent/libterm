@@ -19,7 +19,7 @@ struct point {
 	ushort y;
 };
 
-struct area {
+struct range {
 	struct point start;
 	struct point end;
 };
@@ -36,7 +36,7 @@ struct error_info {
 };
 
 struct ltm_callbacks {
-	int (*update_areas)(int, uint **, struct point *, struct area **);
+	int (*update_areas)(int, uint **, struct point *, struct range **);
 	int (*refresh_screen)(int, uint **);
 	int (*scroll_lines)(int, uint);
 	int (*alert)(int);

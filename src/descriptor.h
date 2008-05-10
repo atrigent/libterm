@@ -22,7 +22,7 @@ struct point {
 	ushort y;
 };
 
-struct area {
+struct range {
 	struct point start;
 	struct point end;
 };
@@ -53,7 +53,7 @@ struct ltm_term_desc {
 	uchar *outputbuf;
 	uint buflen;
 
-	struct area **areas;
+	struct range **areas;
 	uint nareas;
 
 	uint lines_scrolled;
