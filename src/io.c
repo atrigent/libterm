@@ -15,7 +15,7 @@ int DLLEXPORT ltm_feed_input_to_program(int tid, char *input, uint n) {
 
 	LOCK_BIG_MUTEX;
 
-	DIE_ON_INVAL_TID(tid)
+	DIE_ON_INVAL_TID(tid);
 
 	if(fwrite(input, 1, n, descs[tid].pty.master) < n)
 		SYS_ERR("fwrite", input, after_lock);
@@ -33,7 +33,7 @@ int DLLEXPORT ltm_simulate_output(int tid, char *input, uint n) {
 
 	LOCK_BIG_MUTEX;
 
-	DIE_ON_INVAL_TID(tid)
+	DIE_ON_INVAL_TID(tid);
 
 	if(fwrite(input, 1, n, descs[tid].pty.slave) < n)
 		SYS_ERR("fwrite", input, after_lock);
@@ -90,7 +90,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 
 	LOCK_BIG_MUTEX;
 
-	DIE_ON_INVAL_TID(tid)
+	DIE_ON_INVAL_TID(tid);
 
 	if(read_into_outputbuf(tid) == -1) PASS_ERR(after_lock);
 
