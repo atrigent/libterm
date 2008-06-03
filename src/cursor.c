@@ -41,19 +41,15 @@ void cursor_rel_move(int tid, char direction, ushort num) {
 	switch(direction) {
 		case UP:
 			cursor_abs_move(tid, Y, num <= descs[tid].cursor.y ? descs[tid].cursor.y - num : 0);
-
 			break;
 		case DOWN:
 			cursor_abs_move(tid, Y, descs[tid].cursor.y + num);
-
 			break;
 		case LEFT:
 			cursor_abs_move(tid, Y, num <= descs[tid].cursor.x ? descs[tid].cursor.x - num : 0);
-
 			break;
 		case RIGHT:
 			cursor_abs_move(tid, X, descs[tid].cursor.x + num);
-
 			break;
 	}
 }
