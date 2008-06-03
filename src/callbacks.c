@@ -50,7 +50,7 @@ before_anything:
 	return ret;
 }
 
-int cb_update_areas(int tid) {
+int cb_update_areas(int tid, struct range **areas) {
 	struct point *curs;
 
 	if(descs[tid].curs_changed)
@@ -58,35 +58,37 @@ int cb_update_areas(int tid) {
 	else
 		curs = NULL;
 
-	/* assuming descs[tid].areas has been set up and is null terminated... */
-	cbs.update_areas(tid, descs[tid].screen, curs, descs[tid].areas);
+	/* assuming areas is null terminated... */
+	cbs.update_areas(tid, descs[tid].screen, curs, areas);
 
 	descs[tid].curs_changed = 0;
 
 	return 0;
 }
 
+int cb_update_area(int tid, struct range *area) {
+	struct range *areas[2];
+
+	areas[0] = area;
+	areas[1] = NULL;
+
+	cb_update_areas(tid, areas);
+
+	return 0;
+}
+
 int cb_refresh_screen(int tid) {
-	struct range *new_areas[2], **areas_save, area;
+	struct range area;
 
 	if(cbs.refresh_screen)
 		cbs.refresh_screen(tid, descs[tid].screen);
 	else {
-		areas_save = descs[tid].areas;
-
 		area.start.y = area.start.x = 0;
 
 		area.end.y = descs[tid].lines-1;
 		area.end.x = descs[tid].cols;
 
-		new_areas[0] = &area;
-		new_areas[1] = NULL;
-
-		descs[tid].areas = new_areas;
-
-		cb_update_areas(tid);
-
-		descs[tid].areas = areas_save;
+		cb_update_area(tid, &area);
 	}
 
 	return 0;

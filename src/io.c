@@ -182,7 +182,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 		descs[tid].areas[descs[tid].nareas] = NULL;
 
 		cb_scroll_lines(tid);
-		cb_update_areas(tid);
+		cb_update_areas(tid, descs[tid].areas);
 	} else
 		/* this is the case in which the entirety of the original content *has* been
 		 * scrolled off the screen, so we might as well just reload the entire thing

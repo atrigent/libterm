@@ -18,7 +18,8 @@ struct ltm_callbacks {
 
 extern int check_callbacks(struct ltm_callbacks *);
 
-extern int cb_update_areas(int);
+extern int cb_update_areas(int, struct range **);
+extern int cb_update_area(int, struct range *);
 
 extern int cb_scroll_lines(int);
 
