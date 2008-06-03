@@ -3,13 +3,15 @@
 
 struct ltm_callbacks {
 	int (*update_areas)(int, uint **, struct point *, struct range **);
-	int (*refresh_screen)(int, uint **);
+
 	int (*scroll_lines)(int, uint);
+
+	int (*refresh_screen)(int, uint **);
 	int (*alert)(int);
 
 	/* threading stuff */
-	int (*term_exit)(int);
 	int (*thread_died)(struct error_info);
+	int (*term_exit)(int);
 
 	/* many more in the future! */
 };
@@ -17,9 +19,12 @@ struct ltm_callbacks {
 extern int check_callbacks(struct ltm_callbacks *);
 
 extern int cb_update_areas(int);
-extern int cb_refresh_screen(int);
+
 extern int cb_scroll_lines(int);
+
+extern int cb_refresh_screen(int);
 extern int cb_alert(int);
+
 extern int cb_term_exit(int);
 extern int cb_thread_died(struct error_info);
 

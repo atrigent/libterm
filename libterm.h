@@ -37,13 +37,15 @@ struct error_info {
 
 struct ltm_callbacks {
 	int (*update_areas)(int, uint **, struct point *, struct range **);
-	int (*refresh_screen)(int, uint **);
+
 	int (*scroll_lines)(int, uint);
+
+	int (*refresh_screen)(int, uint **);
 	int (*alert)(int);
 
 	/* threading stuff */
-	int (*term_exit)(int);
 	int (*thread_died)(struct error_info);
+	int (*term_exit)(int);
 
 	/* many more in the future! */
 };
