@@ -3,7 +3,7 @@
 
 #include "libterm.h"
 #include "cursor.h"
-#include "window.h"
+#include "screen.h"
 #include "bitarr.h"
 
 void cursor_abs_move(int tid, char axis, ushort num) {
