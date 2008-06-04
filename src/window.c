@@ -69,7 +69,7 @@ int DLLEXPORT ltm_set_window_dimensions(int tid, ushort lines, ushort cols) {
 	else
 		big_changes = 0;
 
-	if(set_screen_dimensions(tid, MAINSCREEN, lines, cols) == -1) PASS_ERR(after_lock);
+	if(screen_set_dimensions(tid, MAINSCREEN, lines, cols) == -1) PASS_ERR(after_lock);
 	/* probably:
 	 * set_screen_dimensions(tid, ALTSCREEN, lines, cols);
 	 * in the future

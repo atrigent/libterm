@@ -1,7 +1,7 @@
 #ifndef SCREEN_H
 #define SCREEN_H
 
-extern int set_screen_dimensions(int, char, ushort, ushort);
-extern int scroll_screen(int);
+extern int screen_set_dimensions(int, char, ushort, ushort);
+extern int screen_scroll(int);
 
 #endif

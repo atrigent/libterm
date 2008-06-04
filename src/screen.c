@@ -23,7 +23,7 @@ error:
 	return ret;
 }
 
-int set_screen_dimensions(int tid, char type, ushort lines, ushort cols) {
+int screen_set_dimensions(int tid, char type, ushort lines, ushort cols) {
 	uint **dscreen, ***screen;
 	ushort i, diff, n;
 	int ret = 0;
@@ -161,7 +161,7 @@ error:
 	return ret;
 }
 
-int scroll_screen(int tid) {
+int screen_scroll(int tid) {
 	uint i, n, *linesave;
 
 	/* push this line into the buffer later... */
