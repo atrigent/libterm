@@ -1,16 +1,16 @@
-#include <termios.h>
+#include <sys/ioctl.h>
 #include <string.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <unistd.h>
 
+#ifndef GWINSZ_IN_SYS_IOCTL
+# include <termios.h>
+#endif
+
 #include "libterm.h"
 #include "bitarr.h"
 #include "cursor.h"
-
-#ifdef GWINSZ_IN_SYS_IOCTL
-# include <sys/ioctl.h>
-#endif
 
 int DLLEXPORT ltm_is_line_wrapped(int tid, ushort line) {
 	int ret;
