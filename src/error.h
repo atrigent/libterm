@@ -187,13 +187,13 @@
 	do { \
 		ret = -1; \
 		goto label; \
-	} while(0);
+	} while(0)
 
 #define PASS_ERR_PTR(label) \
 	do { \
 		ret = NULL; \
 		goto label; \
-	} while(0);
+	} while(0)
 
 struct error_info {
 	const char *file;
