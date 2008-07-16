@@ -87,34 +87,38 @@ int cb_refresh(int tid) {
 }
 
 int cb_refresh_screen(int tid) {
-	struct range area;
+	struct range rect;
 
 	if(cbs.refresh_screen)
 		cbs.refresh_screen(tid, descs[tid].screen);
 	else {
-		area.start.y = area.start.x = 0;
+		rect.type = RANGE_RECT;
 
-		area.end.y = descs[tid].lines-1;
-		area.end.x = descs[tid].cols;
+		rect.start.y = rect.start.x = 0;
 
-		cb_update_range(tid, &area);
+		rect.end.y = descs[tid].lines-1;
+		rect.end.x = descs[tid].cols;
+
+		cb_update_range(tid, &rect);
 	}
 
 	return 0;
 }
 
 int cb_scroll_lines(int tid) {
-	/*struct range area;*/
+	/*struct range rect;*/
 
 	if(cbs.scroll_lines)
 		cbs.scroll_lines(tid, descs[tid].lines_scrolled);
 	else {
-		/*area.start.y = area.start.x = 0;
+		/*rect.type = RANGE_RECT;
 
-		area.end.y = descs[tid].lines - lines - 1;
-		area.end.x = descs[tid].cols;
+		rect.start.y = rect.start.x = 0;
 
-		descs[tid].cb.update_areas(tid, descs[tid].screen, NULL, &area, 1);*/
+		rect.end.y = descs[tid].lines - lines - 1;
+		rect.end.x = descs[tid].cols;
+
+		cb_update_range(tid, &rect);*/
 
 		cb_refresh_screen(tid);
 	}

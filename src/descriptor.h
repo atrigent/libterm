@@ -17,12 +17,17 @@
 #define MAINSCREEN 0
 #define ALTSCREEN 1
 
+#define RANGE_AREA 0
+#define RANGE_RECT 1
+
 struct point {
 	ushort x;
 	ushort y;
 };
 
 struct range {
+	char type;
+
 	struct point start;
 	struct point end;
 };
@@ -53,8 +58,8 @@ struct ltm_term_desc {
 	uchar *outputbuf;
 	uint buflen;
 
-	struct range **areas;
-	uint nareas;
+	struct range **ranges;
+	uint nranges;
 
 	uint lines_scrolled;
 };
