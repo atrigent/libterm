@@ -91,7 +91,7 @@ int screen_set_dimensions(int tid, char type, ushort lines, ushort cols) {
 			memmove(dscreen, &dscreen[diff], lines * sizeof(dscreen[0]));
 
 			if(type == MAINSCREEN) {
-				cursor_rel_move(tid, UP, diff);
+				if(cursor_rel_move(tid, UP, diff) == -1) PASS_ERR(error);
 
 				bitarr_shift_left(descs[tid].wrapped, descs[tid].lines, diff);
 			}
@@ -132,7 +132,7 @@ int screen_set_dimensions(int tid, char type, ushort lines, ushort cols) {
 			memmove(&dscreen[diff], dscreen, descs[tid].lines * sizeof(dscreen[0]));
 
 			if(type == MAINSCREEN) {
-				cursor_rel_move(tid, DOWN, diff);
+				if(cursor_rel_move(tid, DOWN, diff) == -1) PASS_ERR(error);
 
 				bitarr_shift_right(descs[tid].wrapped, descs[tid].lines, diff);
 			}

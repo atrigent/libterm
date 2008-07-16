@@ -102,19 +102,24 @@ int DLLEXPORT ltm_process_output(int tid) {
 		if(buf[i] > '~' || buf[i] < ' ') {
 			switch(buf[i]) {
 				case '\n': /* line break */
-					cursor_line_break(tid);
+					if(cursor_line_break(tid) == -1)
+						PASS_ERR(after_lock);
 					break;
 				case '\r': /* carriage return */
-					cursor_abs_move(tid, X, 0);
+					if(cursor_abs_move(tid, X, 0) == -1)
+						PASS_ERR(after_lock);
 					break;
 				case '\b': /* backspace */
-					cursor_rel_move(tid, LEFT, 1);
+					if(cursor_rel_move(tid, LEFT, 1) == -1)
+						PASS_ERR(after_lock);
 					break;
 				case '\v': /* vertical tab */
-					cursor_vertical_tab(tid);
+					if(cursor_vertical_tab(tid) == -1)
+						PASS_ERR(after_lock);
 					break;
 				case '\t': /* horizontal tab */
-					cursor_horiz_tab(tid);
+					if(cursor_horiz_tab(tid) == -1)
+						PASS_ERR(after_lock);
 					break;
 				case '\a': /* bell */
 					cb_alert(tid);
@@ -125,7 +130,8 @@ int DLLEXPORT ltm_process_output(int tid) {
 		}
 
 		if(descs[tid].cursor.x == descs[tid].cols-1 && descs[tid].curs_prev_not_set)
-			cursor_wrap(tid);
+			if(cursor_wrap(tid) == -1)
+				PASS_ERR(after_lock);
 
 		if(descs[tid].areas == NULL || descs[tid].nareas == 0 || memcmp(&descs[tid].areas[descs[tid].nareas-1]->end, &descs[tid].cursor, sizeof(struct point))) {
 			descs[tid].areas = realloc(descs[tid].areas, ++descs[tid].nareas * sizeof(struct range *));
@@ -143,7 +149,8 @@ int DLLEXPORT ltm_process_output(int tid) {
 
 		descs[tid].screen[descs[tid].cursor.y][descs[tid].cursor.x] = buf[i];
 
-		cursor_advance(tid);
+		if(cursor_advance(tid) == -1)
+			PASS_ERR(after_lock);
 
 		descs[tid].areas[descs[tid].nareas-1]->end.x = descs[tid].cursor.x;
 		descs[tid].areas[descs[tid].nareas-1]->end.y = descs[tid].cursor.y;
