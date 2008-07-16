@@ -197,7 +197,7 @@ FILE DLLEXPORT *ltm_term_init(int tid) {
 
 	DIE_ON_INVAL_TID_PTR(tid);
 
-	if(!cbs.update_areas) LTM_ERR_PTR(EPERM, "Terminal init cannot happen; callbacks haven't been set yet", after_lock);
+	if(!cbs.update_ranges) LTM_ERR_PTR(EPERM, "Terminal init cannot happen; callbacks haven't been set yet", after_lock);
 
 	if(!descs[tid].cols || !descs[tid].lines)
 		if(ltm_set_window_dimensions(tid, 24, 80) == -1) PASS_ERR_PTR(after_lock);

@@ -5,14 +5,14 @@
 int check_callbacks(struct ltm_callbacks *callbacks) {
 	int ret = 0;
 
-	if(!callbacks->update_areas)
-		LTM_ERR(ENOTSUP, "The update_areas callback was not supplied", error);
+	if(!callbacks->update_ranges)
+		LTM_ERR(ENOTSUP, "The update_ranges callback was not supplied", error);
 
 	if(!callbacks->refresh_screen)
-		fprintf(dump_dest, "Warning: The refresh_screen callback was not supplied. It will be emulated with update_areas\n");
+		fprintf(dump_dest, "Warning: The refresh_screen callback was not supplied. It will be emulated with update_ranges\n");
 
 	if(!callbacks->scroll_lines)
-		fprintf(dump_dest, "Warning: The scroll_lines callback was not supplied. It will be emulated with update_areas\n");
+		fprintf(dump_dest, "Warning: The scroll_lines callback was not supplied. It will be emulated with update_ranges\n");
 
 	if(!callbacks->alert)
 		fprintf(dump_dest, "Warning: The alert callback was not supplied. The ASCII bell character will be ignored\n");
@@ -50,7 +50,7 @@ before_anything:
 	return ret;
 }
 
-int cb_update_areas(int tid, struct range **areas) {
+int cb_update_ranges(int tid, struct range **ranges) {
 	struct point *curs;
 
 	if(descs[tid].curs_changed)
@@ -58,21 +58,21 @@ int cb_update_areas(int tid, struct range **areas) {
 	else
 		curs = NULL;
 
-	/* assuming areas is null terminated... */
-	cbs.update_areas(tid, descs[tid].screen, curs, areas);
+	/* assuming ranges is null terminated... */
+	cbs.update_ranges(tid, descs[tid].screen, curs, ranges);
 
 	descs[tid].curs_changed = 0;
 
 	return 0;
 }
 
-int cb_update_area(int tid, struct range *area) {
-	struct range *areas[2];
+int cb_update_range(int tid, struct range *range) {
+	struct range *ranges[2];
 
-	areas[0] = area;
-	areas[1] = NULL;
+	ranges[0] = range;
+	ranges[1] = NULL;
 
-	cb_update_areas(tid, areas);
+	cb_update_ranges(tid, ranges);
 
 	return 0;
 }
@@ -88,7 +88,7 @@ int cb_refresh_screen(int tid) {
 		area.end.y = descs[tid].lines-1;
 		area.end.x = descs[tid].cols;
 
-		cb_update_area(tid, &area);
+		cb_update_range(tid, &area);
 	}
 
 	return 0;
