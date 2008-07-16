@@ -36,7 +36,8 @@ struct error_info {
 };
 
 struct ltm_callbacks {
-	int (*update_ranges)(int, uint **, struct point *, struct range **);
+	int (*update_ranges)(int, uint **, struct range **);
+	int (*refresh)(int, struct point *);
 
 	int (*scroll_lines)(int, uint);
 

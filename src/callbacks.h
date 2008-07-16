@@ -2,7 +2,8 @@
 #define CALLBACKS_H
 
 struct ltm_callbacks {
-	int (*update_ranges)(int, uint **, struct point *, struct range **);
+	int (*update_ranges)(int, uint **, struct range **);
+	int (*refresh)(int, struct point *);
 
 	int (*scroll_lines)(int, uint);
 
@@ -20,6 +21,7 @@ extern int check_callbacks(struct ltm_callbacks *);
 
 extern int cb_update_ranges(int, struct range **);
 extern int cb_update_range(int, struct range *);
+extern int cb_refresh(int);
 
 extern int cb_scroll_lines(int);
 

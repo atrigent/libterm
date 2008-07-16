@@ -8,6 +8,9 @@ int check_callbacks(struct ltm_callbacks *callbacks) {
 	if(!callbacks->update_ranges)
 		LTM_ERR(ENOTSUP, "The update_ranges callback was not supplied", error);
 
+	if(!callbacks->refresh)
+		LTM_ERR(ENOTSUP, "The refresh callback was not supplied", error);
+
 	if(!callbacks->refresh_screen)
 		fprintf(dump_dest, "Warning: The refresh_screen callback was not supplied. It will be emulated with update_ranges\n");
 
@@ -51,17 +54,8 @@ before_anything:
 }
 
 int cb_update_ranges(int tid, struct range **ranges) {
-	struct point *curs;
-
-	if(descs[tid].curs_changed)
-		curs = &descs[tid].cursor;
-	else
-		curs = NULL;
-
 	/* assuming ranges is null terminated... */
-	cbs.update_ranges(tid, descs[tid].screen, curs, ranges);
-
-	descs[tid].curs_changed = 0;
+	cbs.update_ranges(tid, descs[tid].screen, ranges);
 
 	return 0;
 }
@@ -73,6 +67,21 @@ int cb_update_range(int tid, struct range *range) {
 	ranges[1] = NULL;
 
 	cb_update_ranges(tid, ranges);
+
+	return 0;
+}
+
+int cb_refresh(int tid) {
+	struct point *curs;
+
+	if(descs[tid].curs_changed)
+		curs = &descs[tid].cursor;
+	else
+		curs = NULL;
+
+	cbs.refresh(tid, curs);
+
+	descs[tid].curs_changed = 0;
 
 	return 0;
 }

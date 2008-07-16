@@ -191,6 +191,8 @@ int DLLEXPORT ltm_process_output(int tid) {
 
 	descs[tid].lines_scrolled = 0;
 
+	cb_refresh(tid);
+
 	for(i = 0; i < descs[tid].nareas; i++) free(descs[tid].areas[i]);
 	free(descs[tid].areas);
 
