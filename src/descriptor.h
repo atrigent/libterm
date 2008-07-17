@@ -20,9 +20,16 @@
 #define RANGE_AREA 0
 #define RANGE_RECT 1
 
+#define TOPRANGE(set) (set)->ranges[(set)->nranges-1]
+
 struct point {
 	ushort x;
 	ushort y;
+};
+
+struct rangeset {
+	struct range **ranges;
+	uint nranges;
 };
 
 struct range {
@@ -58,8 +65,7 @@ struct ltm_term_desc {
 	uchar *outputbuf;
 	uint buflen;
 
-	struct range **ranges;
-	uint nranges;
+	struct rangeset set;
 
 	uint lines_scrolled;
 };

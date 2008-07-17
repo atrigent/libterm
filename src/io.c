@@ -133,20 +133,20 @@ int DLLEXPORT ltm_process_output(int tid) {
 			if(cursor_wrap(tid) == -1)
 				PASS_ERR(after_lock);
 
-		if(descs[tid].ranges == NULL || descs[tid].nranges == 0 || memcmp(&descs[tid].ranges[descs[tid].nranges-1]->end, &descs[tid].cursor, sizeof(struct point))) {
-			descs[tid].ranges = realloc(descs[tid].ranges, ++descs[tid].nranges * sizeof(struct range *));
-			if(!descs[tid].ranges) SYS_ERR("realloc", NULL, after_lock);
+		if(descs[tid].set.ranges == NULL || descs[tid].set.nranges == 0 || memcmp(&TOPRANGE(&descs[tid].set)->end, &descs[tid].cursor, sizeof(struct point))) {
+			descs[tid].set.ranges = realloc(descs[tid].set.ranges, ++descs[tid].set.nranges * sizeof(struct range *));
+			if(!descs[tid].set.ranges) SYS_ERR("realloc", NULL, after_lock);
 
-			descs[tid].ranges[descs[tid].nranges-1] = malloc(sizeof(struct range));
-			if(!descs[tid].ranges[descs[tid].nranges-1]) SYS_ERR("malloc", NULL, after_lock);
+			TOPRANGE(&descs[tid].set) = malloc(sizeof(struct range));
+			if(!TOPRANGE(&descs[tid].set)) SYS_ERR("malloc", NULL, after_lock);
 
-			descs[tid].ranges[descs[tid].nranges-1]->type = RANGE_AREA;
+			TOPRANGE(&descs[tid].set)->type = RANGE_AREA;
 
-			descs[tid].ranges[descs[tid].nranges-1]->start.y = descs[tid].cursor.y;
-			descs[tid].ranges[descs[tid].nranges-1]->start.x = descs[tid].cursor.x;
+			TOPRANGE(&descs[tid].set)->start.y = descs[tid].cursor.y;
+			TOPRANGE(&descs[tid].set)->start.x = descs[tid].cursor.x;
 
-			descs[tid].ranges[descs[tid].nranges-1]->end.y = descs[tid].cursor.y;
-			descs[tid].ranges[descs[tid].nranges-1]->end.x = descs[tid].cursor.x;
+			TOPRANGE(&descs[tid].set)->end.y = descs[tid].cursor.y;
+			TOPRANGE(&descs[tid].set)->end.x = descs[tid].cursor.x;
 		}
 
 		descs[tid].screen[descs[tid].cursor.y][descs[tid].cursor.x] = buf[i];
@@ -154,8 +154,8 @@ int DLLEXPORT ltm_process_output(int tid) {
 		if(cursor_advance(tid) == -1)
 			PASS_ERR(after_lock);
 
-		descs[tid].ranges[descs[tid].nranges-1]->end.x = descs[tid].cursor.x;
-		descs[tid].ranges[descs[tid].nranges-1]->end.y = descs[tid].cursor.y;
+		TOPRANGE(&descs[tid].set)->end.x = descs[tid].cursor.x;
+		TOPRANGE(&descs[tid].set)->end.y = descs[tid].cursor.y;
 	}
 
 	if(i == descs[tid].buflen) {
@@ -185,13 +185,13 @@ int DLLEXPORT ltm_process_output(int tid) {
 		 * only update things that have changed
 		 */
 
-		descs[tid].ranges = realloc(descs[tid].ranges, (descs[tid].nranges+1) * sizeof(struct range *));
-		if(!descs[tid].ranges) SYS_ERR("realloc", NULL, after_lock);
+		descs[tid].set.ranges = realloc(descs[tid].set.ranges, (descs[tid].set.nranges+1) * sizeof(struct range *));
+		if(!descs[tid].set.ranges) SYS_ERR("realloc", NULL, after_lock);
 
-		descs[tid].ranges[descs[tid].nranges] = NULL;
+		descs[tid].set.ranges[descs[tid].set.nranges] = NULL;
 
 		cb_scroll_lines(tid);
-		cb_update_ranges(tid, descs[tid].ranges);
+		cb_update_ranges(tid, descs[tid].set.ranges);
 	} else
 		/* this is the case in which the entirety of the original content *has* been
 		 * scrolled off the screen, so we might as well just reload the entire thing
@@ -202,11 +202,11 @@ int DLLEXPORT ltm_process_output(int tid) {
 
 	cb_refresh(tid);
 
-	for(i = 0; i < descs[tid].nranges; i++) free(descs[tid].ranges[i]);
-	free(descs[tid].ranges);
+	for(i = 0; i < descs[tid].set.nranges; i++) free(descs[tid].set.ranges[i]);
+	free(descs[tid].set.ranges);
 
-	descs[tid].ranges = NULL;
-	descs[tid].nranges = 0;
+	descs[tid].set.ranges = NULL;
+	descs[tid].set.nranges = 0;
 
 after_lock:
 	UNLOCK_BIG_MUTEX;
