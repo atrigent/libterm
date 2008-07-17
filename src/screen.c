@@ -162,7 +162,7 @@ error:
 }
 
 int screen_scroll(int tid) {
-	uint i, n, *linesave;
+	uint i, *linesave;
 
 	/* push this line into the buffer later... */
 	linesave = descs[tid].screen[0];
@@ -175,33 +175,7 @@ int screen_scroll(int tid) {
 
 	bitarr_shift_left(descs[tid].wrapped, descs[tid].lines, 1);
 
-	for(i = 0; i < descs[tid].set.nranges;)
-		if(!descs[tid].set.ranges[i]->end.y) {
-			/* this update has been scrolled off,
-			 * free it and rotate the ranges down
-			 */
-			free(descs[tid].set.ranges[i]);
-
-			descs[tid].set.nranges--;
-
-			for(n = i; n < descs[tid].set.nranges; n++) descs[tid].set.ranges[n] = descs[tid].set.ranges[n+1];
-		} else {
-			/* move it down... */
-			if(descs[tid].set.ranges[i]->start.y)
-				/* if it's not at the top yet, move it one up */
-				descs[tid].set.ranges[i]->start.y--;
-			else
-				/* if it's already at the top, don't move it;
-				 * set the X coord to the beginning. Think
-				 * about it! :)
-				 */
-				if(descs[tid].set.ranges[i]->type == RANGE_AREA)
-					descs[tid].set.ranges[i]->start.x = 0;
-
-			descs[tid].set.ranges[i]->end.y--;
-
-			i++;
-		}
+	range_shift(&descs[tid].set);
 
 	descs[tid].lines_scrolled++;
 

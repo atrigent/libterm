@@ -3,10 +3,11 @@ AM_LIBTOOLFLAGS = @libtoolflags@
 lib_LTLIBRARIES = libterm.la
 libterm_la_SOURCES = callbacks.c cursor.c error.c init.c window.c \
 		     io.c process.c bitarr.c pty.c conf.c linkedlist.c \
-		     hashtable.c textparse.c idarr.c screen.c \
+		     hashtable.c textparse.c idarr.c screen.c rangeset.c \
 		     callbacks.h cursor.h descriptor.h error.h window.h libterm.h \
 		     process.h ptydev.h util.h bitarr.h threading.h conf.h \
-		     linkedlist.h hashtable.h textparse.h idarr.h screen.h
+		     linkedlist.h hashtable.h textparse.h idarr.h screen.h \
+		     rangeset.h
 libterm_la_CPPFLAGS = -DGLOBAL_CONFIG=\"$(sysconfdir)/libterm.conf\"
 libterm_la_CFLAGS = -Wno-unused-label
 

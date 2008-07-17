@@ -15,6 +15,7 @@ typedef unsigned int uint;
 #include "config.h"
 #include "error.h"
 #include "ptydev.h"
+#include "rangeset.h"
 #include "descriptor.h"
 #include "callbacks.h"
 #include "threading.h"

@@ -134,11 +134,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 				PASS_ERR(after_lock);
 
 		if(descs[tid].set.ranges == NULL || descs[tid].set.nranges == 0 || memcmp(&TOPRANGE(&descs[tid].set)->end, &descs[tid].cursor, sizeof(struct point))) {
-			descs[tid].set.ranges = realloc(descs[tid].set.ranges, ++descs[tid].set.nranges * sizeof(struct range *));
-			if(!descs[tid].set.ranges) SYS_ERR("realloc", NULL, after_lock);
-
-			TOPRANGE(&descs[tid].set) = malloc(sizeof(struct range));
-			if(!TOPRANGE(&descs[tid].set)) SYS_ERR("malloc", NULL, after_lock);
+			if(range_add(&descs[tid].set) == -1) PASS_ERR(after_lock);
 
 			TOPRANGE(&descs[tid].set)->type = RANGE_AREA;
 
@@ -185,10 +181,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 		 * only update things that have changed
 		 */
 
-		descs[tid].set.ranges = realloc(descs[tid].set.ranges, (descs[tid].set.nranges+1) * sizeof(struct range *));
-		if(!descs[tid].set.ranges) SYS_ERR("realloc", NULL, after_lock);
-
-		descs[tid].set.ranges[descs[tid].set.nranges] = NULL;
+		if(range_finish(&descs[tid].set) == -1) PASS_ERR(after_lock);
 
 		cb_scroll_lines(tid);
 		cb_update_ranges(tid, descs[tid].set.ranges);
@@ -202,11 +195,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 
 	cb_refresh(tid);
 
-	for(i = 0; i < descs[tid].set.nranges; i++) free(descs[tid].set.ranges[i]);
-	free(descs[tid].set.ranges);
-
-	descs[tid].set.ranges = NULL;
-	descs[tid].set.nranges = 0;
+	range_free(&descs[tid].set);
 
 after_lock:
 	UNLOCK_BIG_MUTEX;
