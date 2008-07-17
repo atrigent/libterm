@@ -257,7 +257,7 @@ int DLLEXPORT ltm_close(int tid) {
 	fclose(descs[tid].pty.master);
 	fclose(descs[tid].pty.slave);
 
-	for(i=0; i < descs[tid].height; i++)
+	for(i=0; i < descs[tid].lines; i++)
 		free(descs[tid].main_screen[i]);
 
 	free(descs[tid].main_screen);
