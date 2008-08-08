@@ -13,55 +13,55 @@
 
 # define PTHREAD_CALL(func, args, data, label) \
 	if((errno = func args)) \
-		SYS_ERR(#func, data, label);
+		SYS_ERR(#func, data, label)
 
 # define PTHREAD_CALL_PTR(func, args, data, label) \
 	if((errno = func args)) \
-		SYS_ERR_PTR(#func, data, label);
+		SYS_ERR_PTR(#func, data, label)
 
 # define PTHREAD_CALL_THR(func, args, data, label) \
 	if((errno = func args)) \
-		SYS_ERR_THR(#func, data, label);
+		SYS_ERR_THR(#func, data, label)
 
 /* locking and unlocking */
 
 # define MUTEX_LOCK(mutex, label) \
-	PTHREAD_CALL(pthread_mutex_lock, (&mutex), NULL, label);
+	PTHREAD_CALL(pthread_mutex_lock, (&mutex), NULL, label)
 
 # define MUTEX_UNLOCK(mutex, label) \
-	PTHREAD_CALL(pthread_mutex_unlock, (&mutex), NULL, label);
+	PTHREAD_CALL(pthread_mutex_unlock, (&mutex), NULL, label)
 
 # define MUTEX_LOCK_PTR(mutex, label) \
-	PTHREAD_CALL_PTR(pthread_mutex_lock, (&mutex), NULL, label);
+	PTHREAD_CALL_PTR(pthread_mutex_lock, (&mutex), NULL, label)
 
 # define MUTEX_UNLOCK_PTR(mutex, label) \
-	PTHREAD_CALL_PTR(pthread_mutex_unlock, (&mutex), NULL, label);
+	PTHREAD_CALL_PTR(pthread_mutex_unlock, (&mutex), NULL, label)
 
 # define MUTEX_LOCK_THR(mutex, label) \
-	PTHREAD_CALL_THR(pthread_mutex_lock, (&mutex), NULL, label);
+	PTHREAD_CALL_THR(pthread_mutex_lock, (&mutex), NULL, label)
 
 # define MUTEX_UNLOCK_THR(mutex, label) \
-	PTHREAD_CALL_THR(pthread_mutex_unlock, (&mutex), NULL, label);
+	PTHREAD_CALL_THR(pthread_mutex_unlock, (&mutex), NULL, label)
 
 /* locking and unlocking of the "big mutex" */
 
 # define LOCK_BIG_MUTEX \
-	MUTEX_LOCK(the_big_mutex, before_anything);
+	MUTEX_LOCK(the_big_mutex, before_anything)
 
 # define UNLOCK_BIG_MUTEX \
-	MUTEX_UNLOCK(the_big_mutex, before_anything);
+	MUTEX_UNLOCK(the_big_mutex, before_anything)
 
 # define LOCK_BIG_MUTEX_THR \
-	MUTEX_LOCK_THR(the_big_mutex, after_alloc);
+	MUTEX_LOCK_THR(the_big_mutex, after_alloc)
 
 # define UNLOCK_BIG_MUTEX_THR \
-	MUTEX_UNLOCK_THR(the_big_mutex, after_alloc);
+	MUTEX_UNLOCK_THR(the_big_mutex, after_alloc)
 
 # define LOCK_BIG_MUTEX_PTR \
-	MUTEX_LOCK_PTR(the_big_mutex, before_anything);
+	MUTEX_LOCK_PTR(the_big_mutex, before_anything)
 
 # define UNLOCK_BIG_MUTEX_PTR \
-	MUTEX_UNLOCK_PTR(the_big_mutex, before_anything);
+	MUTEX_UNLOCK_PTR(the_big_mutex, before_anything)
 
 extern pthread_mutex_t the_big_mutex;
 extern void *watch_for_events();
