@@ -36,11 +36,10 @@ void range_shift(struct rangeset *set) {
 				set->ranges[i]->start.y--;
 			else
 				/* if it's already at the top, don't move it;
-				 * set the X coord to the beginning. Think
+				 * set the X coord to the left bound. Think
 				 * about it! :)
 				 */
-				if(set->ranges[i]->type == RANGE_AREA)
-					set->ranges[i]->start.x = 0;
+				set->ranges[i]->start.x = set->ranges[i]->leftbound;
 
 			set->ranges[i]->end.y--;
 

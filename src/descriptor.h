@@ -17,17 +17,14 @@
 #define MAINSCREEN 0
 #define ALTSCREEN 1
 
-#define RANGE_AREA 0
-#define RANGE_RECT 1
-
 struct point {
 	ushort x;
 	ushort y;
 };
 
 struct range {
-	char type;
-
+	ushort leftbound;
+	ushort rightbound;
 	struct point start;
 	struct point end;
 };

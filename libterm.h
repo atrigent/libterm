@@ -8,9 +8,6 @@
 #  define extern extern __declspec(dllimport)
 #endif
 
-#define RANGE_AREA 0
-#define RANGE_RECT 1
-
 #define ERROR_DATA_LEN 256
 
 typedef unsigned int uint;
@@ -23,8 +20,8 @@ struct point {
 };
 
 struct range {
-	char type;
-
+	ushort leftbound;
+	ushort rightbound;
 	struct point start;
 	struct point end;
 };
