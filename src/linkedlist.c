@@ -34,7 +34,7 @@ error:
 int linkedlist_add_str_node(struct list_node **head, char *key, void *data, uint len) {
 	int ret = 0;
 
-	if(add_keyless_node(head, data, len) == -1) PASS_ERR(error);
+	if(add_keyless_node(head, data, len) == -1) return -1;
 
 	(*head)->which = STRING;
 	(*head)->u.strkey = strdup(key);
@@ -45,15 +45,12 @@ error:
 }
 
 int linkedlist_add_int_node(struct list_node **head, int key, void *data, uint len) {
-	int ret = 0;
-
-	if(add_keyless_node(head, data, len) == -1) PASS_ERR(error);
+	if(add_keyless_node(head, data, len) == -1) return -1;
 
 	(*head)->which = INTEGER;
 	(*head)->u.intkey = key;
 
-error:
-	return ret;
+	return 0;
 }
 
 struct list_node *linkedlist_find_str_node(struct list_node *head, char *key) {

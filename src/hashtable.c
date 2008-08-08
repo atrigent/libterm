@@ -46,7 +46,7 @@ int hashtable_set_pair(struct list_node *hashtable[], char *key, void *data, uin
 		node->data = databuf;
 		node->len = len;
 	} else
-		if(linkedlist_add_str_node(head, key, data, len) == -1) PASS_ERR(error);
+		if(linkedlist_add_str_node(head, key, data, len) == -1) return -1;
 
 error:
 	return ret;

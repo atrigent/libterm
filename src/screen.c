@@ -51,7 +51,7 @@ int screen_set_dimensions(int tid, char type, ushort lines, ushort cols) {
 				dscreen[i][n] = ' ';
 		}
 
-		if(bitarr_resize(&descs[tid].wrapped, 0, lines) == -1) PASS_ERR(error);
+		if(bitarr_resize(&descs[tid].wrapped, 0, lines) == -1) return -1;
 	} else if(lines < descs[tid].lines) {
 		/* in order to minimize the work that's done,
 		 * here are some orders in which to do things:
@@ -91,7 +91,7 @@ int screen_set_dimensions(int tid, char type, ushort lines, ushort cols) {
 			memmove(dscreen, &dscreen[diff], lines * sizeof(dscreen[0]));
 
 			if(type == MAINSCREEN) {
-				if(cursor_rel_move(tid, UP, diff) == -1) PASS_ERR(error);
+				if(cursor_rel_move(tid, UP, diff) == -1) return -1;
 
 				bitarr_shift_left(descs[tid].wrapped, descs[tid].lines, diff);
 			}
@@ -100,9 +100,9 @@ int screen_set_dimensions(int tid, char type, ushort lines, ushort cols) {
 		*screen = dscreen = realloc(dscreen, lines * sizeof(dscreen[0]));
 		if(!dscreen) SYS_ERR("realloc", NULL, error);
 
-		if(bitarr_resize(&descs[tid].wrapped, descs[tid].lines, lines) == -1) PASS_ERR(error);
+		if(bitarr_resize(&descs[tid].wrapped, descs[tid].lines, lines) == -1) return -1;
 
-		if(resize_cols(tid, lines, cols, dscreen) == -1) PASS_ERR(error);
+		if(resize_cols(tid, lines, cols, dscreen) == -1) return -1;
 	} else if(lines > descs[tid].lines) {
 		/* in the future this will look something like this:
 		 *
@@ -118,12 +118,12 @@ int screen_set_dimensions(int tid, char type, ushort lines, ushort cols) {
 
 		diff = 0;
 
-		if(resize_cols(tid, descs[tid].lines, cols, dscreen) == -1) PASS_ERR(error);
+		if(resize_cols(tid, descs[tid].lines, cols, dscreen) == -1) return -1;
 
 		*screen = dscreen = realloc(dscreen, lines * sizeof(dscreen[0]));
 		if(!dscreen) SYS_ERR("realloc", NULL, error);
 
-		if(bitarr_resize(&descs[tid].wrapped, descs[tid].lines, lines) == -1) PASS_ERR(error);
+		if(bitarr_resize(&descs[tid].wrapped, descs[tid].lines, lines) == -1) return -1;
 
 /*		for(i = diff; i < lines; i++)
 			dscreen[i] = dscreen[i-diff];*/
@@ -132,7 +132,7 @@ int screen_set_dimensions(int tid, char type, ushort lines, ushort cols) {
 			memmove(&dscreen[diff], dscreen, descs[tid].lines * sizeof(dscreen[0]));
 
 			if(type == MAINSCREEN) {
-				if(cursor_rel_move(tid, DOWN, diff) == -1) PASS_ERR(error);
+				if(cursor_rel_move(tid, DOWN, diff) == -1) return -1;
 
 				bitarr_shift_right(descs[tid].wrapped, descs[tid].lines, diff);
 			}
@@ -155,7 +155,7 @@ int screen_set_dimensions(int tid, char type, ushort lines, ushort cols) {
 				dscreen[i][n] = ' ';
 		}
 	} else
-		if(resize_cols(tid, lines, cols, dscreen) == -1) PASS_ERR(error);
+		if(resize_cols(tid, lines, cols, dscreen) == -1) return -1;
 
 error:
 	return ret;
