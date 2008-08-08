@@ -92,6 +92,9 @@ int cb_refresh_screen(int tid) {
 	if(cbs.refresh_screen)
 		cbs.refresh_screen(tid, descs[tid].screen);
 	else {
+		range.action = ACT_COPY;
+		range.val = 0;
+
 		range.leftbound = range.start.y = range.start.x = 0;
 
 		range.end.y = descs[tid].lines-1;
@@ -110,6 +113,9 @@ int cb_scroll_lines(int tid) {
 		cbs.scroll_lines(tid, descs[tid].lines_scrolled);
 	else {
 		/*
+		range.action = ACT_COPY;
+		range.val = 0;
+
 		range.leftbound = range.start.y = range.start.x = 0;
 
 		range.end.y = descs[tid].lines - descs[tid].lines_scrolled - 1;

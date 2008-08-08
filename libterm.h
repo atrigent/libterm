@@ -8,6 +8,10 @@
 #  define extern extern __declspec(dllimport)
 #endif
 
+#define ACT_COPY   0
+#define ACT_CLEAR  1
+#define ACT_SCROLL 2
+
 #define ERROR_DATA_LEN 256
 
 typedef unsigned int uint;
@@ -20,6 +24,9 @@ struct point {
 };
 
 struct range {
+	char action;
+	uint val;
+
 	ushort leftbound;
 	ushort rightbound;
 	struct point start;

@@ -136,6 +136,9 @@ int DLLEXPORT ltm_process_output(int tid) {
 		if(descs[tid].set.ranges == NULL || descs[tid].set.nranges == 0 || memcmp(&TOPRANGE(&descs[tid].set)->end, &descs[tid].cursor, sizeof(struct point))) {
 			if(range_add(&descs[tid].set) == -1) PASS_ERR(after_lock);
 
+			TOPRANGE(&descs[tid].set)->action = ACT_COPY;
+			TOPRANGE(&descs[tid].set)->val = 0;
+
 			TOPRANGE(&descs[tid].set)->leftbound = 0;
 			TOPRANGE(&descs[tid].set)->rightbound = descs[tid].cols-1;
 

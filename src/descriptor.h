@@ -17,12 +17,19 @@
 #define MAINSCREEN 0
 #define ALTSCREEN 1
 
+#define ACT_COPY   0
+#define ACT_CLEAR  1
+#define ACT_SCROLL 2
+
 struct point {
 	ushort x;
 	ushort y;
 };
 
 struct range {
+	char action;
+	uint val;
+
 	ushort leftbound;
 	ushort rightbound;
 	struct point start;
