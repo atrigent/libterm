@@ -74,11 +74,9 @@ int cursor_horiz_tab(int tid) {
 int cursor_down(int tid) {
 	/* scroll the screen, but only in the main screen */
 	if(descs[tid].cursor.y == descs[tid].lines-1 && descs[tid].cur_screen == MAINSCREEN)
-		screen_scroll(tid);
+		return screen_scroll(tid);
 	else
 		return cursor_rel_move(tid, DOWN, 1);
-
-	return 0;
 }
 
 int cursor_vertical_tab(int tid) {
