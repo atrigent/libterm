@@ -133,7 +133,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 			if(cursor_wrap(tid) == -1)
 				PASS_ERR(after_lock);
 
-		if(descs[tid].set.ranges == NULL || descs[tid].set.nranges == 0 || memcmp(&TOPRANGE(&descs[tid].set)->end, &descs[tid].cursor, sizeof(struct point))) {
+		if(!descs[tid].set.nranges || memcmp(&TOPRANGE(&descs[tid].set)->end, &descs[tid].cursor, sizeof(struct point))) {
 			if(range_add(&descs[tid].set) == -1) PASS_ERR(after_lock);
 
 			TOPRANGE(&descs[tid].set)->action = ACT_COPY;
