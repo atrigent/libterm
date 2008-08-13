@@ -6,6 +6,7 @@
 
 #include "libterm.h"
 #include "process.h"
+#include "screen.h"
 #include "window.h"
 #include "idarr.h"
 #include "conf.h"
@@ -246,6 +247,7 @@ before_anything:
 int DLLEXPORT ltm_close(int tid) {
 	int ret = 0;
 	uint i;
+	int n;
 
 	CHECK_INITED;
 
@@ -257,12 +259,16 @@ int DLLEXPORT ltm_close(int tid) {
 	fclose(descs[tid].pty.master);
 	fclose(descs[tid].pty.slave);
 
-	for(i=0; i < descs[tid].lines; i++)
-		free(descs[tid].main_screen[i]);
+	for(n = 0; n < descs[tid].next_sid; n++)
+		if(descs[tid].screens[n].allocated) {
+			for(i=0; i < descs[tid].screens[n].lines; i++)
+				free(descs[tid].screens[n].matrix[i]);
 
-	free(descs[tid].main_screen);
+			free(descs[tid].screens[n].matrix);
+			free(descs[tid].screens[n].wrapped);
+		}
 
-	free(descs[tid].wrapped);
+	free(descs[tid].screens);
 
 	if(IDARR_ID_DEALLOC(descs, next_tid, tid) == -1)
 		PASS_ERR(after_lock);

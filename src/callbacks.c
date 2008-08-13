@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "libterm.h"
+#include "screen.h"
 
 int check_callbacks(struct ltm_callbacks *callbacks) {
 	int ret = 0;
@@ -55,7 +56,7 @@ before_anything:
 
 int cb_update_ranges(int tid, struct range **ranges) {
 	/* assuming ranges is null terminated... */
-	cbs.update_ranges(tid, descs[tid].screen, ranges);
+	cbs.update_ranges(tid, CUR_SCR(tid).matrix, ranges);
 
 	return 0;
 }
@@ -75,7 +76,7 @@ int cb_refresh(int tid) {
 	struct point *curs;
 
 	if(descs[tid].curs_changed)
-		curs = &descs[tid].cursor;
+		curs = &CUR_SCR(tid).cursor;
 	else
 		curs = NULL;
 
@@ -90,7 +91,7 @@ int cb_refresh_screen(int tid) {
 	struct range range;
 
 	if(cbs.refresh_screen)
-		cbs.refresh_screen(tid, descs[tid].screen);
+		cbs.refresh_screen(tid, CUR_SCR(tid).matrix);
 	else {
 		range.action = ACT_COPY;
 		range.val = 0;

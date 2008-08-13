@@ -21,7 +21,7 @@ int DLLEXPORT ltm_is_line_wrapped(int tid, ushort line) {
 
 	if(line > descs[tid].lines-1) LTM_ERR(EINVAL, "line is too large", after_lock);
 
-	ret = bitarr_test_index(descs[tid].wrapped, line);
+	ret = bitarr_test_index(CUR_SCR(tid).wrapped, line);
 
 after_lock:
 	UNLOCK_BIG_MUTEX;
@@ -64,38 +64,20 @@ int DLLEXPORT ltm_set_window_dimensions(int tid, ushort lines, ushort cols) {
 
 	if(lines > descs[tid].lines && 0 /* lines_in_buffer(tid) */)
 		big_changes = 1;
-	else if(lines < descs[tid].lines && descs[tid].cursor.y >= lines)
+	else if(lines < descs[tid].lines && CUR_SCR(tid).cursor.y >= lines)
 		big_changes = 1;
 	else
 		big_changes = 0;
 
-	if(screen_set_dimensions(tid, MAINSCREEN, lines, cols) == -1) PASS_ERR(after_lock);
-	/* probably:
-	 * set_screen_dimensions(tid, ALTSCREEN, lines, cols);
-	 * in the future
-	 * ... or more! (who knows?)
-	 *
-	 * even though everything else is enabled to support an alternate screen,
-	 * I don't want to enable this as it's a fairly expensive operation, and
-	 * what's the point of enabling it if it's not actually used yet?
-	 */
+	if(!descs[tid].next_sid) {
+		/* for first-run case */
+		descs[tid].cur_screen = descs[tid].cur_input_screen = screen_alloc(tid, 1, lines, cols);
+		if(descs[tid].cur_screen == -1) PASS_ERR(after_lock);
+	} else
+		if(screen_set_dimensions(tid, descs[tid].cur_screen, lines, cols) == -1) PASS_ERR(after_lock);
 
 	descs[tid].lines = lines;
 	descs[tid].cols = cols;
-
-	/* since the memory for a descriptor gets zero'd out and MAINSCREEN
-	 * evaluates to zero, this should work even when cur_screen hasn't
-	 * been explicitly set yet
-	 *
-	 * is it wrong to make an assumption like this? is it ok to perform
-	 * unnecessary operations (explicitly setting cur_screen to MAINSCREEN)
-	 * in the name of correctness? I don't know :(
-	 */
-	if(descs[tid].cur_screen == MAINSCREEN)
-		descs[tid].screen = descs[tid].main_screen;
-	else if(descs[tid].cur_screen == ALTSCREEN)
-		descs[tid].screen = descs[tid].alt_screen;
-	/* what to do if cur_screen contains an invalid value??? */
 
 	/* only do this if the pty has been created and the shell has been started! */
 	/* checking if pid is set is a quick'n'dirty way or checking whether ltm_term_init finished */

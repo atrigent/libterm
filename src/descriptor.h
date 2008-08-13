@@ -11,12 +11,6 @@
 	if((tid) >= next_tid || descs[tid].allocated == 0) \
 		LTM_ERR_PTR(EINVAL, "Invalid TID", after_lock)
 
-/* some things won't work if MAINSCREEN isn't zero! don't
- * change this!
- */
-#define MAINSCREEN 0
-#define ALTSCREEN 1
-
 #define ACT_COPY   0
 #define ACT_CLEAR  1
 #define ACT_SCROLL 2
@@ -48,16 +42,10 @@ struct ltm_term_desc {
 	ushort lines;
 	ushort cols;
 
-	struct point cursor;
-	char curs_changed;
-	char curs_prev_not_set;
-
-	char cur_screen;
-	uint **screen;
-	uint **main_screen;
-	uint **alt_screen;
-
-	uchar *wrapped;
+	int cur_screen;
+	int cur_input_screen;
+	struct screen *screens;
+	int next_sid;
 
 	uchar *outputbuf;
 	uint buflen;
@@ -65,6 +53,8 @@ struct ltm_term_desc {
 	struct rangeset set;
 
 	uint lines_scrolled;
+
+	char curs_changed;
 };
 
 extern struct ltm_term_desc *descs;

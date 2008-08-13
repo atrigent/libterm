@@ -6,6 +6,7 @@
 
 #include "libterm.h"
 #include "cursor.h"
+#include "screen.h"
 #include "process.h"
 
 int DLLEXPORT ltm_feed_input_to_program(int tid, char *input, uint n) {
@@ -102,23 +103,23 @@ int DLLEXPORT ltm_process_output(int tid) {
 		if(buf[i] > '~' || buf[i] < ' ') {
 			switch(buf[i]) {
 				case '\n': /* line break */
-					if(cursor_line_break(tid) == -1)
+					if(cursor_line_break(tid, descs[tid].cur_input_screen) == -1)
 						PASS_ERR(after_lock);
 					break;
 				case '\r': /* carriage return */
-					if(cursor_abs_move(tid, X, 0) == -1)
+					if(cursor_abs_move(tid, descs[tid].cur_input_screen, X, 0) == -1)
 						PASS_ERR(after_lock);
 					break;
 				case '\b': /* backspace */
-					if(cursor_rel_move(tid, LEFT, 1) == -1)
+					if(cursor_rel_move(tid, descs[tid].cur_input_screen, LEFT, 1) == -1)
 						PASS_ERR(after_lock);
 					break;
 				case '\v': /* vertical tab */
-					if(cursor_vertical_tab(tid) == -1)
+					if(cursor_vertical_tab(tid, descs[tid].cur_input_screen) == -1)
 						PASS_ERR(after_lock);
 					break;
 				case '\t': /* horizontal tab */
-					if(cursor_horiz_tab(tid) == -1)
+					if(cursor_horiz_tab(tid, descs[tid].cur_input_screen) == -1)
 						PASS_ERR(after_lock);
 					break;
 				case '\a': /* bell */
@@ -129,11 +130,11 @@ int DLLEXPORT ltm_process_output(int tid) {
 			continue;
 		}
 
-		if(descs[tid].cursor.x == descs[tid].cols-1 && descs[tid].curs_prev_not_set)
-			if(cursor_wrap(tid) == -1)
+		if(CUR_INP_SCR(tid).cursor.x == CUR_INP_SCR(tid).cols-1 && CUR_INP_SCR(tid).curs_prev_not_set)
+			if(cursor_wrap(tid, descs[tid].cur_input_screen) == -1)
 				PASS_ERR(after_lock);
 
-		if(!descs[tid].set.nranges || memcmp(&TOPRANGE(&descs[tid].set)->end, &descs[tid].cursor, sizeof(struct point))) {
+		if(descs[tid].cur_screen == descs[tid].cur_input_screen && (!descs[tid].set.nranges || memcmp(&TOPRANGE(&descs[tid].set)->end, &CUR_INP_SCR(tid).cursor, sizeof(struct point)))) {
 			if(range_add(&descs[tid].set) == -1) PASS_ERR(after_lock);
 
 			TOPRANGE(&descs[tid].set)->action = ACT_COPY;
@@ -142,20 +143,22 @@ int DLLEXPORT ltm_process_output(int tid) {
 			TOPRANGE(&descs[tid].set)->leftbound = 0;
 			TOPRANGE(&descs[tid].set)->rightbound = descs[tid].cols-1;
 
-			TOPRANGE(&descs[tid].set)->start.y = descs[tid].cursor.y;
-			TOPRANGE(&descs[tid].set)->start.x = descs[tid].cursor.x;
+			TOPRANGE(&descs[tid].set)->start.y = CUR_INP_SCR(tid).cursor.y;
+			TOPRANGE(&descs[tid].set)->start.x = CUR_INP_SCR(tid).cursor.x;
 
-			TOPRANGE(&descs[tid].set)->end.y = descs[tid].cursor.y;
-			TOPRANGE(&descs[tid].set)->end.x = descs[tid].cursor.x;
+			TOPRANGE(&descs[tid].set)->end.y = CUR_INP_SCR(tid).cursor.y;
+			TOPRANGE(&descs[tid].set)->end.x = CUR_INP_SCR(tid).cursor.x;
 		}
 
-		descs[tid].screen[descs[tid].cursor.y][descs[tid].cursor.x] = buf[i];
+		CUR_INP_SCR(tid).matrix[CUR_INP_SCR(tid).cursor.y][CUR_INP_SCR(tid).cursor.x] = buf[i];
 
-		if(cursor_advance(tid) == -1)
+		if(cursor_advance(tid, descs[tid].cur_input_screen) == -1)
 			PASS_ERR(after_lock);
 
-		TOPRANGE(&descs[tid].set)->end.x = descs[tid].cursor.x;
-		TOPRANGE(&descs[tid].set)->end.y = descs[tid].cursor.y;
+		if(descs[tid].cur_screen == descs[tid].cur_input_screen) {
+			TOPRANGE(&descs[tid].set)->end.x = CUR_INP_SCR(tid).cursor.x;
+			TOPRANGE(&descs[tid].set)->end.y = CUR_INP_SCR(tid).cursor.y;
+		}
 	}
 
 	if(i == descs[tid].buflen) {
@@ -179,16 +182,18 @@ int DLLEXPORT ltm_process_output(int tid) {
 	} else /* nothing done, exit */
 		goto after_lock;
 
-	if(descs[tid].lines_scrolled < descs[tid].lines) {
+	if(descs[tid].lines_scrolled < CUR_SCR(tid).lines) {
 		/* this is the case where the original content has *not* been completely scrolled
 		 * off the screen, and so it makes sense to tell the app to scroll the screen and
 		 * only update things that have changed
 		 */
 
-		if(range_finish(&descs[tid].set) == -1) PASS_ERR(after_lock);
+		if(descs[tid].lines_scrolled) cb_scroll_lines(tid);
 
-		cb_scroll_lines(tid);
-		cb_update_ranges(tid, descs[tid].set.ranges);
+		if(descs[tid].set.nranges) {
+			if(range_finish(&descs[tid].set) == -1) PASS_ERR(after_lock);
+			cb_update_ranges(tid, descs[tid].set.ranges);
+		}
 	} else
 		/* this is the case in which the entirety of the original content *has* been
 		 * scrolled off the screen, so we might as well just reload the entire thing

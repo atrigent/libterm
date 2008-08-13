@@ -9,14 +9,14 @@
 #define X 0
 #define Y 1
 
-extern int cursor_rel_move(int, char, ushort);
-extern int cursor_abs_move(int, char, ushort);
+extern int cursor_rel_move(int, int, char, ushort);
+extern int cursor_abs_move(int, int, char, ushort);
 
-extern int cursor_down(int);
-extern int cursor_wrap(int);
-extern int cursor_line_break(int);
-extern int cursor_advance(int);
-extern int cursor_vertical_tab(int);
-extern int cursor_horiz_tab(int);
+extern int cursor_down(int, int);
+extern int cursor_wrap(int, int);
+extern int cursor_line_break(int, int);
+extern int cursor_advance(int, int);
+extern int cursor_vertical_tab(int, int);
+extern int cursor_horiz_tab(int, int);
 
 #endif
