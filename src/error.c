@@ -25,7 +25,7 @@ void error_info_dump(struct error_info err) {
 	fprintf(err_dest, "\tError: %s (%i numerical)\n", strerror(err.err_no), err.err_no);
 
 	/* FIXME: this should use some sort of hex dumping function */
-	if(err.data) fprintf(err_dest, "\tData: %.*s\n", ERROR_DATA_LEN, err.data);
+	if(err.data[0]) fprintf(err_dest, "\tData: %.*s\n", ERROR_DATA_LEN, err.data);
 }
 
 int DLLEXPORT ltm_set_error_dest(FILE *dest) {
