@@ -80,7 +80,7 @@ int cb_refresh(int tid) {
 	else
 		curs = NULL;
 
-	cbs.refresh(tid, curs);
+	cbs.refresh(tid, !CUR_SCR(tid).curs_invisible, curs);
 
 	descs[tid].curs_changed = 0;
 

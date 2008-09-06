@@ -3,7 +3,7 @@
 
 struct ltm_callbacks {
 	int (*update_ranges)(int, uint **, struct range **);
-	int (*refresh)(int, struct point *);
+	int (*refresh)(int, char, struct point *);
 
 	int (*scroll_lines)(int, uint);
 

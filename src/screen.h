@@ -15,6 +15,7 @@ struct screen {
 	uint **matrix;
 	uchar *wrapped;
 
+	char curs_invisible;
 	struct point cursor;
 	char curs_prev_not_set;
 	char autoscroll;

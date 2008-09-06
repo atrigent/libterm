@@ -9,6 +9,7 @@
 #define X 0
 #define Y 1
 
+extern int cursor_visibility(int, int, char);
 extern int cursor_rel_move(int, int, char, ushort);
 extern int cursor_abs_move(int, int, char, ushort);
 

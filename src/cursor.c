@@ -6,6 +6,18 @@
 #include "screen.h"
 #include "bitarr.h"
 
+int cursor_visibility(int tid, int sid, char visibility) {
+	if(SCR(tid, sid).curs_invisible != !visibility) {
+		SCR(tid, sid).curs_invisible = !visibility;
+
+		if(visibility)
+			if(sid == descs[tid].cur_screen)
+				descs[tid].curs_changed = 1;
+	}
+
+	return 0;
+}
+
 int cursor_abs_move(int tid, int sid, char axis, ushort num) {
 	int ret = 0;
 
@@ -34,8 +46,9 @@ int cursor_abs_move(int tid, int sid, char axis, ushort num) {
 			LTM_ERR(EINVAL, "Invalid axis", error);
 	}
 
-	if(sid == descs[tid].cur_screen)
-		descs[tid].curs_changed = 1;
+	if(!SCR(tid, sid).curs_invisible)
+		if(sid == descs[tid].cur_screen)
+			descs[tid].curs_changed = 1;
 
 not_moved:
 	SCR(tid, sid).curs_prev_not_set = 0;
