@@ -124,14 +124,14 @@ static int parse_config_file(char *filename) {
 	int ret = 0;
 	char *buf;
 
-	if(stat(filename, &info) == -1)
-		SYS_ERR("stat", filename, before_anything);
-
-	if(!S_ISREG(info.st_mode))
-		LTM_ERR(EISDIR, filename, before_anything); /* FIXME!!! WRONG ERROR! */
-
 	config = fopen(filename, "r");
 	if(!config) SYS_ERR("fopen", filename, before_anything);
+
+	if(fstat(fileno(config), &info) == -1)
+		SYS_ERR("fstat", filename, after_fopen);
+
+	if(!S_ISREG(info.st_mode))
+		LTM_ERR(EISDIR, filename, after_fopen); /* FIXME!!! WRONG ERROR! */
 
 	buf = malloc(info.st_size+1);
 	if(!buf) SYS_ERR("malloc", NULL, after_fopen);
