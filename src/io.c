@@ -48,30 +48,27 @@ before_anything:
 static int read_into_outputbuf(int tid) {
 	uint buflen;
 	int ret = 0;
-	uchar *buf;
 
 	if(ioctl(fileno(descs[tid].pty.master), FIONREAD, &buflen) == -1)
 		SYS_ERR("ioctl", "FIONREAD", error);
 
 	if(descs[tid].outputbuf) { /* add to the current buffer */
-		buf = realloc(descs[tid].outputbuf, descs[tid].buflen + buflen);
-		if(!buf) SYS_ERR("realloc", NULL, error);
+		descs[tid].outputbuf = realloc(descs[tid].outputbuf, descs[tid].buflen + buflen);
+		if(!descs[tid].outputbuf) SYS_ERR("realloc", NULL, error);
 
-		if(fread(buf + descs[tid].buflen, 1, buflen, descs[tid].pty.master) < buflen)
+		if(fread(descs[tid].outputbuf + descs[tid].buflen, 1, buflen, descs[tid].pty.master) < buflen)
 			SYS_ERR("fread", NULL, error);
 
 		descs[tid].buflen += buflen;
 	} else { /* create a new buffer */
-		buf = malloc(buflen);
-		if(!buf) SYS_ERR("malloc", NULL, error);
+		descs[tid].outputbuf = malloc(buflen);
+		if(!descs[tid].outputbuf) SYS_ERR("malloc", NULL, error);
 
-		if(fread(buf, 1, buflen, descs[tid].pty.master) < buflen)
+		if(fread(descs[tid].outputbuf, 1, buflen, descs[tid].pty.master) < buflen)
 			SYS_ERR("fread", NULL, error);
 
 		descs[tid].buflen = buflen;
 	}
-
-	descs[tid].outputbuf = buf;
 
 error:
 	return ret;
