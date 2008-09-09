@@ -13,13 +13,13 @@ int check_callbacks(struct ltm_callbacks *callbacks) {
 		LTM_ERR(ENOTSUP, "The refresh callback was not supplied", error);
 
 	if(!callbacks->refresh_screen)
-		fprintf(dump_dest, "Warning: The refresh_screen callback was not supplied. It will be emulated with update_ranges\n");
+		fprintf(DUMP_DEST, "Warning: The refresh_screen callback was not supplied. It will be emulated with update_ranges\n");
 
 	if(!callbacks->scroll_lines)
-		fprintf(dump_dest, "Warning: The scroll_lines callback was not supplied. It will be emulated with update_ranges\n");
+		fprintf(DUMP_DEST, "Warning: The scroll_lines callback was not supplied. It will be emulated with update_ranges\n");
 
 	if(!callbacks->alert)
-		fprintf(dump_dest, "Warning: The alert callback was not supplied. The ASCII bell character will be ignored\n");
+		fprintf(DUMP_DEST, "Warning: The alert callback was not supplied. The ASCII bell character will be ignored\n");
 
 #ifdef HAVE_LIBPTHREAD
 	if(threading) {

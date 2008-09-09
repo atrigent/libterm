@@ -65,8 +65,6 @@ int DLLEXPORT ltm_init() {
 
 	PTHREAD_CALL(pthread_mutexattr_destroy, (&big_mutex_attrs), NULL, after_lock);
 
-	if(!dump_dest) dump_dest = stderr;
-
 	if(config_parse_files() == -1) PASS_ERR(after_lock);
 
 	if(setup_pipe() == -1) PASS_ERR(after_lock);

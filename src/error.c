@@ -7,7 +7,7 @@ struct error_info thr_curerr = {0, 0, 0, 0, "", 0};
 FILE *dump_dest = 0;
 
 void error_info_dump(struct error_info err) {
-	FILE *err_dest = dump_dest ? dump_dest : stderr;
+	FILE *err_dest = DUMP_DEST;
 
 	fprintf(err_dest, "libterm ");
 

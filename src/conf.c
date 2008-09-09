@@ -12,7 +12,7 @@
 #define USER_CONFIG ".libterm"
 
 #define PARSE_ERR(file, line, msg) \
-	fprintf(dump_dest, "Parse error in %s:%i: %s\n", file, line, msg)
+	fprintf(DUMP_DEST, "Parse error in %s:%i: %s\n", file, line, msg)
 
 struct list_node *conf[256];
 
@@ -86,7 +86,7 @@ static int parse_config_text(char *buf, char *filename) {
 			goto after_val_alloc;
 		}
 
-		fprintf(dump_dest, "Setting config entry \"%s\" to value \"%s\"\n", key, val);
+		fprintf(DUMP_DEST, "Setting config entry \"%s\" to value \"%s\"\n", key, val);
 		if(hashtable_set_pair(conf, key, val, strlen(val)+1) == -1)
 			PASS_ERR(after_val_alloc);
 

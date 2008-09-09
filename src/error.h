@@ -138,6 +138,7 @@
 # endif
 #endif
 
+#define DUMP_DEST (dump_dest ? dump_dest : stderr)
 #define ERROR_DATA_LEN 256
 
 #define ERR_MACRO_TMPL(sysfunc, err, _data, _ret, prefix, label) \
