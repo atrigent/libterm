@@ -196,6 +196,8 @@
 		goto label; \
 	} while(0)
 
+#define ERROR_INFO_INITIALIZER {0, 0, 0, 0, "", 0}
+
 struct error_info {
 	const char *file;
 	uint line;
