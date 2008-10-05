@@ -145,6 +145,8 @@ int DLLEXPORT ltm_uninit() {
 
 	config_free();
 
+	flush_repeated_errors();
+
 after_lock:
 	UNLOCK_BIG_MUTEX;
 

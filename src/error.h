@@ -214,5 +214,6 @@ extern struct error_info thr_curerr;
 extern FILE *dump_dest;
 
 extern void error_info_dump(struct error_info);
+extern void flush_repeated_errors();
 
 #endif
