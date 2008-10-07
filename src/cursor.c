@@ -10,9 +10,8 @@ int cursor_visibility(int tid, int sid, char visibility) {
 	if(SCR(tid, sid).curs_invisible != !visibility) {
 		SCR(tid, sid).curs_invisible = !visibility;
 
-		if(visibility)
-			if(sid == descs[tid].cur_screen)
-				descs[tid].curs_changed = 1;
+		if(sid == descs[tid].cur_screen)
+			descs[tid].curs_changed = !SCR(tid, sid).curs_invisible;
 	}
 
 	return 0;
