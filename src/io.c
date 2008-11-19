@@ -131,31 +131,11 @@ int DLLEXPORT ltm_process_output(int tid) {
 			if(cursor_wrap(tid, descs[tid].cur_input_screen) == -1)
 				PASS_ERR(after_lock);
 
-		if(descs[tid].cur_screen == descs[tid].cur_input_screen && (!descs[tid].set.nranges || memcmp(&TOPRANGE(&descs[tid].set)->end, &CUR_INP_SCR(tid).cursor, sizeof(struct point)))) {
-			if(range_add(&descs[tid].set) == -1) PASS_ERR(after_lock);
-
-			TOPRANGE(&descs[tid].set)->action = ACT_COPY;
-			TOPRANGE(&descs[tid].set)->val = 0;
-
-			TOPRANGE(&descs[tid].set)->leftbound = 0;
-			TOPRANGE(&descs[tid].set)->rightbound = descs[tid].cols-1;
-
-			TOPRANGE(&descs[tid].set)->start.y = CUR_INP_SCR(tid).cursor.y;
-			TOPRANGE(&descs[tid].set)->start.x = CUR_INP_SCR(tid).cursor.x;
-
-			TOPRANGE(&descs[tid].set)->end.y = CUR_INP_SCR(tid).cursor.y;
-			TOPRANGE(&descs[tid].set)->end.x = CUR_INP_SCR(tid).cursor.x;
-		}
-
-		CUR_INP_SCR(tid).matrix[CUR_INP_SCR(tid).cursor.y][CUR_INP_SCR(tid).cursor.x] = buf[i];
+		if(screen_set_point(tid, descs[tid].cur_input_screen, ACT_COPY, &CUR_INP_SCR(tid).cursor, buf[i]) == -1)
+			PASS_ERR(after_lock);
 
 		if(cursor_advance(tid, descs[tid].cur_input_screen) == -1)
 			PASS_ERR(after_lock);
-
-		if(descs[tid].cur_screen == descs[tid].cur_input_screen) {
-			TOPRANGE(&descs[tid].set)->end.x = CUR_INP_SCR(tid).cursor.x;
-			TOPRANGE(&descs[tid].set)->end.y = CUR_INP_SCR(tid).cursor.y;
-		}
 	}
 
 	if(i == descs[tid].buflen) {

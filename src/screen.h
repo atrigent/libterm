@@ -28,6 +28,8 @@ extern void screen_set_autoscroll(int, int, char);
 extern void screen_give_input_focus(int, int);
 extern int screen_make_current(int, int);
 
+extern int screen_set_point(int, int, char, struct point *, uint);
+
 extern int screen_scroll(int, int);
 
 #endif

@@ -222,3 +222,66 @@ int screen_scroll(int tid, int sid) {
 
 	return 0;
 }
+
+static int should_be_merged(struct range *range, struct point *start) {
+	/* some magic... */
+	if(
+		(range->start.y == range->end.y &&
+			(
+				(range->end.y == start->y && range->end.x+1 == start->x) ||
+				(range->end.y+1 == start->y && start->x <= range->start.x)
+			)
+		) ||
+		(
+			(range->end.y == start->y && range->end.x+1 == start->x && start->x <= range->rightbound) ||
+			(range->end.y+1 == start->y && start->x == range->leftbound)
+		)
+	) return 1;
+
+	return 0;
+}
+
+int screen_set_point(int tid, int sid, char action, struct point *pt, uint chr) {
+	struct rangeset *curset;
+
+	if(SCR(tid, sid).matrix[pt->y][pt->x] == chr)
+		return 0;
+
+	if(sid == descs[tid].cur_screen)
+		curset = &descs[tid].set;
+	else
+		goto set_cell;
+
+	if(curset->nranges && should_be_merged(TOPRANGE(curset), pt)) {
+		if(
+			TOPRANGE(curset)->start.y == TOPRANGE(curset)->end.y &&
+			TOPRANGE(curset)->end.y+1 == pt->y
+		) {
+			TOPRANGE(curset)->leftbound = pt->x;
+			TOPRANGE(curset)->rightbound = TOPRANGE(curset)->end.x;
+		}
+
+		TOPRANGE(curset)->end.x = pt->x;
+		TOPRANGE(curset)->end.y = pt->y;
+	} else {
+		if(range_add(curset) == -1) return -1;
+
+		TOPRANGE(curset)->action = action;
+		TOPRANGE(curset)->val = 0;
+
+		TOPRANGE(curset)->leftbound = 0;
+		TOPRANGE(curset)->rightbound = SCR(tid, sid).cols-1;
+
+		TOPRANGE(curset)->start.x = pt->x;
+		TOPRANGE(curset)->start.y = pt->y;
+
+		TOPRANGE(curset)->end.x = pt->x;
+		TOPRANGE(curset)->end.y = pt->y;
+	}
+
+set_cell:
+	SCR(tid, sid).matrix[pt->y][pt->x] = chr;
+
+	return 0;
+}
+
