@@ -30,6 +30,13 @@ struct range {
 	struct point end;
 };
 
+struct update {
+	int sid;
+	struct rangeset set;
+	uint lines_scrolled;
+	char curs_changed;
+};
+
 struct ltm_term_desc {
 	char allocated;
 
@@ -50,10 +57,20 @@ struct ltm_term_desc {
 	uchar *outputbuf;
 	uint buflen;
 
+	/* updates that happened in each screen */
+	struct update *scr_ups;
+	uint scr_nups; /* nups, heh */
+
+	/* this stuff has to do w/ updates that were
+	 * written directly to the window screen
+	 */
 	struct rangeset set;
 
 	uint lines_scrolled;
 
+	/* whether the cursor changed, because there's only one cursor
+	 * on the window screen
+	 */
 	char curs_changed;
 };
 

@@ -10,8 +10,10 @@ int cursor_visibility(int tid, int sid, char visibility) {
 	if(SCR(tid, sid).curs_invisible != !visibility) {
 		SCR(tid, sid).curs_invisible = !visibility;
 
-		if(sid == descs[tid].cur_screen)
-			descs[tid].curs_changed = !SCR(tid, sid).curs_invisible;
+		if(!record_update(tid, sid, visibility ? UPD_CURS : UPD_CURS_INVIS)) {
+			if(ltm_curerr.err_no == ESRCH) return 0;
+			else return -1;
+		}
 	}
 
 	return 0;
@@ -45,9 +47,10 @@ int cursor_abs_move(int tid, int sid, char axis, ushort num) {
 			LTM_ERR(EINVAL, "Invalid axis", error);
 	}
 
-	if(!SCR(tid, sid).curs_invisible)
-		if(sid == descs[tid].cur_screen)
-			descs[tid].curs_changed = 1;
+	if(!record_update(tid, sid, UPD_CURS)) {
+		if(ltm_curerr.err_no == ESRCH) return 0;
+		else return -1;
+	}
 
 not_moved:
 	SCR(tid, sid).curs_prev_not_set = 0;

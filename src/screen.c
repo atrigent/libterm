@@ -197,7 +197,71 @@ error:
 	return ret;
 }
 
+struct rangeset *record_update(int tid, int sid, char opts) {
+	struct rangeset *ret = NULL;
+	uint i;
+
+	/* nothing to do */
+	if(!opts) return NULL;
+
+	/* no reason to do anything in this case, the app using libterm
+	 * doesn't care where the hidden cursor has moved
+	 */
+	if(opts == UPD_CURS && SCR(tid, sid).curs_invisible)
+		return NULL;
+
+	/* check if it's the window screen first because if it's
+	 * both the window and the input screen we want stuff
+	 * to go directly to the window ranges
+	 */
+	if(sid == descs[tid].cur_screen) {
+		ret = &descs[tid].set;
+
+		if(opts & UPD_SCROLL)
+			descs[tid].lines_scrolled++;
+
+		/* the reason that we're un-dirtying the cursor when it is
+		 * hidden is that the app using libterm doesn't care
+		 * about where the cursor is if it's hidden
+		 */
+		if(opts & UPD_CURS)
+			descs[tid].curs_changed = 1;
+		else if(opts & UPD_CURS_INVIS)
+			descs[tid].curs_changed = 0;
+	} else if(sid == descs[tid].cur_input_screen) {
+		for(i = 0; i < descs[tid].scr_nups; i++)
+			if(descs[tid].scr_ups[i].sid == sid) break;
+
+		if(i >= descs[tid].scr_nups) {
+			descs[tid].scr_ups = realloc(descs[tid].scr_ups, ++descs[tid].scr_nups * sizeof(struct update));
+			if(!descs[tid].scr_ups) SYS_ERR_PTR("realloc", NULL, error);
+
+			i = descs[tid].scr_nups-1;
+
+			memset(&descs[tid].scr_ups[i], 0, sizeof(struct update));
+			descs[tid].scr_ups[i].sid = sid;
+		}
+
+		ret = &descs[tid].scr_ups[i].set;
+
+		if(opts & UPD_SCROLL)
+			descs[tid].scr_ups[i].lines_scrolled++;
+
+		/* we need to mark the cursor dirty even when it is being
+		 * hidden so that the change will be propagated
+		 */
+		if(opts & (UPD_CURS | UPD_CURS_INVIS))
+			descs[tid].scr_ups[i].curs_changed = 1;
+	}
+
+	if(!ret) LTM_ERR_PTR(ESRCH, NULL, error);
+
+error:
+	return ret;
+}
+
 int screen_scroll(int tid, int sid) {
+	struct rangeset *set;
 	uint i, *linesave;
 
 	/* push this line into the buffer later... */
@@ -215,10 +279,13 @@ int screen_scroll(int tid, int sid) {
 
 	bitarr_shift_left(SCR(tid, sid).wrapped, SCR(tid, sid).lines, 1);
 
-	if(sid == descs[tid].cur_screen) {
-		range_shift(&descs[tid].set);
-		descs[tid].lines_scrolled++;
+	set = record_update(tid, sid, UPD_SCROLL | UPD_GET_SET);
+	if(!set) {
+		if(ltm_curerr.err_no == ESRCH) return 0;
+		else return -1;
 	}
+
+	range_shift(set);
 
 	return 0;
 }
@@ -247,10 +314,11 @@ int screen_set_point(int tid, int sid, char action, struct point *pt, uint chr) 
 	if(SCR(tid, sid).matrix[pt->y][pt->x] == chr)
 		return 0;
 
-	if(sid == descs[tid].cur_screen)
-		curset = &descs[tid].set;
-	else
-		goto set_cell;
+	curset = record_update(tid, sid, UPD_GET_SET);
+	if(!curset) {
+		if(ltm_curerr.err_no == ESRCH) goto set_cell;
+		else return -1;
+	}
 
 	if(curset->nranges && should_be_merged(TOPRANGE(curset), pt)) {
 		if(

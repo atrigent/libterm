@@ -181,6 +181,13 @@ int DLLEXPORT ltm_process_output(int tid) {
 
 	cb_refresh(tid);
 
+	for(i = 0; i < descs[tid].scr_nups; i++)
+		range_free(&descs[tid].scr_ups[i].set);
+
+	free(descs[tid].scr_ups);
+	descs[tid].scr_ups = NULL;
+	descs[tid].scr_nups = 0;
+
 	range_free(&descs[tid].set);
 
 after_lock:
