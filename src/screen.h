@@ -11,6 +11,19 @@
 #define UPD_SCROLL     4
 #define UPD_GET_SET    8
 
+#define TRANSFORM_PT(pt, link) \
+	do { \
+		(pt).x += (link).origin.x; \
+		(pt).y += (link).origin.y - (link).fromline; \
+	} while(0)
+
+struct link {
+	struct point origin;
+
+	ushort fromline;
+	ushort toline;
+};
+
 struct screen {
 	char allocated;
 
@@ -35,8 +48,13 @@ extern void screen_set_autoscroll(int, int, char);
 extern void screen_give_input_focus(int, int);
 extern int screen_make_current(int, int);
 
-extern int screen_set_point(int, int, char, struct point *, uint);
+extern int screen_inject_update(int, int, struct range *);
 
+extern int screen_set_point(int, int, char, struct point *, uint);
+extern int screen_clear_range(int, int, struct range *);
+extern int screen_copy_range(int, int, int, struct range *, struct link *);
+
+extern int screen_scroll_rect(int, int, struct range *);
 extern int screen_scroll(int, int);
 
 #endif

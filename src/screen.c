@@ -353,3 +353,98 @@ set_cell:
 	return 0;
 }
 
+int screen_inject_update(int tid, int sid, struct range *range) {
+	struct rangeset *curset;
+
+	curset = record_update(tid, sid, 0);
+	if(!curset) {
+		if(ltm_curerr.err_no == ESRCH) return 0;
+		else return -1;
+	}
+
+	if(range_add(curset) == -1) return -1;
+
+	memcpy(TOPRANGE(curset), range, sizeof(struct range));
+
+	return 0;
+}
+
+int screen_clear_range(int tid, int sid, struct range *range) {
+	struct point cur;
+
+	if(range->action != ACT_CLEAR) return 0;
+
+	cur.y = range->start.y;
+	cur.x = range->start.x;
+
+	while(cur.y <= range->end.y) {
+		while(
+			(cur.y < range->end.y && cur.x <= range->rightbound) ||
+			(cur.y == range->end.y && cur.x <= range->end.x)
+		) {
+			screen_set_point(tid, sid, ACT_CLEAR, &cur, ' ');
+
+			cur.x++;
+		}
+
+		cur.x = range->leftbound;
+		cur.y++;
+	}
+
+	return 0;
+}
+
+int screen_copy_range(int tid, int fromsid, int tosid, struct range *range, struct link *link) {
+	struct point srccur, dstcur;
+
+	if(range->action != ACT_COPY) return 0;
+
+	dstcur.x = srccur.x = range->start.x;
+	dstcur.y = srccur.y = range->start.y;
+
+	TRANSFORM_PT(dstcur, *link);
+
+	while(srccur.y <= range->end.y) {
+		while(
+			(srccur.y < range->end.y && srccur.x <= range->rightbound) ||
+			(srccur.y == range->end.y && srccur.x <= range->end.x)
+		) {
+			screen_set_point(tid, tosid, ACT_COPY, &dstcur, SCR(tid, fromsid).matrix[srccur.y][srccur.x]);
+
+			srccur.x++;
+			dstcur.x++;
+		}
+
+		srccur.x = range->leftbound;
+		srccur.y++;
+
+		dstcur.x = range->leftbound + link->origin.x;
+		dstcur.y++;
+	}
+
+	return 0;
+}
+
+int screen_scroll_rect(int tid, int sid, struct range *rect) {
+	struct point cur;
+
+	if(
+		rect->leftbound != rect->start.x ||
+		rect->rightbound != rect->end.x ||
+		rect->action != ACT_SCROLL ||
+		!rect->val
+	) return 0;
+
+	for(cur.y = rect->start.y; cur.y + rect->val <= rect->end.y; cur.y++)
+		memcpy(
+			&SCR(tid, sid).matrix[cur.y][rect->start.x],
+			&SCR(tid, sid).matrix[cur.y + rect->val][rect->start.x],
+			sizeof(uint) * (rect->end.x - rect->start.x + 1)
+		      );
+
+	for(; cur.y <= rect->end.y; cur.y++)
+		for(cur.x = rect->leftbound; cur.x <= rect->rightbound; cur.x++)
+			SCR(tid, sid).matrix[cur.y][cur.x] = ' ';
+
+	return screen_inject_update(tid, sid, rect);
+}
