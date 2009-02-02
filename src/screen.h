@@ -37,12 +37,18 @@ struct screen {
 	struct point cursor;
 	char curs_prev_not_set;
 	char autoscroll;
+
+	struct list_node *downlinks;
+	struct list_node *uplinks;
 };
 
 extern struct rangeset *record_update(int, int, char);
 
 extern int screen_set_dimensions(int, int, ushort, ushort);
 extern int screen_alloc(int, char, ushort, ushort);
+
+extern int screen_add_link(int, int, int, struct link *);
+extern int screen_del_link(int, int, int);
 
 extern void screen_set_autoscroll(int, int, char);
 extern void screen_give_input_focus(int, int);

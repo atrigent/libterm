@@ -5,6 +5,7 @@
 #include <pwd.h>
 
 #include "libterm.h"
+#include "linkedlist.h"
 #include "process.h"
 #include "screen.h"
 #include "window.h"
@@ -263,6 +264,9 @@ int DLLEXPORT ltm_close(int tid) {
 		if(descs[tid].screens[n].allocated) {
 			for(i=0; i < descs[tid].screens[n].lines; i++)
 				free(descs[tid].screens[n].matrix[i]);
+
+			linkedlist_free(&descs[tid].screens[n].uplinks);
+			linkedlist_free(&descs[tid].screens[n].downlinks);
 
 			free(descs[tid].screens[n].matrix);
 			free(descs[tid].screens[n].wrapped);

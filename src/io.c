@@ -5,6 +5,7 @@
 #include <poll.h>
 
 #include "libterm.h"
+#include "linkedlist.h"
 #include "cursor.h"
 #include "screen.h"
 #include "process.h"
@@ -71,6 +72,194 @@ static int read_into_outputbuf(int tid) {
 	}
 
 error:
+	return ret;
+}
+
+static int translate_update(int tid, struct update *up, struct link *curlink, struct rangeset *newset) {
+	ushort copy_fromline, copy_toline;
+	struct range *currange;
+	char need_copy;
+	uint i;
+
+	if(up->lines_scrolled) {
+		if(range_add(newset) == -1) return -1;
+
+		TOPRANGE(newset)->action = ACT_SCROLL;
+		TOPRANGE(newset)->val = up->lines_scrolled;
+
+		TOPRANGE(newset)->leftbound = TOPRANGE(newset)->start.x = 0;
+		TOPRANGE(newset)->start.y = curlink->fromline;
+		TOPRANGE(newset)->rightbound = TOPRANGE(newset)->end.x = SCR(tid, up->sid).cols-1;
+		TOPRANGE(newset)->end.y = curlink->toline;
+
+		need_copy = 0;
+		if(
+			curlink->toline != SCR(tid, up->sid).lines-1 &&
+			curlink->fromline + up->lines_scrolled <= SCR(tid, up->sid).lines-1UL
+		) {
+			copy_fromline = curlink->fromline + up->lines_scrolled < curlink->toline+1UL ?
+				curlink->toline+1 - up->lines_scrolled :
+				curlink->fromline;
+
+			copy_toline = curlink->toline + up->lines_scrolled > SCR(tid, up->sid).lines-1UL ?
+				SCR(tid, up->sid).lines-1 - up->lines_scrolled :
+				curlink->toline;
+
+			need_copy = 1;
+		}
+
+		if(need_copy) {
+			if(range_add(newset) == -1) return -1;
+
+			TOPRANGE(newset)->action = ACT_COPY;
+			TOPRANGE(newset)->val = 0;
+
+			TOPRANGE(newset)->leftbound = TOPRANGE(newset)->start.x = 0;
+			TOPRANGE(newset)->start.y = copy_fromline;
+			TOPRANGE(newset)->rightbound = TOPRANGE(newset)->end.x = SCR(tid, up->sid).cols-1;
+			TOPRANGE(newset)->end.y = copy_toline;
+		}
+	}
+
+	for(i = 0; i < up->set.nranges; i++) {
+		currange = up->set.ranges[i];
+
+		/* if the current range is not in the current link at all, try the next link */
+		if(currange->end.y < curlink->fromline || currange->start.y > curlink->toline ||
+			(need_copy &&
+				(currange->start.y >= curlink->fromline ? currange->start.y : curlink->fromline) >= copy_fromline &&
+				(currange->end.y <= curlink->toline ? currange->end.y : curlink->toline) <= copy_toline
+			)
+		) continue;
+
+		if(range_add(newset) == -1) return -1;
+
+		TOPRANGE(newset)->action = currange->action;
+		TOPRANGE(newset)->val = currange->val;
+
+		TOPRANGE(newset)->leftbound = currange->leftbound;
+		TOPRANGE(newset)->rightbound = currange->rightbound;
+
+		if(currange->start.y >= curlink->fromline) {
+			/* if the start of the range is inside the link, the restricted range will
+			 * start where the original range starts
+			 */
+			TOPRANGE(newset)->start.y = currange->start.y;
+			TOPRANGE(newset)->start.x = currange->start.x;
+		} else {
+			/* if the start of the range is before the link, the restricted range will
+			 * start where the link starts
+			 */
+			TOPRANGE(newset)->start.y = curlink->fromline;
+			TOPRANGE(newset)->start.x = currange->leftbound;
+		}
+
+		if(currange->end.y <= curlink->toline) {
+			/* if the end of the range is inside the link, the restricted range will
+			 * end where the original range ends
+			 */
+			TOPRANGE(newset)->end.y = currange->end.y;
+			TOPRANGE(newset)->end.x = currange->end.x;
+		} else {
+			/* if the original range ends after the current link, the restricted
+			 * range will end where the link ends
+			 */
+			TOPRANGE(newset)->end.y = curlink->toline;
+			TOPRANGE(newset)->end.x = currange->rightbound;
+		}
+
+		if(need_copy) {
+			if(TOPRANGE(newset)->start.y >= copy_fromline && TOPRANGE(newset)->start.y <= copy_toline)
+				TOPRANGE(newset)->start.y = copy_toline+1;
+			else if(TOPRANGE(newset)->end.y >= copy_fromline && TOPRANGE(newset)->end.y <= copy_toline)
+				TOPRANGE(newset)->end.y = copy_fromline-1;
+			else if(TOPRANGE(newset)->end.y < copy_fromline && TOPRANGE(newset)->start.y > copy_toline) {
+				if(range_add(newset) == -1) return -1;
+
+				TOPRANGE(newset)->action = ACT_COPY;
+				TOPRANGE(newset)->val = 0;
+
+				TOPRANGE(newset)->leftbound = TOPRANGE(newset)->start.x = 0;
+				TOPRANGE(newset)->start.y = copy_toline+1;
+				TOPRANGE(newset)->rightbound = TOPRANGE(newset)->end.x = SCR(tid, up->sid).cols-1;
+				TOPRANGE(newset)->end.y = newset->ranges[newset->nranges-2]->end.y;
+
+				newset->ranges[newset->nranges-2]->end.y = copy_fromline-1;
+			}
+		}
+	}
+
+	return 0;
+}
+
+int propagate_updates(int tid, struct update *up) {
+	struct list_node *curnode;
+	struct update newup;
+	struct point newcurs;
+	struct link *curlink;
+	int tosid, ret = 0;
+	uint i;
+
+	newup.set.ranges = NULL;
+	newup.set.nranges = 0;
+
+	for(curnode = descs[tid].screens[up->sid].uplinks; curnode; curnode = curnode->next) {
+		tosid = curnode->u.intkey;
+		curlink = curnode->data;
+
+		if(translate_update(tid, up, curlink, &newup.set) == -1)
+			PASS_ERR(after_newup_set_alloc);
+
+		if(tosid == descs[tid].cur_screen && newup.set.nranges) {
+			descs[tid].win_ups = realloc(descs[tid].win_ups, ++descs[tid].win_nups * sizeof(struct rangeset));
+			if(!descs[tid].win_ups) SYS_ERR("realloc", NULL, after_newup_set_alloc);
+			memset(&descs[tid].win_ups[descs[tid].win_nups-1], 0, sizeof(struct rangeset));
+		}
+
+		for(i = 0; i < newup.set.nranges; i++) {
+			if(newup.set.ranges[i]->action == ACT_COPY)
+				if(screen_copy_range(tid, up->sid, tosid, newup.set.ranges[i], curlink) == -1)
+					PASS_ERR(after_newup_set_alloc);
+
+			newup.set.ranges[i]->leftbound += curlink->origin.x;
+			newup.set.ranges[i]->rightbound += curlink->origin.x;
+			TRANSLATE_PT(newup.set.ranges[i]->start, *curlink);
+			TRANSLATE_PT(newup.set.ranges[i]->end, *curlink);
+
+			if(newup.set.ranges[i]->action == ACT_SCROLL) {
+				if(screen_scroll_rect(tid, tosid, newup.set.ranges[i]) == -1)
+					PASS_ERR(after_newup_set_alloc);
+			} else if(newup.set.ranges[i]->action == ACT_CLEAR) {
+				if(screen_clear_range(tid, tosid, newup.set.ranges[i]) == -1)
+					PASS_ERR(after_newup_set_alloc);
+			}
+		}
+
+		if(up->curs_changed) {
+			newcurs.y = SCR(tid, up->sid).cursor.y;
+			newcurs.x = SCR(tid, up->sid).cursor.x;
+
+			if(newcurs.y < curlink->fromline || newcurs.y > curlink->toline || SCR(tid, up->sid).curs_invisible) {
+				if(cursor_visibility(tid, tosid, 0) == -1) PASS_ERR(after_newup_set_alloc);
+			} else {
+				if(cursor_visibility(tid, tosid, 1) == -1) PASS_ERR(after_newup_set_alloc);
+				TRANSLATE_PT(newcurs, *curlink);
+				if(cursor_abs_move(tid, tosid, X, newcurs.x) == -1) PASS_ERR(after_newup_set_alloc);
+				if(cursor_abs_move(tid, tosid, Y, newcurs.y) == -1) PASS_ERR(after_newup_set_alloc);
+			}
+		}
+
+		newup.sid = tosid;
+		newup.curs_changed = up->curs_changed;
+		newup.lines_scrolled = 0;
+		propagate_updates(tid, &newup);
+
+after_newup_set_alloc:
+		range_free(&newup.set);
+
+		if(ret == -1) break;
+	}
+
 	return ret;
 }
 
@@ -159,6 +348,29 @@ int DLLEXPORT ltm_process_output(int tid) {
 	} else /* nothing done, exit */
 		goto after_lock;
 
+	for(i = 0; i < descs[tid].scr_nups; i++)
+		propagate_updates(tid, &descs[tid].scr_ups[i]);
+
+	for(i = 0; i < descs[tid].win_nups; i++) {
+		if(descs[tid].win_ups[i].ranges[0]->val < CUR_INP_SCR(tid).lines) {
+			/* this is the case where the original content has *not* been completely scrolled
+			 * off the screen, and so it makes sense to tell the app to scroll the screen and
+			 * only update things that have changed
+			 */
+
+			if(range_finish(&descs[tid].win_ups[i]) == -1)
+					PASS_ERR(after_lock);
+
+			cb_update_ranges(tid, descs[tid].win_ups[i].ranges);
+		} else {
+			/* this is the case in which the entirety of the original content *has* been
+			 * scrolled off the screen, so we might as well just reload the entire thing
+			 */
+
+			cb_update_range(tid, descs[tid].win_ups[i].ranges[0]);
+		}
+	}
+
 	if(descs[tid].lines_scrolled < CUR_SCR(tid).lines) {
 		/* this is the case where the original content has *not* been completely scrolled
 		 * off the screen, and so it makes sense to tell the app to scroll the screen and
@@ -187,6 +399,13 @@ int DLLEXPORT ltm_process_output(int tid) {
 	free(descs[tid].scr_ups);
 	descs[tid].scr_ups = NULL;
 	descs[tid].scr_nups = 0;
+
+	for(i = 0; i < descs[tid].win_nups; i++)
+		range_free(&descs[tid].win_ups[i]);
+
+	free(descs[tid].win_ups);
+	descs[tid].win_ups = NULL;
+	descs[tid].win_nups = 0;
 
 	range_free(&descs[tid].set);
 

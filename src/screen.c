@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "libterm.h"
+#include "linkedlist.h"
 #include "bitarr.h"
 #include "screen.h"
 #include "cursor.h"
@@ -34,6 +35,108 @@ int screen_alloc(int tid, char autoscroll, ushort lines, ushort cols) {
 
 error:
 	return ret;
+}
+
+static int overlap_check(int tid, int fromsid, int tosid, struct link *link) {
+	ushort curfirstline, curlastline, curfirstcol, curlastcol;
+	ushort firstline, lastline, firstcol, lastcol;
+	struct list_node *curnode;
+	struct link *curlink;
+
+	firstline = link->origin.y;
+	firstcol = link->origin.x;
+
+	lastline = firstline + (link->toline - link->fromline);
+	lastcol = firstcol + descs[tid].screens[fromsid].cols;
+
+	for(curnode = descs[tid].screens[tosid].downlinks; curnode; curnode = curnode->next) {
+		curlink = curnode->data;
+
+		curfirstline = curlink->origin.y;
+		curfirstcol = curlink->origin.x;
+
+		curlastline = curfirstline + (curlink->toline - curlink->fromline);
+		curlastcol = curfirstcol + descs[tid].screens[curnode->u.intkey].cols;
+
+		if(
+			/* it's vertically in the right place, and */
+			(
+			 /* the upper edge is in range, or */
+			 (firstline >= curfirstline && firstline <= curlastline) ||
+			 /* the lower edge is in range, or */
+			 (lastline >= curfirstline && lastline <= curlastline) ||
+			 /* the upper edge is above and the lower edge is below */
+			 (firstline < curfirstline && lastline > curlastline)
+			) &&
+			/* it's horizontally in the right place */
+			(
+			 /* the left edge is in range, or */
+			 (firstcol >= curfirstcol && firstcol <= curlastcol) ||
+			 /* the right edge is in range, or */
+			 (lastcol >= curfirstcol && lastcol <= curlastcol) ||
+			 /* the right edge is to the right and the left edge is
+			  * to the left*/
+			 (firstcol < curfirstcol && lastcol > curlastcol)
+			)
+		  ) return 1;
+	}
+
+	return 0;
+}
+
+int screen_add_link(int tid, int fromsid, int tosid, struct link *link) {
+	int ret = 0;
+
+	/* check sanity of fromline/toline values */
+	if(link->fromline > link->toline)
+		LTM_ERR(EINVAL, "Start line is higher than end line", error);
+
+	/* check that fromline and toline make sense given the dimensions of the source screen */
+	if(
+		link->fromline > descs[tid].screens[fromsid].lines-1 ||
+		link->toline > descs[tid].screens[fromsid].lines-1
+	  ) LTM_ERR(EINVAL, "Line range is not in the source screen", error);
+
+	/* check the origin makes sense given the dimensions of the destination screen */
+	if(
+		link->origin.x > descs[tid].screens[tosid].cols-1 ||
+		link->origin.y > descs[tid].screens[tosid].lines-1
+	  ) LTM_ERR(EINVAL, "Origin point is not in the destination screen", error);
+
+	/* check that the dimensions of the link would fit onto the destination screen */
+	if(
+		link->origin.y + (link->toline - link->fromline) > descs[tid].screens[tosid].lines-1 ||
+		link->origin.x + descs[tid].screens[fromsid].cols > descs[tid].screens[tosid].cols-1
+	  ) LTM_ERR(E2BIG, "Source screen will not fit onto destination screen", error);
+
+	/* check whether the link would overlap other links on the destination screen */
+	if(overlap_check(tid, fromsid, tosid, link))
+		LTM_ERR(EINVAL, "This link would overlap other links in the destination screen", error);
+
+	if(linkedlist_add_int_node(&descs[tid].screens[fromsid].uplinks, tosid, link, sizeof(struct link)) == -1)
+		return -1;
+
+	if(linkedlist_add_int_node(&descs[tid].screens[tosid].downlinks, fromsid, link, sizeof(struct link)) == -1)
+		return -1;
+
+error:
+	return ret;
+}
+
+int screen_del_link(int tid, int fromsid, int tosid) {
+	struct list_node *node;
+
+	node = linkedlist_find_int_node(descs[tid].screens[fromsid].uplinks, tosid);
+	if(!node) return -1;
+
+	linkedlist_del_node(&descs[tid].screens[fromsid].uplinks, node);
+
+	node = linkedlist_find_int_node(descs[tid].screens[tosid].downlinks, fromsid);
+	if(!node) return -1;
+
+	linkedlist_del_node(&descs[tid].screens[tosid].downlinks, node);
+
+	return 0;
 }
 
 int screen_make_current(int tid, int sid) {
@@ -215,10 +318,14 @@ struct rangeset *record_update(int tid, int sid, char opts) {
 	 * to go directly to the window ranges
 	 */
 	if(sid == descs[tid].cur_screen) {
-		ret = &descs[tid].set;
+		if(descs[tid].win_nups)
+			ret = &descs[tid].win_ups[descs[tid].win_nups-1];
+		else {
+			ret = &descs[tid].set;
 
-		if(opts & UPD_SCROLL)
-			descs[tid].lines_scrolled++;
+			if(opts & UPD_SCROLL)
+				descs[tid].lines_scrolled++;
+		}
 
 		/* the reason that we're un-dirtying the cursor when it is
 		 * hidden is that the app using libterm doesn't care

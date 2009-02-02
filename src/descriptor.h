@@ -61,6 +61,12 @@ struct ltm_term_desc {
 	struct update *scr_ups;
 	uint scr_nups; /* nups, heh */
 
+	/* updates that happened to different parts
+	 * of the window screen during update propagation
+	 */
+	struct rangeset *win_ups;
+	uint win_nups;
+
 	/* this stuff has to do w/ updates that were
 	 * written directly to the window screen
 	 */
