@@ -11,7 +11,7 @@
 #define UPD_SCROLL     4
 #define UPD_GET_SET    8
 
-#define TRANSFORM_PT(pt, link) \
+#define TRANSLATE_PT(pt, link) \
 	do { \
 		(pt).x += (link).origin.x; \
 		(pt).y += (link).origin.y - (link).fromline; \

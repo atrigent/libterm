@@ -402,7 +402,7 @@ int screen_copy_range(int tid, int fromsid, int tosid, struct range *range, stru
 	dstcur.x = srccur.x = range->start.x;
 	dstcur.y = srccur.y = range->start.y;
 
-	TRANSFORM_PT(dstcur, *link);
+	TRANSLATE_PT(dstcur, *link);
 
 	while(srccur.y <= range->end.y) {
 		while(
