@@ -17,7 +17,6 @@ typedef unsigned int uint;
 #include "ptydev.h"
 #include "rangeset.h"
 #include "descriptor.h"
-#include "callbacks.h"
 #include "threading.h"
 
 #ifdef WIN32

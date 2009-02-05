@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "libterm.h"
+#include "callbacks.h"
 #include "screen.h"
 
 int check_callbacks(struct ltm_callbacks *callbacks) {

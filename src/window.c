@@ -7,6 +7,7 @@
 #endif
 
 #include "libterm.h"
+#include "callbacks.h"
 #include "screen.h"
 #include "bitarr.h"
 

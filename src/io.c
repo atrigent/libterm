@@ -6,6 +6,7 @@
 
 #include "libterm.h"
 #include "linkedlist.h"
+#include "callbacks.h"
 #include "cursor.h"
 #include "screen.h"
 #include "process.h"
