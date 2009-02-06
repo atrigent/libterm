@@ -464,7 +464,7 @@ set_cell:
 int screen_inject_update(int tid, int sid, struct range *range) {
 	struct rangeset *curset;
 
-	curset = record_update(tid, sid, 0);
+	curset = record_update(tid, sid, UPD_GET_SET);
 	if(!curset) {
 		if(ltm_curerr.err_no == ESRCH) return 0;
 		else return -1;
