@@ -39,8 +39,8 @@ struct error_info {
 	const char *file;
 	uint line;
 
-	const char * ltm_func;
-	char * sys_func;
+	const char *ltm_func;
+	char *sys_func;
 
 	char data[ERROR_DATA_LEN];
 	int err_no;
@@ -67,7 +67,7 @@ struct ltm_callbacks {
 };
 
 extern int ltm_term_alloc();
-extern FILE * ltm_term_init(int);
+extern FILE *ltm_term_init(int);
 extern int ltm_close(int);
 
 extern int ltm_init();
@@ -83,9 +83,9 @@ extern int ltm_set_threading(char);
 extern int ltm_process_output(int);
 
 extern int ltm_reload_sigchld_handler();
-extern int ltm_set_sigchld_handler(struct sigaction * action);
+extern int ltm_set_sigchld_handler(struct sigaction *action);
 
-extern FILE * ltm_get_notifier();
+extern FILE *ltm_get_notifier();
 
 extern int ltm_set_error_dest(FILE *);
 
