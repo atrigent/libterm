@@ -14,10 +14,10 @@
 #include "conf.h"
 
 int next_tid = 0;
-struct ltm_term_desc *descs = 0;
+struct term_desc *descs = 0;
 enum initstate init_state = INIT_NOT_DONE;
 
-struct ltm_callbacks cbs;
+struct callbacks cbs;
 
 #ifdef HAVE_LIBPTHREAD
 pthread_mutex_t test_and_set_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -81,7 +81,7 @@ int DLLEXPORT ltm_init() {
 		PTHREAD_CALL(pthread_create, (&watchthread, NULL, watch_for_events, NULL), NULL, after_lock);
 #endif
 
-	memset(&cbs, 0, sizeof(struct ltm_callbacks));
+	memset(&cbs, 0, sizeof(struct callbacks));
 
 	init_state = INIT_DONE;
 

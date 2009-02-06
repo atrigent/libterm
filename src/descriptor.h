@@ -41,7 +41,7 @@ struct update {
 	char curs_changed;
 };
 
-struct ltm_term_desc {
+struct term_desc {
 	char allocated;
 
 	struct ptydev pty;
@@ -84,7 +84,7 @@ struct ltm_term_desc {
 	char curs_changed;
 };
 
-extern struct ltm_term_desc *descs;
+extern struct term_desc *descs;
 extern int next_tid;
 
 #endif

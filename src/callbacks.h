@@ -3,7 +3,7 @@
 
 #include "screen.h"
 
-struct ltm_callbacks {
+struct callbacks {
 	int (*update_ranges)(int, struct cell **, struct range **);
 	int (*refresh)(int, char, struct point *);
 
@@ -19,7 +19,7 @@ struct ltm_callbacks {
 	/* many more in the future! */
 };
 
-extern int check_callbacks(struct ltm_callbacks *);
+extern int check_callbacks(struct callbacks *);
 
 extern int cb_update_ranges(int, struct range **);
 extern int cb_update_range(int, struct range *);
@@ -33,6 +33,6 @@ extern int cb_alert(int);
 extern int cb_term_exit(int);
 extern int cb_thread_died(struct error_info);
 
-extern struct ltm_callbacks cbs;
+extern struct callbacks cbs;
 
 #endif

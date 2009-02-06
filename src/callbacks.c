@@ -4,7 +4,7 @@
 #include "callbacks.h"
 #include "screen.h"
 
-int check_callbacks(struct ltm_callbacks *callbacks) {
+int check_callbacks(struct callbacks *callbacks) {
 	int ret = 0;
 
 	if(!callbacks->update_ranges)
@@ -32,13 +32,13 @@ int check_callbacks(struct ltm_callbacks *callbacks) {
 	}
 #endif
 
-	/* more as the ltm_callbacks struct grows... */
+	/* more as the callbacks struct grows... */
 
 error:
 	return ret;
 }
 
-int DLLEXPORT ltm_set_callbacks(struct ltm_callbacks *callbacks) {
+int DLLEXPORT ltm_set_callbacks(struct callbacks *callbacks) {
 	int ret = 0;
 
 	CHECK_INITED;
@@ -47,7 +47,7 @@ int DLLEXPORT ltm_set_callbacks(struct ltm_callbacks *callbacks) {
 
 	if(check_callbacks(callbacks) == -1) PASS_ERR(after_lock);
 
-	memcpy(&cbs, callbacks, sizeof(struct ltm_callbacks));
+	memcpy(&cbs, callbacks, sizeof(struct callbacks));
 
 after_lock:
 	UNLOCK_BIG_MUTEX;
