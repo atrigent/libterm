@@ -3,6 +3,8 @@
 
 #include <sys/types.h>
 
+#include "ptydev.h"
+
 #define DIE_ON_INVAL_TID(tid) \
 	if((tid) >= next_tid || descs[tid].allocated == 0) \
 		LTM_ERR(EINVAL, "Invalid TID", after_lock)
