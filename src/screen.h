@@ -24,13 +24,17 @@ struct link {
 	ushort toline;
 };
 
+struct cell {
+	uint chr;
+};
+
 struct screen {
 	char allocated;
 
 	ushort lines;
 	ushort cols;
 
-	uint **matrix;
+	struct cell **matrix;
 	uchar *wrapped;
 
 	char curs_invisible;

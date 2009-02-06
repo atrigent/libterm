@@ -9,22 +9,22 @@
 #include "idarr.h"
 
 int screen_alloc(int tid, char autoscroll, ushort lines, ushort cols) {
-	uint **screen;
+	struct cell **screen;
 	uint i, n;
 	int ret;
 
 	ret = IDARR_ID_ALLOC(descs[tid].screens, descs[tid].next_sid);
 	if(ret == -1) return -1;
 
-	screen = SCR(tid, ret).matrix = malloc(lines * sizeof(SCR(tid, ret).matrix[0]));
+	screen = SCR(tid, ret).matrix = malloc(lines * sizeof(struct cell *));
 	if(!screen) SYS_ERR("malloc", NULL, error);
 
 	for(i = 0; i < lines; i++) {
-		screen[i] = malloc(cols * sizeof(screen[0][0]));
+		screen[i] = malloc(cols * sizeof(struct cell));
 		if(!screen[i]) SYS_ERR("malloc", NULL, error);
 
 		for(n = 0; n < cols; n++)
-			screen[i][n] = ' ';
+			screen[i][n].chr = ' ';
 	}
 
 	SCR(tid, ret).lines = lines;
@@ -164,7 +164,7 @@ void screen_set_autoscroll(int tid, int sid, char autoscroll) {
 }
 
 static int resize_cols(int tid, int sid, ushort lines, ushort cols) {
-	uint **screen;
+	struct cell **screen;
 	ushort i, n;
 	int ret = 0;
 
@@ -172,12 +172,12 @@ static int resize_cols(int tid, int sid, ushort lines, ushort cols) {
 
 	if(SCR(tid, sid).cols != cols)
 		for(i = 0; i < lines; i++) {
-			screen[i] = realloc(screen[i], cols * sizeof(screen[0][0]));
+			screen[i] = realloc(screen[i], cols * sizeof(struct cell));
 			if(!screen[i]) SYS_ERR("realloc", NULL, error);
 
 			if(cols > SCR(tid, sid).cols)
 				for(n = SCR(tid, sid).cols; n < cols; n++)
-					screen[i][n] = ' ';
+					screen[i][n].chr = ' ';
 		}
 
 error:
@@ -185,7 +185,7 @@ error:
 }
 
 int screen_set_dimensions(int tid, int sid, ushort lines, ushort cols) {
-	uint **dscreen, ***screen;
+	struct cell **dscreen, ***screen;
 	ushort i, diff, n;
 	int ret = 0;
 
@@ -228,14 +228,14 @@ int screen_set_dimensions(int tid, int sid, ushort lines, ushort cols) {
 			dscreen[i] = dscreen[i+diff];*/
 
 		if(diff) {
-			memmove(dscreen, &dscreen[diff], lines * sizeof(dscreen[0]));
+			memmove(dscreen, &dscreen[diff], lines * sizeof(struct cell *));
 
 			if(cursor_rel_move(tid, sid, UP, diff) == -1) return -1;
 
 			bitarr_shift_left(SCR(tid, sid).wrapped, SCR(tid, sid).lines, diff);
 		}
 
-		*screen = dscreen = realloc(dscreen, lines * sizeof(dscreen[0]));
+		*screen = dscreen = realloc(dscreen, lines * sizeof(struct cell *));
 		if(!dscreen) SYS_ERR("realloc", NULL, error);
 
 		if(bitarr_resize(&SCR(tid, sid).wrapped, SCR(tid, sid).lines, lines) == -1) return -1;
@@ -258,7 +258,7 @@ int screen_set_dimensions(int tid, int sid, ushort lines, ushort cols) {
 
 		if(resize_cols(tid, sid, SCR(tid, sid).lines, cols) == -1) return -1;
 
-		*screen = dscreen = realloc(dscreen, lines * sizeof(dscreen[0]));
+		*screen = dscreen = realloc(dscreen, lines * sizeof(struct cell *));
 		if(!dscreen) SYS_ERR("realloc", NULL, error);
 
 		if(bitarr_resize(&SCR(tid, sid).wrapped, SCR(tid, sid).lines, lines) == -1) return -1;
@@ -267,7 +267,7 @@ int screen_set_dimensions(int tid, int sid, ushort lines, ushort cols) {
 			dscreen[i] = dscreen[i-diff];*/
 
 		if(diff) {
-			memmove(&dscreen[diff], dscreen, SCR(tid, sid).lines * sizeof(dscreen[0]));
+			memmove(&dscreen[diff], dscreen, SCR(tid, sid).lines * sizeof(struct cell *));
 
 			if(cursor_rel_move(tid, sid, DOWN, diff) == -1) return -1;
 
@@ -276,19 +276,19 @@ int screen_set_dimensions(int tid, int sid, ushort lines, ushort cols) {
 
 		/* probably pop lines off the buffer and put them in here later */
 		for(i = 0; i < diff; i++) {
-			dscreen[i] = malloc(cols * sizeof(dscreen[0][0]));
+			dscreen[i] = malloc(cols * sizeof(struct cell));
 			if(!dscreen[i]) SYS_ERR("malloc", NULL, error);
 
 			for(n = 0; n < cols; n++)
-				dscreen[i][n] = ' ';
+				dscreen[i][n].chr = ' ';
 		}
 
 		for(i = SCR(tid, sid).lines + diff; i < lines; i++) {
-			dscreen[i] = malloc(cols * sizeof(dscreen[0][0]));
+			dscreen[i] = malloc(cols * sizeof(struct cell));
 			if(!dscreen[i]) SYS_ERR("malloc", NULL, error);
 
 			for(n = 0; n < cols; n++)
-				dscreen[i][n] = ' ';
+				dscreen[i][n].chr = ' ';
 		}
 	} else
 		if(resize_cols(tid, sid, lines, cols) == -1) return -1;
@@ -368,18 +368,19 @@ error:
 }
 
 int screen_scroll(int tid, int sid) {
+	struct cell *linesave;
 	struct rangeset *set;
-	uint i, *linesave;
+	uint i;
 
 	/* push this line into the buffer later... */
 	linesave = SCR(tid, sid).matrix[0];
 	for(i = 0; i < SCR(tid, sid).cols; i++)
-		linesave[i] = ' ';
+		linesave[i].chr = ' ';
 
 	memmove(
 		SCR(tid, sid).matrix,
 		&SCR(tid, sid).matrix[1],
-		sizeof(SCR(tid, sid).matrix[0]) * (SCR(tid, sid).lines-1)
+		sizeof(struct cell *) * (SCR(tid, sid).lines-1)
 	);
 
 	SCR(tid, sid).matrix[SCR(tid, sid).lines-1] = linesave;
@@ -418,7 +419,7 @@ static int should_be_merged(struct range *range, struct point *start) {
 int screen_set_point(int tid, int sid, char action, struct point *pt, uint chr) {
 	struct rangeset *curset;
 
-	if(SCR(tid, sid).matrix[pt->y][pt->x] == chr)
+	if(SCR(tid, sid).matrix[pt->y][pt->x].chr == chr)
 		return 0;
 
 	curset = record_update(tid, sid, UPD_GET_SET);
@@ -455,7 +456,7 @@ int screen_set_point(int tid, int sid, char action, struct point *pt, uint chr) 
 	}
 
 set_cell:
-	SCR(tid, sid).matrix[pt->y][pt->x] = chr;
+	SCR(tid, sid).matrix[pt->y][pt->x].chr = chr;
 
 	return 0;
 }
@@ -516,7 +517,7 @@ int screen_copy_range(int tid, int fromsid, int tosid, struct range *range, stru
 			(srccur.y < range->end.y && srccur.x <= range->rightbound) ||
 			(srccur.y == range->end.y && srccur.x <= range->end.x)
 		) {
-			screen_set_point(tid, tosid, ACT_COPY, &dstcur, SCR(tid, fromsid).matrix[srccur.y][srccur.x]);
+			screen_set_point(tid, tosid, ACT_COPY, &dstcur, SCR(tid, fromsid).matrix[srccur.y][srccur.x].chr);
 
 			srccur.x++;
 			dstcur.x++;
@@ -546,12 +547,12 @@ int screen_scroll_rect(int tid, int sid, struct range *rect) {
 		memcpy(
 			&SCR(tid, sid).matrix[cur.y][rect->start.x],
 			&SCR(tid, sid).matrix[cur.y + rect->val][rect->start.x],
-			sizeof(uint) * (rect->end.x - rect->start.x + 1)
+			sizeof(struct cell) * (rect->end.x - rect->start.x + 1)
 		      );
 
 	for(; cur.y <= rect->end.y; cur.y++)
 		for(cur.x = rect->leftbound; cur.x <= rect->rightbound; cur.x++)
-			SCR(tid, sid).matrix[cur.y][cur.x] = ' ';
+			SCR(tid, sid).matrix[cur.y][cur.x].chr = ' ';
 
 	return screen_inject_update(tid, sid, rect);
 }

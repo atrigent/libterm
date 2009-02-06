@@ -1,13 +1,15 @@
 #ifndef CALLBACKS_H
 #define CALLBACKS_H
 
+#include "screen.h"
+
 struct ltm_callbacks {
-	int (*update_ranges)(int, uint **, struct range **);
+	int (*update_ranges)(int, struct cell **, struct range **);
 	int (*refresh)(int, char, struct point *);
 
 	int (*scroll_lines)(int, uint);
 
-	int (*refresh_screen)(int, uint **);
+	int (*refresh_screen)(int, struct cell **);
 	int (*alert)(int);
 
 	/* threading stuff */

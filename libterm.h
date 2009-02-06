@@ -44,13 +44,17 @@ struct error_info {
 	int err_no;
 };
 
+struct ltm_cell {
+	uint chr;
+};
+
 struct ltm_callbacks {
-	int (*update_ranges)(int, uint **, struct range **);
+	int (*update_ranges)(int, struct ltm_cell **, struct range **);
 	int (*refresh)(int, char, struct point *);
 
 	int (*scroll_lines)(int, uint);
 
-	int (*refresh_screen)(int, uint **);
+	int (*refresh_screen)(int, struct ltm_cell **);
 	int (*alert)(int);
 
 	/* threading stuff */
