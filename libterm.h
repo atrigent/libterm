@@ -8,59 +8,59 @@
 #  define extern extern __declspec(dllimport)
 #endif
 
-enum action {
-	ACT_COPY,
-	ACT_CLEAR,
-	ACT_SCROLL
+enum ltm_action {
+	LTM_ACT_COPY,
+	LTM_ACT_CLEAR,
+	LTM_ACT_SCROLL
 };
 
-#define ERROR_DATA_LEN 256
+#define LTM_ERROR_DATA_LEN 256
 
-typedef unsigned int uint;
-typedef unsigned short ushort;
-typedef unsigned char uchar;
+typedef unsigned int ltm_uint;
+typedef unsigned short ltm_ushort;
+typedef unsigned char ltm_uchar;
 
-struct point {
-	ushort x;
-	ushort y;
+struct ltm_point {
+	ltm_ushort x;
+	ltm_ushort y;
 };
 
-struct range {
-	enum action action;
-	uint val;
+struct ltm_range {
+	enum ltm_action action;
+	ltm_uint val;
 
-	ushort leftbound;
-	ushort rightbound;
-	struct point start;
-	struct point end;
+	ltm_ushort leftbound;
+	ltm_ushort rightbound;
+	struct ltm_point start;
+	struct ltm_point end;
 };
 
-struct error_info {
+struct ltm_error_info {
 	const char *file;
-	uint line;
+	ltm_uint line;
 
 	const char *ltm_func;
 	char *sys_func;
 
-	char data[ERROR_DATA_LEN];
+	char data[LTM_ERROR_DATA_LEN];
 	int err_no;
 };
 
 struct ltm_cell {
-	uint chr;
+	ltm_uint chr;
 };
 
 struct ltm_callbacks {
-	int (*update_ranges)(int, struct ltm_cell **, struct range **);
-	int (*refresh)(int, char, struct point *);
+	int (*update_ranges)(int, struct ltm_cell **, struct ltm_range **);
+	int (*refresh)(int, char, struct ltm_point *);
 
-	int (*scroll_lines)(int, uint);
+	int (*scroll_lines)(int, ltm_uint);
 
 	int (*refresh_screen)(int, struct ltm_cell **);
 	int (*alert)(int);
 
 	/* threading stuff */
-	int (*thread_died)(struct error_info);
+	int (*thread_died)(struct ltm_error_info);
 	int (*term_exit)(int);
 
 	/* many more in the future! */
@@ -73,9 +73,9 @@ extern int ltm_close(int);
 extern int ltm_init();
 extern int ltm_uninit();
 
-extern int ltm_feed_input_to_program(int, char *, uint);
-extern int ltm_simulate_output(int, char *, uint);
-extern int ltm_set_window_dimensions(int, ushort, ushort);
+extern int ltm_feed_input_to_program(int, char *, ltm_uint);
+extern int ltm_simulate_output(int, char *, ltm_uint);
+extern int ltm_set_window_dimensions(int, ltm_ushort, ltm_ushort);
 extern int ltm_set_shell(int, char *);
 extern int ltm_set_callbacks(struct ltm_callbacks *);
 extern int ltm_set_threading(char);
@@ -91,9 +91,9 @@ extern int ltm_set_error_dest(FILE *);
 
 extern int ltm_parse_config_text(char *);
 
-extern int ltm_is_line_wrapped(int, uint);
+extern int ltm_is_line_wrapped(int, ltm_uint);
 
-extern struct error_info ltm_curerr;
+extern struct ltm_error_info ltm_curerr;
 
 #ifdef WIN32
 #  undef extern
