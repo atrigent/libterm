@@ -21,9 +21,11 @@ typedef unsigned int uint;
 #  define DLLEXPORT
 #endif
 
-#define INIT_NOT_DONE 0
-#define INIT_IN_PROGRESS 1
-#define INIT_DONE 2
+enum initstate {
+	INIT_NOT_DONE,
+	INIT_IN_PROGRESS,
+	INIT_DONE
+};
 
 #define CHECK_INITED \
 	if(init_state != INIT_DONE) LTM_ERR(EPERM, "libterm has not yet been inited", before_anything);
@@ -34,6 +36,6 @@ typedef unsigned int uint;
 #define CHECK_NOT_INITED \
 	if(init_state != INIT_NOT_DONE) LTM_ERR(EPERM, "libterm has been inited", before_anything);
 
-extern char init_state;
+extern enum initstate init_state;
 
 #endif

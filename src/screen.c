@@ -416,7 +416,7 @@ static int should_be_merged(struct range *range, struct point *start) {
 	return 0;
 }
 
-int screen_set_point(int tid, int sid, char action, struct point *pt, uint chr) {
+int screen_set_point(int tid, int sid, enum action action, struct point *pt, uint chr) {
 	struct rangeset *curset;
 
 	if(SCR(tid, sid).matrix[pt->y][pt->x].chr == chr)

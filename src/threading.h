@@ -5,9 +5,11 @@
 #ifdef HAVE_LIBPTHREAD
 # include <pthread.h>
 
-# define EXIT_THREAD 0
-# define NEW_TERM 1
-# define DEL_TERM 2
+enum threadaction {
+	EXIT_THREAD,
+	NEW_TERM,
+	DEL_TERM
+};
 
 /* handling errors from pthread calls */
 

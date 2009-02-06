@@ -60,7 +60,7 @@ extern int screen_make_current(int, int);
 
 extern int screen_inject_update(int, int, struct range *);
 
-extern int screen_set_point(int, int, char, struct point *, uint);
+extern int screen_set_point(int, int, enum action, struct point *, uint);
 extern int screen_clear_range(int, int, struct range *);
 extern int screen_copy_range(int, int, int, struct range *, struct link *);
 

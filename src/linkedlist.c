@@ -4,9 +4,6 @@
 #include "libterm.h"
 #include "linkedlist.h"
 
-#define INTEGER 1
-#define STRING 0
-
 static int add_keyless_node(struct list_node **head, void *data, uint len) {
 	struct list_node *new;
 	int ret = 0;

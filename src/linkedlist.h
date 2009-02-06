@@ -1,11 +1,16 @@
 #ifndef LINKEDLIST_H
 #define LINKEDLIST_H
 
+enum keytype {
+	INTEGER,
+	STRING
+};
+
 struct list_node {
 	struct list_node *next;
 	struct list_node *prev;
 
-	char which;
+	enum keytype which;
 	union {
 		char *strkey;
 		int intkey;

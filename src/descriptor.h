@@ -13,9 +13,11 @@
 	if((tid) >= next_tid || descs[tid].allocated == 0) \
 		LTM_ERR_PTR(EINVAL, "Invalid TID", after_lock)
 
-#define ACT_COPY   0
-#define ACT_CLEAR  1
-#define ACT_SCROLL 2
+enum action {
+	ACT_COPY,
+	ACT_CLEAR,
+	ACT_SCROLL
+};
 
 struct point {
 	ushort x;
@@ -23,7 +25,7 @@ struct point {
 };
 
 struct range {
-	char action;
+	enum action action;
 	uint val;
 
 	ushort leftbound;

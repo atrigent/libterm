@@ -19,7 +19,7 @@ int cursor_visibility(int tid, int sid, char visibility) {
 	return 0;
 }
 
-int cursor_abs_move(int tid, int sid, char axis, ushort num) {
+int cursor_abs_move(int tid, int sid, enum axis axis, ushort num) {
 	int ret = 0;
 
 	switch(axis) {
@@ -59,7 +59,7 @@ error:
 	return ret;
 }
 
-int cursor_rel_move(int tid, int sid, char direction, ushort num) {
+int cursor_rel_move(int tid, int sid, enum direction direction, ushort num) {
 	int ret = 0;
 
 	if(!num) return 0;

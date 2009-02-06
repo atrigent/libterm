@@ -420,9 +420,10 @@ before_anything:
 /* use poll because there's no limit on the number of fds to watch */
 void *watch_for_events() {
 	int i, n, nfds, pollret, newtid;
+	enum threadaction code;
 	struct pollfd *fds = 0;
-	char code, running = 1;
 	void *ret = (void*)1;
+	char running = 1;
 
 	LOCK_BIG_MUTEX_THR;
 
@@ -454,7 +455,7 @@ void *watch_for_events() {
 			if(fds[i].revents) {
 				if(!i) {
 					/* got a new term, delete term, or exit notification... */
-					if(fread(&code, 1, sizeof(char), pipefiles[0]) < sizeof(char))
+					if(fread(&code, 1, sizeof(enum threadaction), pipefiles[0]) < sizeof(enum threadaction))
 						SYS_ERR_THR("fread", NULL, after_lock);
 
 					if(code == EXIT_THREAD) {
@@ -488,6 +489,8 @@ void *watch_for_events() {
 
 							cb_term_exit(newtid);
 
+							break;
+						case EXIT_THREAD: /* make gcc happy */
 							break;
 					}
 

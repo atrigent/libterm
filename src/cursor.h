@@ -1,17 +1,21 @@
 #ifndef CURSOR_H
 #define CURSOR_H
 
-#define UP 0
-#define DOWN 1
-#define LEFT 2
-#define RIGHT 3
+enum direction {
+	UP,
+	DOWN,
+	LEFT,
+	RIGHT
+};
 
-#define X 0
-#define Y 1
+enum axis {
+	X,
+	Y
+};
 
 extern int cursor_visibility(int, int, char);
-extern int cursor_rel_move(int, int, char, ushort);
-extern int cursor_abs_move(int, int, char, ushort);
+extern int cursor_rel_move(int, int, enum direction, ushort);
+extern int cursor_abs_move(int, int, enum axis, ushort);
 
 extern int cursor_down(int, int);
 extern int cursor_wrap(int, int);

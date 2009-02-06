@@ -1,9 +1,11 @@
 #ifndef PTYDEV_H
 #define PTYDEV_H
 
-#define UNIX98_PTY 0
-#define BSD_PTY    1
-#define FUNC_PTY   2
+enum ptytype {
+	UNIX98_PTY,
+	BSD_PTY,
+	FUNC_PTY
+};
 
 /* From here to... */
 /* Since major is a function on SVR4, we can't use `ifndef major'.  */
@@ -35,7 +37,7 @@
  */
 
 struct ptydev {
-	char type;
+	enum ptytype type;
 	FILE *master;
 	FILE *slave;
 };

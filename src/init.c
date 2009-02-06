@@ -15,7 +15,7 @@
 
 int next_tid = 0;
 struct ltm_term_desc *descs = 0;
-char init_state = INIT_NOT_DONE;
+enum initstate init_state = INIT_NOT_DONE;
 
 struct ltm_callbacks cbs;
 
@@ -93,8 +93,8 @@ before_anything:
 
 int DLLEXPORT ltm_uninit() {
 #ifdef HAVE_LIBPTHREAD
+	enum threadaction code;
 	void *thr_ret;
-	char code;
 #endif
 	int ret = 0;
 
@@ -113,7 +113,7 @@ int DLLEXPORT ltm_uninit() {
 	if(threading) {
 		code = EXIT_THREAD;
 
-		if(fwrite(&code, 1, sizeof(char), pipefiles[1]) < sizeof(char))
+		if(fwrite(&code, 1, sizeof(enum threadaction), pipefiles[1]) < sizeof(enum threadaction))
 			SYS_ERR("fwrite", NULL, after_lock);
 
 		/* we need to temporarily unlock the mutex so that
@@ -191,7 +191,7 @@ FILE DLLEXPORT *ltm_term_init(int tid) {
 	pid_t pid = -1;
 	FILE *ret;
 #ifdef HAVE_LIBPTHREAD
-	char code;
+	enum threadaction code;
 #endif
 
 	CHECK_INITED_PTR;
@@ -230,7 +230,7 @@ FILE DLLEXPORT *ltm_term_init(int tid) {
 #ifdef HAVE_LIBPTHREAD
 	if(threading) {
 		code = NEW_TERM;
-		if(fwrite(&code, 1, sizeof(char), pipefiles[1]) < sizeof(char))
+		if(fwrite(&code, 1, sizeof(enum threadaction), pipefiles[1]) < sizeof(enum threadaction))
 			SYS_ERR_PTR("fwrite", NULL, after_lock);
 
 		if(fwrite(&tid, 1, sizeof(int), pipefiles[1]) < sizeof(int))
