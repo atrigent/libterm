@@ -8,9 +8,11 @@
 #  define extern extern __declspec(dllimport)
 #endif
 
-#define ACT_COPY   0
-#define ACT_CLEAR  1
-#define ACT_SCROLL 2
+enum action {
+	ACT_COPY,
+	ACT_CLEAR,
+	ACT_SCROLL
+};
 
 #define ERROR_DATA_LEN 256
 
@@ -24,7 +26,7 @@ struct point {
 };
 
 struct range {
-	char action;
+	enum action action;
 	uint val;
 
 	ushort leftbound;
