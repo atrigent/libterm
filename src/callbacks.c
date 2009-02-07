@@ -55,25 +55,21 @@ before_anything:
 	return ret;
 }
 
-int cb_update_ranges(int tid, struct range **ranges) {
+void cb_update_ranges(int tid, struct range **ranges) {
 	/* assuming ranges is null terminated... */
 	cbs.update_ranges(tid, CUR_SCR(tid).matrix, ranges);
-
-	return 0;
 }
 
-int cb_update_range(int tid, struct range *range) {
+void cb_update_range(int tid, struct range *range) {
 	struct range *ranges[2];
 
 	ranges[0] = range;
 	ranges[1] = NULL;
 
 	cb_update_ranges(tid, ranges);
-
-	return 0;
 }
 
-int cb_refresh(int tid) {
+void cb_refresh(int tid) {
 	struct point *curs;
 
 	if(descs[tid].curs_changed)
@@ -84,11 +80,9 @@ int cb_refresh(int tid) {
 	cbs.refresh(tid, !CUR_SCR(tid).curs_invisible, curs);
 
 	descs[tid].curs_changed = 0;
-
-	return 0;
 }
 
-int cb_refresh_screen(int tid) {
+void cb_refresh_screen(int tid) {
 	struct range range;
 
 	if(cbs.refresh_screen)
@@ -104,11 +98,9 @@ int cb_refresh_screen(int tid) {
 
 		cb_update_range(tid, &range);
 	}
-
-	return 0;
 }
 
-int cb_scroll_lines(int tid) {
+void cb_scroll_lines(int tid) {
 	/*struct range range;*/
 
 	if(cbs.scroll_lines)
@@ -127,25 +119,17 @@ int cb_scroll_lines(int tid) {
 
 		cb_refresh_screen(tid);
 	}
-
-	return 0;
 }
 
-int cb_alert(int tid) {
+void cb_alert(int tid) {
 	if(cbs.alert)
 		cbs.alert(tid);
-
-	return 0;
 }
 
-int cb_term_exit(int tid) {
+void cb_term_exit(int tid) {
 	cbs.term_exit(tid);
-
-	return 0;
 }
 
-int cb_thread_died(struct error_info err) {
+void cb_thread_died(struct error_info err) {
 	cbs.thread_died(err);
-
-	return 0;
 }

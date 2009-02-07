@@ -4,34 +4,34 @@
 #include "screen.h"
 
 struct callbacks {
-	int (*update_ranges)(int, struct cell **, struct range **);
-	int (*refresh)(int, char, struct point *);
+	void (*update_ranges)(int, struct cell **, struct range **);
+	void (*refresh)(int, char, struct point *);
 
-	int (*scroll_lines)(int, uint);
+	void (*scroll_lines)(int, uint);
 
-	int (*refresh_screen)(int, struct cell **);
-	int (*alert)(int);
+	void (*refresh_screen)(int, struct cell **);
+	void (*alert)(int);
 
 	/* threading stuff */
-	int (*thread_died)(struct error_info);
-	int (*term_exit)(int);
+	void (*thread_died)(struct error_info);
+	void (*term_exit)(int);
 
 	/* many more in the future! */
 };
 
 extern int check_callbacks(struct callbacks *);
 
-extern int cb_update_ranges(int, struct range **);
-extern int cb_update_range(int, struct range *);
-extern int cb_refresh(int);
+extern void cb_update_ranges(int, struct range **);
+extern void cb_update_range(int, struct range *);
+extern void cb_refresh(int);
 
-extern int cb_scroll_lines(int);
+extern void cb_scroll_lines(int);
 
-extern int cb_refresh_screen(int);
-extern int cb_alert(int);
+extern void cb_refresh_screen(int);
+extern void cb_alert(int);
 
-extern int cb_term_exit(int);
-extern int cb_thread_died(struct error_info);
+extern void cb_term_exit(int);
+extern void cb_thread_died(struct error_info);
 
 extern struct callbacks cbs;
 

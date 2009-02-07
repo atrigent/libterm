@@ -51,17 +51,17 @@ struct ltm_cell {
 };
 
 struct ltm_callbacks {
-	int (*update_ranges)(int, struct ltm_cell **, struct ltm_range **);
-	int (*refresh)(int, char, struct ltm_point *);
+	void (*update_ranges)(int, struct ltm_cell **, struct ltm_range **);
+	void (*refresh)(int, char, struct ltm_point *);
 
-	int (*scroll_lines)(int, ltm_uint);
+	void (*scroll_lines)(int, ltm_uint);
 
-	int (*refresh_screen)(int, struct ltm_cell **);
-	int (*alert)(int);
+	void (*refresh_screen)(int, struct ltm_cell **);
+	void (*alert)(int);
 
 	/* threading stuff */
-	int (*thread_died)(struct ltm_error_info);
-	int (*term_exit)(int);
+	void (*thread_died)(struct ltm_error_info);
+	void (*term_exit)(int);
 
 	/* many more in the future! */
 };
