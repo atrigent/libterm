@@ -6,10 +6,12 @@
 #define CUR_SCR(tid) SCR(tid, descs[tid].cur_screen)
 #define CUR_INP_SCR(tid) SCR(tid, descs[tid].cur_input_screen)
 
-#define UPD_CURS       1
-#define UPD_CURS_INVIS 2
-#define UPD_SCROLL     4
-#define UPD_GET_SET    8
+enum updateactions {
+	UPD_CURS = 1,
+	UPD_CURS_INVIS = 2,
+	UPD_SCROLL = 4,
+	UPD_GET_SET = 8
+};
 
 #define TRANSLATE_PT(pt, link) \
 	do { \
@@ -46,7 +48,7 @@ struct screen {
 	struct list_node *uplinks;
 };
 
-extern struct rangeset *record_update(int, int, char);
+extern struct rangeset *record_update(int, int, enum updateactions);
 
 extern int screen_set_dimensions(int, int, ushort, ushort);
 extern int screen_alloc(int, char, ushort, ushort);

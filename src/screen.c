@@ -300,7 +300,7 @@ error:
 	return ret;
 }
 
-struct rangeset *record_update(int tid, int sid, char opts) {
+struct rangeset *record_update(int tid, int sid, enum updateactions opts) {
 	struct rangeset *ret = NULL;
 	uint i;
 
