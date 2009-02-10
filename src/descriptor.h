@@ -53,6 +53,7 @@ struct term_desc {
 	ushort lines;
 	ushort cols;
 
+	int old_cur_screen;
 	int cur_screen;
 	int cur_input_screen;
 	struct screen *screens;

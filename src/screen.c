@@ -317,7 +317,7 @@ struct rangeset *record_update(int tid, int sid, enum updateactions opts) {
 	 * both the window and the input screen we want stuff
 	 * to go directly to the window ranges
 	 */
-	if(sid == descs[tid].cur_screen) {
+	if(sid == descs[tid].old_cur_screen) {
 		if(descs[tid].win_nups)
 			ret = &descs[tid].win_ups[descs[tid].win_nups-1];
 		else {

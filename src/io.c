@@ -284,6 +284,8 @@ int DLLEXPORT ltm_process_output(int tid) {
 
 	buf = descs[tid].outputbuf;
 
+	descs[tid].old_cur_screen = descs[tid].cur_screen;
+
 	for(i = 0; i < descs[tid].buflen; i++) {
 		if(buf[i] > 0x7f) continue;
 
@@ -352,10 +354,10 @@ int DLLEXPORT ltm_process_output(int tid) {
 	for(i = 0; i < descs[tid].scr_nups; i++)
 		propagate_updates(tid, &descs[tid].scr_ups[i]);
 
-	if(descs[tid].lines_scrolled < CUR_SCR(tid).lines) {
+	if(descs[tid].lines_scrolled < CUR_SCR(tid).lines && descs[tid].old_cur_screen == descs[tid].cur_screen) {
 		/* this is the case where the original content has *not* been completely scrolled
-		 * off the screen, and so it makes sense to tell the app to update the links, scroll
-		 * the screen, and update things that have changed
+		 * off the screen and the current screen has not changed, so it makes sense to tell
+		 * the app to update the links, scroll the screen, and update things that have changed
 		 */
 
 		for(i = 0; i < descs[tid].win_nups; i++) {
@@ -386,7 +388,8 @@ int DLLEXPORT ltm_process_output(int tid) {
 		}
 	} else {
 		/* this is the case in which the entirety of the original content *has* been
-		 * scrolled off the screen, so we might as well just reload the entire thing
+		 * scrolled off the screen or the current screen has changed, so we might as
+		 * well just reload the entire thing
 		 */
 		cb_refresh_screen(tid);
 	}
