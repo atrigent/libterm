@@ -17,7 +17,7 @@ int check_callbacks(struct callbacks *callbacks) {
 		fprintf(DUMP_DEST, "Warning: The refresh_screen callback was not supplied. It will be emulated with update_ranges\n");
 
 	if(!callbacks->scroll_lines)
-		fprintf(DUMP_DEST, "Warning: The scroll_lines callback was not supplied. It will be emulated with update_ranges\n");
+		fprintf(DUMP_DEST, "Warning: The scroll_lines callback was not supplied. It will be emulated with refresh_screen or update_ranges\n");
 
 	if(!callbacks->alert)
 		fprintf(DUMP_DEST, "Warning: The alert callback was not supplied. The ASCII bell character will be ignored\n");
