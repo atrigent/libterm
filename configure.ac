@@ -1,9 +1,9 @@
 # Process w/ autoconf
 
 dnl Autoconf requirements
-AC_PREREQ([2.61])
+AC_PREREQ(2.63)
 dnl Boilerplate
-AC_INIT([libterm], [devel], [lmage11@twcny.rr.com], [libterm])
+AC_INIT([libterm],[devel],[lmage11@twcny.rr.com],[libterm])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/init.c])
 AC_CONFIG_AUX_DIR([build-aux])
