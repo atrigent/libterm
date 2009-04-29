@@ -490,7 +490,8 @@ int screen_clear_range(int tid, int sid, struct range *range) {
 			(cur.y < range->end.y && cur.x <= range->rightbound) ||
 			(cur.y == range->end.y && cur.x <= range->end.x)
 		) {
-			screen_set_point(tid, sid, ACT_CLEAR, &cur, ' ');
+			if(screen_set_point(tid, sid, ACT_CLEAR, &cur, ' ') == -1)
+				return -1;
 
 			cur.x++;
 		}
@@ -517,7 +518,8 @@ int screen_copy_range(int tid, int fromsid, int tosid, struct range *range, stru
 			(srccur.y < range->end.y && srccur.x <= range->rightbound) ||
 			(srccur.y == range->end.y && srccur.x <= range->end.x)
 		) {
-			screen_set_point(tid, tosid, ACT_COPY, &dstcur, SCR(tid, fromsid).matrix[srccur.y][srccur.x].chr);
+			if(screen_set_point(tid, tosid, ACT_COPY, &dstcur, SCR(tid, fromsid).matrix[srccur.y][srccur.x].chr) == -1)
+				return -1;
 
 			srccur.x++;
 			dstcur.x++;
