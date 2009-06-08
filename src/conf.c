@@ -23,7 +23,7 @@ static char *get_user_config_path() {
 	if(!homedir || !homedir[0]) SYS_ERR_PTR("getenv", "HOME", error);
 
 	/* plus 2 for slash and null terminator */
-	ret = malloc(strlen(homedir) + 1 + strlen(USER_CONFIG) + 1);
+	ret = malloc(strlen(homedir) + 1 + sizeof(USER_CONFIG)-1 + 1);
 	if(!ret) SYS_ERR_PTR("malloc", NULL, error);
 
 	sprintf(ret, "%s/" USER_CONFIG, homedir);
