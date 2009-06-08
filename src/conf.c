@@ -32,6 +32,15 @@ error:
 	return ret;
 }
 
+static int set_config_entry(char *key, char *val) {
+	fprintf(DUMP_DEST, "Setting config entry \"%s\" to value \"%s\"\n", key, val);
+
+	if(hashtable_set_pair(conf, key, val, strlen(val)+1) == -1)
+		return -1;
+
+	return 0;
+}
+
 /* ok, it's official: text parsing in C is REALLY FUCKING ANNOYING */
 static int parse_config_text(char *buf, char *filename) {
 	int linenum, ret = 0;
@@ -86,8 +95,7 @@ static int parse_config_text(char *buf, char *filename) {
 			goto after_val_alloc;
 		}
 
-		fprintf(DUMP_DEST, "Setting config entry \"%s\" to value \"%s\"\n", key, val);
-		if(hashtable_set_pair(conf, key, val, strlen(val)+1) == -1)
+		if(set_config_entry(key, val) == -1)
 			PASS_ERR(after_val_alloc);
 
 after_val_alloc:
@@ -103,14 +111,14 @@ next:
 	return ret;
 }
 
-int DLLEXPORT ltm_parse_config_text(char *txt) {
+int DLLEXPORT ltm_set_config_entry(char *key, char *val) {
 	int ret = 0;
 
 	CHECK_INITED;
 
 	LOCK_BIG_MUTEX;
 
-	if(parse_config_text(txt, "<from program>") == -1) PASS_ERR(after_lock);
+	if(set_config_entry(key, val) == -1) PASS_ERR(after_lock);
 
 after_lock:
 	UNLOCK_BIG_MUTEX;
@@ -153,7 +161,7 @@ before_anything:
 	return ret;
 }
 
-int config_parse_files() {
+static int config_parse_files() {
 	char *user_config_file;
 	int ret = 0;
 
@@ -169,6 +177,14 @@ after_alloc:
 	free(user_config_file);
 before_anything:
 	return ret;
+}
+
+int config_init() {
+	memset(conf, 0, sizeof(conf));
+
+	if(config_parse_files() == -1) return -1;
+
+	return 0;
 }
 
 char *config_get_entry(char *class, char *module, char *name, char *def) {
