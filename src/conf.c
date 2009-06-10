@@ -11,23 +11,32 @@
 
 struct list_node *conf[256];
 
+static char *make_config_entry_name(char *class, char *module, char *name) {
+	char *ret;
+
+	ret = malloc(strlen(class) + 1 + (module ? strlen(module) + 1 : 0) + strlen(name) + 1);
+	if(!ret) SYS_ERR_PTR("malloc", NULL, error);
+
+	if(module)
+		sprintf(ret, "%s.%s.%s", class, module, name);
+	else
+		sprintf(ret, "%s.%s", class, name);
+
+error:
+	return ret;
+}
+
 char *config_get_entry(char *class, char *module, char *name, char *def) {
 	char *hashname, *ret;
 
-	hashname = malloc(strlen(class) + 1 + (module ? strlen(module) + 1 : 0) + strlen(name) + 1);
-	if(!hashname) SYS_ERR_PTR("malloc", NULL, error);
-
-	if(module)
-		sprintf(hashname, "%s.%s.%s", class, module, name);
-	else
-		sprintf(hashname, "%s.%s", class, name);
+	hashname = make_config_entry_name(class, module, name);
+	if(!hashname) return NULL;
 
 	ret = hashtable_get_value(conf, hashname);
 	if(!ret) ret = def;
 
 	free(hashname);
 
-error:
 	return ret;
 }
 
@@ -40,15 +49,21 @@ static int set_config_entry(char *key, char *val) {
 	return 0;
 }
 
-int DLLEXPORT ltm_set_config_entry(char *key, char *val) {
+int DLLEXPORT ltm_set_config_entry(char *class, char *module, char *name, char *val) {
+	char *hashname;
 	int ret = 0;
 
 	CHECK_INITED;
 
 	LOCK_BIG_MUTEX;
 
-	if(set_config_entry(key, val) == -1) PASS_ERR(after_lock);
+	hashname = make_config_entry_name(class, module, name);
+	if(!hashname) PASS_ERR(after_lock);
 
+	if(set_config_entry(hashname, val) == -1) PASS_ERR(after_alloc);
+
+after_alloc:
+	free(hashname);
 after_lock:
 	UNLOCK_BIG_MUTEX;
 before_anything:
