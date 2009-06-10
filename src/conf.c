@@ -9,12 +9,86 @@
 #include "hashtable.h"
 #include "textparse.h"
 
+struct list_node *conf[256];
+
+char *config_get_entry(char *class, char *module, char *name, char *def) {
+	char *hashname, *ret;
+
+	hashname = malloc(strlen(class) + 1 + (module ? strlen(module) + 1 : 0) + strlen(name) + 1);
+	if(!hashname) SYS_ERR_PTR("malloc", NULL, error);
+
+	if(module)
+		sprintf(hashname, "%s.%s.%s", class, module, name);
+	else
+		sprintf(hashname, "%s.%s", class, name);
+
+	ret = hashtable_get_value(conf, hashname);
+	if(!ret) ret = def;
+
+	free(hashname);
+
+error:
+	return ret;
+}
+
+static int set_config_entry(char *key, char *val) {
+	fprintf(DUMP_DEST, "Setting config entry \"%s\" to value \"%s\"\n", key, val);
+
+	if(hashtable_set_pair(conf, key, val, strlen(val)+1) == -1)
+		return -1;
+
+	return 0;
+}
+
+int DLLEXPORT ltm_set_config_entry(char *key, char *val) {
+	int ret = 0;
+
+	CHECK_INITED;
+
+	LOCK_BIG_MUTEX;
+
+	if(set_config_entry(key, val) == -1) PASS_ERR(after_lock);
+
+after_lock:
+	UNLOCK_BIG_MUTEX;
+before_anything:
+	return ret;
+}
+
+int config_interpret_boolean(char *val) {
+	int ret;
+
+	/* lol
+	 *   -Herb
+	 */
+	if(!val) LTM_ERR(EINVAL, NULL, error);
+
+	if(
+		!strcmp(val, "false") ||
+		!strcmp(val, "no") ||
+		!strcmp(val, "off") ||
+		(strspn(val, "0") == strlen(val))
+	  ) ret = 0;
+	else if(
+		!strcmp(val, "true") ||
+		!strcmp(val, "yes") ||
+		!strcmp(val, "on") ||
+		(strspn(val, range_0_9) == strlen(val))
+	       ) ret = 1;
+	else LTM_ERR(EINVAL, val, error);
+
+error:
+	return ret;
+}
+
+void config_free() {
+	hashtable_free(conf);
+}
+
 #define USER_CONFIG ".libterm"
 
 #define PARSE_ERR(file, line, msg) \
 	fprintf(DUMP_DEST, "Parse error in %s:%i: %s\n", file, line, msg)
-
-struct list_node *conf[256];
 
 static char *get_user_config_path() {
 	char *homedir, *ret;
@@ -30,15 +104,6 @@ static char *get_user_config_path() {
 
 error:
 	return ret;
-}
-
-static int set_config_entry(char *key, char *val) {
-	fprintf(DUMP_DEST, "Setting config entry \"%s\" to value \"%s\"\n", key, val);
-
-	if(hashtable_set_pair(conf, key, val, strlen(val)+1) == -1)
-		return -1;
-
-	return 0;
 }
 
 /* ok, it's official: text parsing in C is REALLY FUCKING ANNOYING */
@@ -111,21 +176,6 @@ next:
 	return ret;
 }
 
-int DLLEXPORT ltm_set_config_entry(char *key, char *val) {
-	int ret = 0;
-
-	CHECK_INITED;
-
-	LOCK_BIG_MUTEX;
-
-	if(set_config_entry(key, val) == -1) PASS_ERR(after_lock);
-
-after_lock:
-	UNLOCK_BIG_MUTEX;
-before_anything:
-	return ret;
-}
-
 static int parse_config_file(char *filename) {
 	struct stat info;
 	FILE *config;
@@ -185,54 +235,4 @@ int config_init() {
 	if(config_parse_files() == -1) return -1;
 
 	return 0;
-}
-
-char *config_get_entry(char *class, char *module, char *name, char *def) {
-	char *hashname, *ret;
-
-	hashname = malloc(strlen(class) + 1 + (module ? strlen(module) + 1 : 0) + strlen(name) + 1);
-	if(!hashname) SYS_ERR_PTR("malloc", NULL, error);
-
-	if(module)
-		sprintf(hashname, "%s.%s.%s", class, module, name);
-	else
-		sprintf(hashname, "%s.%s", class, name);
-
-	ret = hashtable_get_value(conf, hashname);
-	if(!ret) ret = def;
-
-	free(hashname);
-
-error:
-	return ret;
-}
-
-int config_interpret_boolean(char *val) {
-	int ret;
-
-	/* lol
-	 *   -Herb
-	 */
-	if(!val) LTM_ERR(EINVAL, NULL, error);
-
-	if(
-		!strcmp(val, "false") ||
-		!strcmp(val, "no") ||
-		!strcmp(val, "off") ||
-		(strspn(val, "0") == strlen(val))
-	  ) ret = 0;
-	else if(
-		!strcmp(val, "true") ||
-		!strcmp(val, "yes") ||
-		!strcmp(val, "on") ||
-		(strspn(val, range_0_9) == strlen(val))
-	       ) ret = 1;
-	else LTM_ERR(EINVAL, val, error);
-
-error:
-	return ret;
-}
-
-void config_free() {
-	hashtable_free(conf);
 }
