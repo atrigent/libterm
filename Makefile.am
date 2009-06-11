@@ -1,3 +1,3 @@
 include_HEADERS = libterm.h
 
-SUBDIRS = src
+SUBDIRS = @LTDLDIR@ src

@@ -12,7 +12,7 @@ if [ -n "$AUXDIR" ]; then
 fi
 
 run aclocal
-run libtoolize --copy --force
+run libtoolize --copy --force --ltdl
 run autoconf
 run autoheader
 run automake --gnu --add-missing --copy
