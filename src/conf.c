@@ -8,12 +8,34 @@
 #include "libterm.h"
 #include "hashtable.h"
 #include "textparse.h"
+#include "conf.h"
+
+const char *const ltm_classes[] = {
+	/* The 'libterm' class is actually a pseudoclass -
+	 * no module can actually have that class. It is
+	 * exclusively for configuration purposes (i.e.
+	 * so libterm itself can have configuration
+	 * entries).
+	 */
+	/* 0 */ "libterm",
+	NULL
+};
 
 struct list_node *conf[256];
 
-static char *make_config_entry_name(char *class, char *module, char *name) {
+static char *make_config_entry_name(enum moduleclass classnum, char *module, char *name) {
+	const char *class;
 	char *ret;
 
+	if(classnum == LIBTERM && module)
+		LTM_ERR_PTR(EINVAL, "A config entry of class libterm "
+				"cannot have a module name associated with it", error);
+
+	if(classnum != LIBTERM && !module)
+		LTM_ERR_PTR(EINVAL, "A config entry of anything other than class "
+				"libterm must have a module name associated with it", error);
+
+	class = ltm_classes[classnum];
 	ret = malloc(strlen(class) + 1 + (module ? strlen(module) + 1 : 0) + strlen(name) + 1);
 	if(!ret) SYS_ERR_PTR("malloc", NULL, error);
 
@@ -26,7 +48,7 @@ error:
 	return ret;
 }
 
-char *config_get_entry(char *class, char *module, char *name, char *def) {
+char *config_get_entry(enum moduleclass class, char *module, char *name, char *def) {
 	char *hashname, *ret;
 
 	hashname = make_config_entry_name(class, module, name);
@@ -49,7 +71,7 @@ static int set_config_entry(char *key, char *val) {
 	return 0;
 }
 
-int DLLEXPORT ltm_set_config_entry(char *class, char *module, char *name, char *val) {
+int DLLEXPORT ltm_set_config_entry(enum moduleclass class, char *module, char *name, char *val) {
 	char *hashname;
 	int ret = 0;
 

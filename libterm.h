@@ -14,6 +14,10 @@ enum ltm_action {
 	LTM_ACT_SCROLL
 };
 
+enum ltm_moduleclass {
+	LTM_MOD_LIBTERM
+};
+
 #define LTM_ERROR_DATA_LEN 256
 
 typedef unsigned int ltm_uint;
@@ -89,7 +93,7 @@ extern FILE *ltm_get_notifier();
 
 extern int ltm_set_error_dest(FILE *);
 
-extern int ltm_set_config_entry(char *, char *, char *, char *);
+extern int ltm_set_config_entry(enum ltm_moduleclass, char *, char *, char *);
 
 extern int ltm_is_line_wrapped(int, ltm_uint);
 
