@@ -39,7 +39,7 @@ struct ltm_error_info {
 	const char *file;
 	ltm_uint line;
 
-	const char *ltm_func;
+	const char *func;
 	char *sys_func;
 
 	char data[LTM_ERROR_DATA_LEN];

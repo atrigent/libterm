@@ -144,7 +144,7 @@
 #define ERR_MACRO_TMPL(sysfunc, err, _data, _ret, prefix, label) \
 	do { \
 		prefix##_curerr.sys_func = sysfunc; \
-		prefix##_curerr.ltm_func = __func__; \
+		prefix##_curerr.func = __func__; \
 		prefix##_curerr.err_no = err; \
 		strncpy(prefix##_curerr.data, _data ? _data : "", ERROR_DATA_LEN); \
 		prefix##_curerr.file = __FILE__; \
@@ -202,7 +202,7 @@ struct error_info {
 	const char *file;
 	uint line;
 
-	const char *ltm_func;
+	const char *func;
 	char *sys_func;
 
 	char data[ERROR_DATA_LEN];

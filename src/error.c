@@ -33,7 +33,7 @@ void error_info_dump(struct error_info err) {
 
 	fprintf(err_dest, "\tFile and line #: %s:%u\n", err.file, err.line);
 
-	fprintf(err_dest, "\tOriginating libterm function: %s\n", err.ltm_func);
+	fprintf(err_dest, "\tOriginating function: %s\n", err.func);
 
 	if(err.sys_func)
 		fprintf(err_dest, "\tOriginating system function: %s\n", err.sys_func);
