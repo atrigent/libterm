@@ -171,8 +171,8 @@
 #define SYS_ERR_PTR(name, data, label) \
 	ERR_MACRO_TMPL(name, errno, data, NULL, ltm, label)
 
- /* these are only for use within watch_for_events()!!!
-  */
+/* these are only for use within watch_for_events()!!!
+ */
 
 #define LTM_ERR_THR(err, data, label) \
 	ERR_MACRO_TMPL(NULL, err, data, NULL, thr, label)

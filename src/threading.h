@@ -74,19 +74,14 @@ extern char threading;
 
 # define PTHREAD_CALL(func, args, data, label)
 # define PTHREAD_CALL_PTR(func, args, data, label)
-# define PTHREAD_CALL_THR(func, args, data, label)
 
 # define MUTEX_LOCK(mutex, label)
 # define MUTEX_UNLOCK(mutex, label)
 # define MUTEX_LOCK_PTR(mutex, label)
 # define MUTEX_UNLOCK_PTR(mutex, label)
-# define MUTEX_LOCK_THR(mutex, label)
-# define MUTEX_UNLOCK_THR(mutex, label)
 
 # define LOCK_BIG_MUTEX
 # define UNLOCK_BIG_MUTEX
-# define LOCK_BIG_MUTEX_THR
-# define UNLOCK_BIG_MUTEX_THR
 # define LOCK_BIG_MUTEX_PTR
 # define UNLOCK_BIG_MUTEX_PTR
 
