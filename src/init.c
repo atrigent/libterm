@@ -10,6 +10,7 @@
 #include "process.h"
 #include "screen.h"
 #include "window.h"
+#include "module.h"
 #include "idarr.h"
 #include "conf.h"
 
@@ -66,6 +67,9 @@ int DLLEXPORT ltm_init() {
 	LOCK_BIG_MUTEX;
 
 	PTHREAD_CALL(pthread_mutexattr_destroy, (&big_mutex_attrs), NULL, after_lock);
+
+	LTDL_CALL(init, (), after_lock);
+	LTDL_CALL(addsearchdir, (MODULE_PATH), after_lock);
 
 	if(config_init() == -1) PASS_ERR(after_lock);
 
@@ -148,6 +152,8 @@ int DLLEXPORT ltm_uninit() {
 	config_free();
 
 	flush_repeated_errors();
+
+	LTDL_CALL(exit, (), after_lock);
 
 after_lock:
 	UNLOCK_BIG_MUTEX;

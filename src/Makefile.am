@@ -8,7 +8,7 @@ libterm_la_SOURCES = callbacks.c cursor.c error.c init.c window.c \
 		     process.h ptydev.h util.h bitarr.h threading.h conf.h \
 		     linkedlist.h hashtable.h textparse.h idarr.h screen.h \
 		     rangeset.h module.h
-libterm_la_CPPFLAGS = @LTDLINCL@ -DGLOBAL_CONFIG=\"$(sysconfdir)/libterm.conf\"
+libterm_la_CPPFLAGS = @LTDLINCL@ -DGLOBAL_CONFIG=\"$(sysconfdir)/libterm.conf\" -DMODULE_PATH=\"$(pkglibdir)\"
 libterm_la_LIBADD = @LIBLTDL@
 libterm_la_CFLAGS = -Wno-unused-label
 
