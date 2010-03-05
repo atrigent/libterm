@@ -12,12 +12,12 @@ AM_INIT_AUTOMAKE
 dnl Options
 
 dnl Checks for programs
-AC_LIBLTDL_INSTALLABLE
-AC_LIBTOOL_DLOPEN
-AC_PROG_LIBTOOL
+LT_CONFIG_LTDL_DIR([libltdl])
+LT_INIT([dlopen])
+LTDL_INIT([recursive])
 
-if test $enable_ltdl_install = yes; then
-	AC_CONFIG_SUBDIRS([libltdl])
+if test "x$with_included_ltdl" = xyes; then
+	AC_CONFIG_FILES([libltdl/Makefile])
 	LTDLDIR=libltdl
 fi
 
