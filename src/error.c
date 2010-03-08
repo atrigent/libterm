@@ -4,7 +4,7 @@
 
 struct error_info DLLEXPORT ltm_curerr = ERROR_INFO_INITIALIZER;
 struct error_info thr_curerr = ERROR_INFO_INITIALIZER;
-FILE *dump_dest = 0;
+FILE DLLEXPORT *dump_dest = 0;
 
 static struct error_info last_err = ERROR_INFO_INITIALIZER;
 static uint repeats = 0;
@@ -17,7 +17,7 @@ void flush_repeated_errors() {
 	}
 }
 
-void error_info_dump(struct error_info err) {
+void DLLEXPORT error_info_dump(struct error_info err) {
 	FILE *err_dest = DUMP_DEST;
 
 	if(!memcmp(&last_err, &err, sizeof(struct error_info))) {

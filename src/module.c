@@ -5,7 +5,7 @@
 #include "module.h"
 #include "idarr.h"
 
-const char *const ltm_classes[] = {
+const char DLLEXPORT *const ltm_classes[] = {
 	/* The 'libterm' class is actually a pseudoclass -
 	 * no module can actually have that class. It is
 	 * exclusively for configuration purposes (i.e.
