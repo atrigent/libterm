@@ -33,7 +33,7 @@
 
 #define MODULE_CALL(ret, func, mid) \
 	do { \
-		ret = func(modules[mid].class, modules[mid].name, &modules[mid].private); \
+		ret = ((modulefunc)(func))(modules[mid].class, modules[mid].name, &modules[mid].private); \
 	} while(0)
 
 enum moduleclass {
