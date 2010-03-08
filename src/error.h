@@ -129,6 +129,10 @@
  *          happen on a properly configured system. Fatal.
  */
 
+static const char *ensure_string(const char *str) {
+	return str ? str : "";
+}
+
 /* taken from http://gcc.gnu.org/onlinedocs/gcc-4.1.1/gcc/Function-Names.html */
 #if __STDC_VERSION__ < 199901L
 # if __GNUC__ >= 2
@@ -146,7 +150,7 @@
 		prefix##_curerr.sys_func = sysfunc; \
 		prefix##_curerr.func = __func__; \
 		prefix##_curerr.err_no = err; \
-		strncpy(prefix##_curerr.data, _data ? _data : "", ERROR_DATA_LEN); \
+		strncpy(prefix##_curerr.data, ensure_string(_data), ERROR_DATA_LEN); \
 		prefix##_curerr.file = __FILE__; \
 		prefix##_curerr.line = __LINE__; \
 		error_info_dump(prefix##_curerr); \
