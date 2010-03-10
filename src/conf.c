@@ -51,30 +51,33 @@ char *config_get_entry(enum moduleclass class, char *module, char *name, char *d
 	return ret;
 }
 
-static int set_config_entry(char *key, char *val) {
-	fprintf(DUMP_DEST, "Setting config entry \"%s\" to value \"%s\"\n", key, val);
+static int set_config_entry(enum moduleclass class, char *module, char *name, char *val) {
+	char *hashname;
+	int ret = 0;
 
-	if(hashtable_set_pair(conf, key, val, strlen(val)+1) == -1)
-		return -1;
+	hashname = make_config_entry_name(class, module, name);
+	if(!hashname) PASS_ERR(before_anything);
 
-	return 0;
+	fprintf(DUMP_DEST, "Setting config entry \"%s\" to value \"%s\"\n", hashname, val);
+
+	if(hashtable_set_pair(conf, hashname, val, strlen(val)+1) == -1)
+		PASS_ERR(after_alloc);
+
+after_alloc:
+	free(hashname);
+before_anything:
+	return ret;
 }
 
 int DLLEXPORT ltm_set_config_entry(enum moduleclass class, char *module, char *name, char *val) {
-	char *hashname;
 	int ret = 0;
 
 	CHECK_INITED;
 
 	LOCK_BIG_MUTEX;
 
-	hashname = make_config_entry_name(class, module, name);
-	if(!hashname) PASS_ERR(after_lock);
+	if(set_config_entry(class, module, name, val) == -1) PASS_ERR(after_lock);
 
-	if(set_config_entry(hashname, val) == -1) PASS_ERR(after_alloc);
-
-after_alloc:
-	free(hashname);
 after_lock:
 	UNLOCK_BIG_MUTEX;
 before_anything:
@@ -134,8 +137,9 @@ error:
 
 /* ok, it's official: text parsing in C is REALLY FUCKING ANNOYING */
 static int parse_config_text(char *buf, char *filename) {
+	char *class, *module, *name, *val;
+	enum moduleclass classnum;
 	int linenum, ret = 0;
-	char *key, *val;
 
 	for(linenum = 1; *buf; linenum++) {
 		if(*buf == '#' || *buf == '\n') /* comment or empty line */
@@ -144,14 +148,40 @@ static int parse_config_text(char *buf, char *filename) {
 		/* "fast forward" past horizontal tabs and spaces */
 		parse_ff_past_consec(&buf, "\t ");
 
-		/* config key name should come next. they can contain:
-		 * alphanumerics (upper and lower case), underscores, and periods
+		/* config key name should come next. each part of it can contain
+		 * alphanumerics (upper and lower case) and underscores
 		 */
-		if(parse_read_consec(&buf, &key, range_a_z range_A_Z range_0_9 "_.") == -1)
+		if(parse_read_consec(&buf, &class, range_a_z range_A_Z range_0_9 "_") == -1)
 			PASS_ERR(next);
-		if(!key) {
-			PARSE_ERR(filename, linenum, "line appears to lack a setting name");
+		if(!class) {
+			PARSE_ERR(filename, linenum, "line appears to lack a class name");
 			goto next;
+		}
+
+		if(*buf != '.') {
+			PARSE_ERR(filename, linenum, "no period after class name");
+			goto after_class_alloc;
+		} else
+			buf++;
+
+		if(parse_read_consec(&buf, &module, range_a_z range_A_Z range_0_9 "_") == -1)
+			PASS_ERR(after_class_alloc);
+		if(!module) {
+			PARSE_ERR(filename, linenum, "line appears to lack a module/setting name");
+			goto after_class_alloc;
+		}
+
+		if(*buf == '.') {
+			buf++;
+			if(parse_read_consec(&buf, &name, range_a_z range_A_Z range_0_9 "_") == -1)
+				PASS_ERR(after_module_alloc);
+			if(!name) {
+				PARSE_ERR(filename, linenum, "line appears to lack a setting name");
+				goto after_module_alloc;
+			}
+		} else {
+			name = module;
+			module = NULL;
 		}
 
 		parse_ff_past_consec(&buf, "\t ");
@@ -164,7 +194,7 @@ static int parse_config_text(char *buf, char *filename) {
 			else
 				PARSE_ERR(filename, linenum, "line contains garbage after setting name");
 
-			goto after_key_alloc;
+			goto after_name_alloc;
 		} else
 			/* go past the equals sign */
 			buf++;
@@ -172,10 +202,10 @@ static int parse_config_text(char *buf, char *filename) {
 		parse_ff_past_consec(&buf, "\t ");
 
 		if(parse_read_to_without_trailing(&buf, &val, "\n", "\t ") == -1)
-			PASS_ERR(after_key_alloc);
+			PASS_ERR(after_name_alloc);
 		if(!val) {
 			PARSE_ERR(filename, linenum, "line appears to lack a setting value");
-			goto after_key_alloc;
+			goto after_name_alloc;
 		}
 
 		parse_ff_past_consec(&buf, "\t ");
@@ -186,13 +216,25 @@ static int parse_config_text(char *buf, char *filename) {
 			goto after_val_alloc;
 		}
 
-		if(set_config_entry(key, val) == -1)
+		for(classnum = 0; ltm_classes[classnum]; classnum++)
+			if(!strcmp(class, ltm_classes[classnum])) break;
+
+		if(!ltm_classes[classnum]) {
+			PARSE_ERR(filename, linenum, "line contains an invalid class name");
+			goto after_val_alloc;
+		}
+
+		if(set_config_entry(classnum, module, name, val) == -1)
 			PASS_ERR(after_val_alloc);
 
 after_val_alloc:
 		free(val);
-after_key_alloc:
-		free(key);
+after_name_alloc:
+		free(name);
+after_module_alloc:
+		if(module) free(module);
+after_class_alloc:
+		free(class);
 next:
 		parse_ff_past(&buf, "\n");
 
