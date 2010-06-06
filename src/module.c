@@ -13,6 +13,7 @@ const char DLLEXPORT *const ltm_classes[] = {
 	 * entries).
 	 */
 	/* 0 */ "libterm",
+	/* 1 */ "conf",
 	NULL
 };
 

@@ -37,7 +37,8 @@
 	} while(0)
 
 enum moduleclass {
-	LIBTERM
+	LIBTERM,
+	CONF
 };
 
 typedef void *(*modulefunc)(enum moduleclass, char *, void **);

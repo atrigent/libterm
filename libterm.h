@@ -15,7 +15,8 @@ enum ltm_action {
 };
 
 enum ltm_moduleclass {
-	LTM_MOD_LIBTERM
+	LTM_MOD_LIBTERM,
+	LTM_MOD_CONF
 };
 
 #define LTM_ERROR_DATA_LEN 256

@@ -10,6 +10,13 @@ AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE
 
 dnl Options
+AC_MSG_CHECKING([for default configuration module])
+AC_ARG_WITH([default-conf-module],
+	[AS_HELP_STRING([--with-default-conf-module],
+		[which configuration module to load by default (default is textfile)])],
+	[], [with_default_conf_module=textfile])
+AC_MSG_RESULT([$with_default_conf_module])
+AC_DEFINE_UNQUOTED([DEFAULT_CONF_MODULE], ["$with_default_conf_module"], [Configuration module to load by default])
 
 dnl Checks for programs
 LT_CONFIG_LTDL_DIR([libltdl])
@@ -118,6 +125,6 @@ dnl Checks for system services
 
 CFLAGS="-Wall -Wextra -Werror-implicit-function-declaration $CFLAGS"
 AC_SUBST([libtoolflags], [--silent])
-AC_CONFIG_FILES([Makefile src/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile src/modules/Makefile])
 
 AC_OUTPUT

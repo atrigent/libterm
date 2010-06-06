@@ -3,12 +3,12 @@ AM_LIBTOOLFLAGS = @libtoolflags@
 lib_LTLIBRARIES = libterm.la
 libterm_la_SOURCES = callbacks.c cursor.c error.c init.c window.c \
 		     io.c process.c bitarr.c pty.c conf.c linkedlist.c \
-		     hashtable.c textparse.c idarr.c screen.c rangeset.c module.c \
+		     hashtable.c idarr.c screen.c rangeset.c module.c \
 		     callbacks.h cursor.h descriptor.h error.h window.h libterm.h \
 		     process.h ptydev.h util.h bitarr.h threading.h conf.h \
 		     linkedlist.h hashtable.h textparse.h idarr.h screen.h \
 		     rangeset.h module.h
-libterm_la_CPPFLAGS = @LTDLINCL@ -DGLOBAL_CONFIG=\"$(sysconfdir)/libterm.conf\" -DMODULE_PATH=\"$(pkglibdir)\"
+libterm_la_CPPFLAGS = @LTDLINCL@ -DMODULE_PATH=\"$(pkglibdir)\"
 libterm_la_LIBADD = @LIBLTDL@
 libterm_la_CFLAGS = -Wno-unused-label
 
@@ -27,3 +27,5 @@ endif
 if HAVE_PTHREAD
 libterm_la_CFLAGS += -pthread
 endif
+
+SUBDIRS = modules
