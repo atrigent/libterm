@@ -53,6 +53,17 @@ error:
 	return ret;
 }
 
+char *config_get_mid_entry(int mid, char *name, char *def) {
+	char *ret;
+
+	DIE_ON_INVAL_MID_PTR(mid);
+
+	ret = config_get_entry(modules[mid].class, modules[mid].name, name, def);
+
+error:
+	return ret;
+}
+
 static int set_config_entry(enum moduleclass class, char *module, char *name, char *val) {
 	char *hashname;
 	int ret = 0;
@@ -86,6 +97,17 @@ int DLLEXPORT ltm_set_config_entry(enum moduleclass class, char *module, char *n
 after_lock:
 	UNLOCK_BIG_MUTEX;
 before_anything:
+	return ret;
+}
+
+int config_set_mid_entry(int mid, char *name, char *val) {
+	int ret;
+
+	DIE_ON_INVAL_MID(mid);
+
+	ret = set_config_entry(modules[mid].class, modules[mid].name, name, val);
+
+error:
 	return ret;
 }
 
