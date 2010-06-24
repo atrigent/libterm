@@ -354,10 +354,11 @@ int DLLEXPORT ltm_process_output(int tid) {
 	for(i = 0; i < descs[tid].scr_nups; i++)
 		propagate_updates(tid, &descs[tid].scr_ups[i]);
 
-	if(descs[tid].lines_scrolled < CUR_SCR(tid).lines && descs[tid].old_cur_screen == descs[tid].cur_screen) {
-		/* this is the case where the original content has *not* been completely scrolled
-		 * off the screen and the current screen has not changed, so it makes sense to tell
-		 * the app to update the links, scroll the screen, and update things that have changed
+	if(descs[tid].old_cur_screen == descs[tid].cur_screen) {
+		/* This is the case in which the screen that was the currently active screen
+		 * at the end of the last output processing session is still the active screen,
+		 * so we can use the updates that we have stored to only ask the program using
+		 * libterm to update stuff that has changed.
 		 */
 
 		for(i = 0; i < descs[tid].win_nups; i++) {
@@ -380,16 +381,17 @@ int DLLEXPORT ltm_process_output(int tid) {
 			}
 		}
 
-		if(descs[tid].lines_scrolled) cb_scroll_lines(tid);
+		if(descs[tid].lines_scrolled >= CUR_SCR(tid).lines) cb_clear_screen(tid);
+		else if(descs[tid].lines_scrolled) cb_scroll_lines(tid);
 
 		if(descs[tid].set.nranges) {
 			if(range_finish(&descs[tid].set) == -1) PASS_ERR(after_lock);
 			cb_update_ranges(tid, descs[tid].set.ranges);
 		}
 	} else {
-		/* this is the case in which the entirety of the original content *has* been
-		 * scrolled off the screen or the current screen has changed, so we might as
-		 * well just reload the entire thing
+		/* This is the case in which the currently active screen has changed since
+		 * the last output processing session, so all we can do is to tell the app
+		 * using libterm to completely reload the screen.
 		 */
 		cb_refresh_screen(tid);
 	}

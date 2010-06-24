@@ -16,6 +16,9 @@ int check_callbacks(struct callbacks *callbacks) {
 	if(!callbacks->refresh_screen)
 		fprintf(DUMP_DEST, "Warning: The refresh_screen callback was not supplied. It will be emulated with update_ranges\n");
 
+	if(!callbacks->clear_screen)
+		fprintf(DUMP_DEST, "Warning: The clear_screen callback was not supplied. It will be emulated with refresh_screen or update_ranges\n");
+
 	if(!callbacks->scroll_lines)
 		fprintf(DUMP_DEST, "Warning: The scroll_lines callback was not supplied. It will be emulated with refresh_screen or update_ranges\n");
 
@@ -98,6 +101,13 @@ void cb_refresh_screen(int tid) {
 
 		cb_update_range(tid, &range);
 	}
+}
+
+void cb_clear_screen(int tid) {
+	if(cbs.clear_screen)
+		cbs.clear_screen(tid, CUR_SCR(tid).matrix);
+	else
+		cb_refresh_screen(tid);
 }
 
 void cb_scroll_lines(int tid) {

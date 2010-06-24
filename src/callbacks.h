@@ -10,6 +10,7 @@ struct callbacks {
 	void (*scroll_lines)(int, uint);
 
 	void (*refresh_screen)(int, struct cell **);
+	void (*clear_screen)(int, struct cell **);
 	void (*alert)(int);
 
 	/* threading stuff */
@@ -28,6 +29,7 @@ extern void cb_refresh(int);
 extern void cb_scroll_lines(int);
 
 extern void cb_refresh_screen(int);
+extern void cb_clear_screen(int);
 extern void cb_alert(int);
 
 extern void cb_term_exit(int);
