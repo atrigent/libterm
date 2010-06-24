@@ -79,7 +79,7 @@ error:
 static int translate_update(int tid, struct update *up, struct link *curlink, struct rangeset *newset) {
 	ushort copy_fromline, copy_toline;
 	struct range *currange;
-	char need_copy;
+	char need_copy = 0;
 	uint i;
 
 	if(up->lines_scrolled) {
@@ -93,7 +93,6 @@ static int translate_update(int tid, struct update *up, struct link *curlink, st
 		TOPRANGE(newset)->rightbound = TOPRANGE(newset)->end.x = SCR(tid, up->sid).cols-1;
 		TOPRANGE(newset)->end.y = curlink->toline;
 
-		need_copy = 0;
 		if(
 			curlink->toline != SCR(tid, up->sid).lines-1 &&
 			curlink->fromline + up->lines_scrolled <= SCR(tid, up->sid).lines-1UL
