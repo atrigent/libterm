@@ -153,6 +153,7 @@ static const char *ensure_string(const char *str) {
 		strncpy(prefix##_curerr.data, ensure_string(_data), ERROR_DATA_LEN); \
 		prefix##_curerr.file = __FILE__; \
 		prefix##_curerr.line = __LINE__; \
+		prefix##_curerr.mid = cur_mid; \
 		error_info_dump(prefix##_curerr); \
 		errno = err; \
 		ret = _ret; \
@@ -200,11 +201,12 @@ static const char *ensure_string(const char *str) {
 		goto label; \
 	} while(0)
 
-#define ERROR_INFO_INITIALIZER {0, 0, 0, 0, "", 0}
+#define ERROR_INFO_INITIALIZER {0, 0, -1, 0, 0, "", 0}
 
 struct error_info {
 	const char *file;
 	uint line;
+	int mid;
 
 	const char *func;
 	char *sys_func;
@@ -219,5 +221,13 @@ extern FILE *dump_dest;
 
 extern void error_info_dump(struct error_info);
 extern void flush_repeated_errors();
+
+/* Put this here because the error macros reference it. Note
+ * that this extern is also in module.h. I think this makes
+ * sense, as the macros on both header files reference this
+ * global. I can't currently think of a better way to resolve
+ * this.
+ */
+extern int cur_mid;
 
 #endif

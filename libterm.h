@@ -43,6 +43,7 @@ struct ltm_range {
 struct ltm_error_info {
 	const char *file;
 	ltm_uint line;
+	int mid;
 
 	const char *func;
 	char *sys_func;

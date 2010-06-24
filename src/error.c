@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "libterm.h"
+#include "module.h"
 
 struct error_info DLLEXPORT ltm_curerr = ERROR_INFO_INITIALIZER;
 struct error_info thr_curerr = ERROR_INFO_INITIALIZER;
@@ -35,6 +36,10 @@ void DLLEXPORT error_info_dump(struct error_info err) {
 
 	if(err.sys_func)
 		fprintf(err_dest, "\tOriginating system function: %s\n", err.sys_func);
+
+	if(err.mid != -1)
+		fprintf(err_dest, "\tOriginating module: %s_%s\n",
+				ltm_classes[modules[err.mid].class], modules[err.mid].name);
 
 	fprintf(err_dest, "\tError: %s (%i numerical)\n", strerror(err.err_no), err.err_no);
 

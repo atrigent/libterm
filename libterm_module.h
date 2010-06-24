@@ -8,4 +8,7 @@ enum ltm_moduleclass {
 
 extern const char *const ltm_classes[];
 
+extern int config_set_module_entry(char *, char *);
+extern char *config_get_module_entry(char *, char *);
+
 #endif

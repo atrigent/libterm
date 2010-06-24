@@ -33,7 +33,9 @@
 
 #define MODULE_CALL(ret, func, mid) \
 	do { \
+		cur_mid = mid; \
 		ret = ((modulefunc)(func))(modules[mid].class, modules[mid].name, &modules[mid].private); \
+		cur_mid = -1; \
 	} while(0)
 
 enum moduleclass {
@@ -62,6 +64,6 @@ extern void *module_get_sym(int, char *);
 
 extern const char *const ltm_classes[];
 extern struct module *modules;
-extern int next_mid;
+extern int next_mid, cur_mid;
 
 #endif

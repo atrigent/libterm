@@ -64,6 +64,10 @@ error:
 	return ret;
 }
 
+char *config_get_module_entry(char *name, char *def) {
+	return cur_mid == -1 ? NULL : config_get_mid_entry(cur_mid, name, def);
+}
+
 static int set_config_entry(enum moduleclass class, char *module, char *name, char *val) {
 	char *hashname;
 	int ret = 0;
@@ -109,6 +113,10 @@ int config_set_mid_entry(int mid, char *name, char *val) {
 
 error:
 	return ret;
+}
+
+int config_set_module_entry(char *name, char *val) {
+	return cur_mid == -1 ? 0 : config_set_mid_entry(cur_mid, name, val);
 }
 
 int config_interpret_boolean(char *val) {

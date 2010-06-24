@@ -19,6 +19,7 @@ const char DLLEXPORT *const ltm_classes[] = {
 
 struct module *modules = NULL;
 int next_mid = 0;
+int DLLEXPORT cur_mid = -1;
 
 void *module_get_sym(int mid, char *sym) {
 	void *ret;
