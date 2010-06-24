@@ -185,7 +185,7 @@ int config_process() {
 		 * modules...
 		 */
 
-		if(modret != -1) one_worked = 1;
+		if(modret != (void*)-1) one_worked = 1;
 	}
 
 	/* ...but fail here if no working modules
