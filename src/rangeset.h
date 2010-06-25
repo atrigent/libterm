@@ -1,7 +1,8 @@
 #ifndef RANGESET_H
 #define RANGESET_H
 
-#define TOPRANGE(set) (set)->ranges[(set)->nranges-1]
+#define NRANGE(set, n) (set)->ranges[(set)->nranges - (n)]
+#define TOPRANGE(set) NRANGE(set, 1)
 
 struct rangeset {
 	struct range **ranges;
