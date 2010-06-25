@@ -307,7 +307,8 @@ int propagate_updates(int tid, struct update *up) {
 		newup.curs_changed = up->curs_changed;
 		newup.lines_scrolled = 0;
 
-		propagate_updates(tid, &newup);
+		if(propagate_updates(tid, &newup) == -1)
+			PASS_ERR(after_newup_set_alloc);
 
 after_newup_set_alloc:
 		range_free(&newup.set);
@@ -406,7 +407,8 @@ int DLLEXPORT ltm_process_output(int tid) {
 		goto after_lock;
 
 	for(i = 0; i < descs[tid].scr_nups; i++)
-		propagate_updates(tid, &descs[tid].scr_ups[i]);
+		if(propagate_updates(tid, &descs[tid].scr_ups[i]) == -1)
+			PASS_ERR(after_lock);
 
 	if(descs[tid].old_cur_screen == descs[tid].cur_screen) {
 		/* This is the case in which the screen that was the currently active screen
