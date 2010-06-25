@@ -76,6 +76,16 @@ error:
 	return ret;
 }
 
+/* This function essentially does three things:
+ * 1. Translates the lines_scrolled number into an ACT_SCROLL update
+ * 2. Computes what the "copy region" should be (this also has to do with scrolling, see below)
+ * 3. Figures out which updates are within the linked area and either ignores or
+ *    restricts them accordingly
+ *
+ * Note that this function does NOT change any coordinates so that they refer to where
+ * the linked region appears on the destination screen. It does do most of the work to
+ * make this possible, however.
+ */
 static int translate_update(int tid, struct update *up, struct link *curlink, struct rangeset *newset) {
 	ushort copy_fromline, copy_toline;
 	struct range *currange;
@@ -93,6 +103,38 @@ static int translate_update(int tid, struct update *up, struct link *curlink, st
 		TOPRANGE(newset)->rightbound = TOPRANGE(newset)->end.x = SCR(tid, up->sid).cols-1;
 		TOPRANGE(newset)->end.y = curlink->toline;
 
+		/* The copy region is best described with a diagram:
+		 *
+		 * +---------------------------+
+		 * |                           |
+		 * |                           |
+		 * |                           | <- fromline
+		 * |                           |
+		 * |                           |
+		 * |                           |
+		 * |                           |
+		 * |                           |
+		 * |                           |
+		 * |                           | <- toline
+		 * |                           | \
+		 * |                           | |  copy region
+		 * |                           | /
+		 * +---------------------------+
+		 *
+		 * This diagram assumes we're scrolling up.
+		 *
+		 * When we scroll and the toline is not at the bottom of
+		 * the screen, the region which starts out where the
+		 * "copy region" is marked in the above diagram is going
+		 * to need special handling. Since it was not already
+		 * in the linked region, it will not magically appear
+		 * when scrolling happens. In addition, it will not be
+		 * part of the propagated updates because it already
+		 * existed - it was already written by previous updates.
+		 * Therefore, we need to copy it. The calculations
+		 * below are for figuring out where the copy region
+		 * is after scrolling.
+		 */
 		if(
 			curlink->toline != SCR(tid, up->sid).lines-1 &&
 			curlink->fromline + up->lines_scrolled <= SCR(tid, up->sid).lines-1UL
@@ -125,11 +167,12 @@ static int translate_update(int tid, struct update *up, struct link *curlink, st
 		currange = up->set.ranges[i];
 
 		/* if the current range is not in the current link at all, try the next link */
-		if(currange->end.y < curlink->fromline || currange->start.y > curlink->toline ||
-			(need_copy &&
-				(currange->start.y >= curlink->fromline ? currange->start.y : curlink->fromline) >= copy_fromline &&
-				(currange->end.y <= curlink->toline ? currange->end.y : curlink->toline) <= copy_toline
-			)
+		if(currange->end.y < curlink->fromline || currange->start.y > curlink->toline) continue;
+
+		/* if the current range is completely within the copy region, ignore it */
+		if(need_copy &&
+			(currange->start.y >= curlink->fromline ? currange->start.y : curlink->fromline) >= copy_fromline &&
+			(currange->end.y <= curlink->toline ? currange->end.y : curlink->toline) <= copy_toline
 		) continue;
 
 		if(range_add(newset) == -1) return -1;
@@ -169,11 +212,20 @@ static int translate_update(int tid, struct update *up, struct link *curlink, st
 		}
 
 		if(need_copy) {
+			/* if the current range overlaps the copy region, we need to restrict it
+			 * further or split it up (depending on how it overlaps) in order to avoid
+			 * telling the program using libterm to update the same area twice
+			 */
+
 			if(TOPRANGE(newset)->start.y >= copy_fromline && TOPRANGE(newset)->start.y <= copy_toline)
 				TOPRANGE(newset)->start.y = copy_toline+1;
 			else if(TOPRANGE(newset)->end.y >= copy_fromline && TOPRANGE(newset)->end.y <= copy_toline)
 				TOPRANGE(newset)->end.y = copy_fromline-1;
 			else if(TOPRANGE(newset)->end.y < copy_fromline && TOPRANGE(newset)->start.y > copy_toline) {
+				/* the copy region is in the middle of the current range, so we need to split
+				 * the current range up
+				 */
+
 				if(range_add(newset) == -1) return -1;
 
 				TOPRANGE(newset)->action = ACT_COPY;
@@ -203,7 +255,7 @@ int propagate_updates(int tid, struct update *up) {
 	newup.set.ranges = NULL;
 	newup.set.nranges = 0;
 
-	for(curnode = descs[tid].screens[up->sid].uplinks; curnode; curnode = curnode->next) {
+	for(curnode = SCR(tid, up->sid).uplinks; curnode; curnode = curnode->next) {
 		tosid = curnode->u.intkey;
 		curlink = curnode->data;
 
@@ -213,6 +265,7 @@ int propagate_updates(int tid, struct update *up) {
 		if(tosid == descs[tid].cur_screen && newup.set.nranges) {
 			descs[tid].win_ups = realloc(descs[tid].win_ups, ++descs[tid].win_nups * sizeof(struct rangeset));
 			if(!descs[tid].win_ups) SYS_ERR("realloc", NULL, after_newup_set_alloc);
+
 			memset(&descs[tid].win_ups[descs[tid].win_nups-1], 0, sizeof(struct rangeset));
 		}
 
@@ -243,6 +296,7 @@ int propagate_updates(int tid, struct update *up) {
 				if(cursor_visibility(tid, tosid, 0) == -1) PASS_ERR(after_newup_set_alloc);
 			} else {
 				if(cursor_visibility(tid, tosid, 1) == -1) PASS_ERR(after_newup_set_alloc);
+
 				TRANSLATE_PT(newcurs, *curlink);
 				if(cursor_abs_move(tid, tosid, X, newcurs.x) == -1) PASS_ERR(after_newup_set_alloc);
 				if(cursor_abs_move(tid, tosid, Y, newcurs.y) == -1) PASS_ERR(after_newup_set_alloc);
@@ -252,6 +306,7 @@ int propagate_updates(int tid, struct update *up) {
 		newup.sid = tosid;
 		newup.curs_changed = up->curs_changed;
 		newup.lines_scrolled = 0;
+
 		propagate_updates(tid, &newup);
 
 after_newup_set_alloc:
