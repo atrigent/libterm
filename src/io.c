@@ -221,22 +221,20 @@ static int translate_update(int tid, struct update *up, struct link *curlink, st
 				TOPRANGE(newset)->start.y = copy_toline+1;
 			else if(TOPRANGE(newset)->end.y >= copy_fromline && TOPRANGE(newset)->end.y <= copy_toline)
 				TOPRANGE(newset)->end.y = copy_fromline-1;
-			else if(TOPRANGE(newset)->end.y < copy_fromline && TOPRANGE(newset)->start.y > copy_toline) {
+			else if(TOPRANGE(newset)->start.y < copy_fromline && TOPRANGE(newset)->end.y > copy_toline) {
 				/* the copy region is in the middle of the current range, so we need to split
 				 * the current range up
 				 */
 
 				if(range_add(newset) == -1) return -1;
 
-				TOPRANGE(newset)->action = ACT_COPY;
-				TOPRANGE(newset)->val = 0;
+				memcpy(TOPRANGE(newset), NRANGE(newset, 2), sizeof(struct range));
 
-				TOPRANGE(newset)->leftbound = TOPRANGE(newset)->start.x = 0;
+				TOPRANGE(newset)->start.x = TOPRANGE(newset)->leftbound;
 				TOPRANGE(newset)->start.y = copy_toline+1;
-				TOPRANGE(newset)->rightbound = TOPRANGE(newset)->end.x = SCR(tid, up->sid).cols-1;
-				TOPRANGE(newset)->end.y = newset->ranges[newset->nranges-2]->end.y;
 
-				newset->ranges[newset->nranges-2]->end.y = copy_fromline-1;
+				NRANGE(newset, 2)->end.x = NRANGE(newset, 2)->rightbound;
+				NRANGE(newset, 2)->end.y = copy_fromline-1;
 			}
 		}
 	}
