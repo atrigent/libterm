@@ -95,8 +95,16 @@ static int translate_update(int tid, struct update *up, struct link *curlink, st
 	if(up->lines_scrolled) {
 		if(range_add(newset) == -1) return -1;
 
-		TOPRANGE(newset)->action = ACT_SCROLL;
-		TOPRANGE(newset)->val = up->lines_scrolled;
+		/* If all of the previous contents would be scrolled off, set
+		 * this to a clear because the operations would be equivalent.
+		 */
+		if(curlink->fromline + up->lines_scrolled > curlink->toline) {
+			TOPRANGE(newset)->action = ACT_CLEAR;
+			TOPRANGE(newset)->val = 0;
+		} else {
+			TOPRANGE(newset)->action = ACT_SCROLL;
+			TOPRANGE(newset)->val = up->lines_scrolled;
+		}
 
 		TOPRANGE(newset)->leftbound = TOPRANGE(newset)->start.x = 0;
 		TOPRANGE(newset)->start.y = curlink->fromline;
