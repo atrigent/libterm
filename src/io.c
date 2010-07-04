@@ -426,23 +426,10 @@ int DLLEXPORT ltm_process_output(int tid) {
 		 */
 
 		for(i = 0; i < descs[tid].win_nups; i++) {
-			if(descs[tid].win_ups[i].ranges[0]->val < CUR_INP_SCR(tid).lines) {
-				/* this is the case where the original content of the link has *not* been completely scrolled
-				 * off the screen, and so it makes sense to tell the app to scroll the link and
-				 * only update things that have changed
-				 */
+			if(range_finish(&descs[tid].win_ups[i]) == -1)
+					PASS_ERR(after_lock);
 
-				if(range_finish(&descs[tid].win_ups[i]) == -1)
-						PASS_ERR(after_lock);
-
-				cb_update_ranges(tid, descs[tid].win_ups[i].ranges);
-			} else {
-				/* this is the case in which the entirety of the original content of the link *has* been
-				 * scrolled off the screen, so we might as well just reload the entire thing
-				 */
-
-				cb_update_range(tid, descs[tid].win_ups[i].ranges[0]);
-			}
+			cb_update_ranges(tid, descs[tid].win_ups[i].ranges);
 		}
 
 		if(descs[tid].lines_scrolled >= CUR_SCR(tid).lines) cb_clear_screen(tid);
