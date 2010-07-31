@@ -56,7 +56,7 @@ static int parse_config_text(char *buf, char *filename) {
 		 * alphanumerics (upper and lower case) and underscores
 		 */
 		if(parse_read_consec(&buf, &class, range_a_z range_A_Z range_0_9 "_") == -1)
-			PASS_ERR(next);
+			SYS_ERR("parse_read_consec", NULL, next);
 		if(!class) {
 			PARSE_ERR(filename, linenum, "line appears to lack a class name");
 			goto next;
@@ -69,7 +69,7 @@ static int parse_config_text(char *buf, char *filename) {
 			buf++;
 
 		if(parse_read_consec(&buf, &module, range_a_z range_A_Z range_0_9 "_") == -1)
-			PASS_ERR(after_class_alloc);
+			SYS_ERR("parse_read_consec", NULL, after_class_alloc);
 		if(!module) {
 			PARSE_ERR(filename, linenum, "line appears to lack a module/setting name");
 			goto after_class_alloc;
@@ -78,7 +78,7 @@ static int parse_config_text(char *buf, char *filename) {
 		if(*buf == '.') {
 			buf++;
 			if(parse_read_consec(&buf, &name, range_a_z range_A_Z range_0_9 "_") == -1)
-				PASS_ERR(after_module_alloc);
+				SYS_ERR("parse_read_consec", NULL, after_module_alloc);
 			if(!name) {
 				PARSE_ERR(filename, linenum, "line appears to lack a setting name");
 				goto after_module_alloc;
@@ -106,7 +106,7 @@ static int parse_config_text(char *buf, char *filename) {
 		parse_ff_past_consec(&buf, "\t ");
 
 		if(parse_read_to_without_trailing(&buf, &val, "\n", "\t ") == -1)
-			PASS_ERR(after_name_alloc);
+			SYS_ERR("parse_read_to_without_trailing", NULL, after_name_alloc);
 		if(!val) {
 			PARSE_ERR(filename, linenum, "line appears to lack a setting value");
 			goto after_name_alloc;

@@ -1,10 +1,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "libterm.h"
-
-uint find_length_without_trailing(char *buf, char *not_trailing, char *search_end) {
-	uint len, cur;
+unsigned int find_length_without_trailing(char *buf, char *not_trailing, char *search_end) {
+	unsigned int len, cur;
 
 	for(cur = 1, len = 0; *buf && !strchr(search_end, buf[0]); buf++, cur++)
 		if(!strchr(not_trailing, buf[0])) len = cur;
@@ -14,7 +12,7 @@ uint find_length_without_trailing(char *buf, char *not_trailing, char *search_en
 
 /* FAST FORWARD FUNCTIONS */
 
-int parse_ff(char **buf, uint len) {
+int parse_ff(char **buf, unsigned int len) {
 	*buf += len;
 
 	return len;
@@ -30,25 +28,21 @@ int parse_ff_past(char **buf, char *accept) {
 
 /* READ FUNCTIONS */
 
-int parse_read(char **buf, char **readbuf, uint len) {
-	int ret = 0;
-
+int parse_read(char **buf, char **readbuf, unsigned int len) {
 	*readbuf = NULL;
 
 	if(len) {
 		*readbuf = malloc(len+1);
 		if(!*readbuf)
-			SYS_ERR("malloc", NULL, error);
+			return -1;
 
 		memcpy(*readbuf, *buf, len);
 		(*readbuf)[len] = 0;
 
 		*buf += len;
-		ret = len;
 	}
 
-error:
-	return ret;
+	return len;
 }
 
 int parse_read_consec(char **buf, char **readbuf, char *accept) {
