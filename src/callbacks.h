@@ -26,6 +26,7 @@ extern void cb_update_ranges(int, struct range **);
 extern void cb_update_range(int, struct range *);
 extern void cb_refresh(int);
 
+extern void cb_update_screen(int, enum action, int);
 extern void cb_scroll_lines(int);
 
 extern void cb_refresh_screen(int);

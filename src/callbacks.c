@@ -17,10 +17,10 @@ int check_callbacks(struct callbacks *callbacks) {
 		fprintf(DUMP_DEST, "Warning: The refresh_screen callback was not supplied. It will be emulated with update_ranges\n");
 
 	if(!callbacks->clear_screen)
-		fprintf(DUMP_DEST, "Warning: The clear_screen callback was not supplied. It will be emulated with refresh_screen or update_ranges\n");
+		fprintf(DUMP_DEST, "Warning: The clear_screen callback was not supplied. It will be emulated with update_ranges\n");
 
 	if(!callbacks->scroll_lines)
-		fprintf(DUMP_DEST, "Warning: The scroll_lines callback was not supplied. It will be emulated with refresh_screen or update_ranges\n");
+		fprintf(DUMP_DEST, "Warning: The scroll_lines callback was not supplied. It will be emulated with update_ranges\n");
 
 	if(!callbacks->alert)
 		fprintf(DUMP_DEST, "Warning: The alert callback was not supplied. The ASCII bell character will be ignored\n");
@@ -72,6 +72,20 @@ void cb_update_range(int tid, struct range *range) {
 	cb_update_ranges(tid, ranges);
 }
 
+void cb_update_screen(int tid, enum action act, int val) {
+	struct range range;
+
+	range.action = act;
+	range.val = val;
+
+	range.leftbound = range.start.y = range.start.x = 0;
+
+	range.end.y = descs[tid].lines-1;
+	range.rightbound = range.end.x = descs[tid].cols-1;
+
+	cb_update_range(tid, &range);
+}
+
 void cb_refresh(int tid) {
 	struct point *curs;
 
@@ -86,49 +100,24 @@ void cb_refresh(int tid) {
 }
 
 void cb_refresh_screen(int tid) {
-	struct range range;
-
 	if(cbs.refresh_screen)
 		cbs.refresh_screen(tid, CUR_SCR(tid).matrix);
-	else {
-		range.action = ACT_COPY;
-		range.val = 0;
-
-		range.leftbound = range.start.y = range.start.x = 0;
-
-		range.end.y = descs[tid].lines-1;
-		range.rightbound = range.end.x = descs[tid].cols-1;
-
-		cb_update_range(tid, &range);
-	}
+	else
+		cb_update_screen(tid, ACT_COPY, 0);
 }
 
 void cb_clear_screen(int tid) {
 	if(cbs.clear_screen)
 		cbs.clear_screen(tid, CUR_SCR(tid).matrix);
 	else
-		cb_refresh_screen(tid);
+		cb_update_screen(tid, ACT_CLEAR, 0);
 }
 
 void cb_scroll_lines(int tid) {
-	/*struct range range;*/
-
 	if(cbs.scroll_lines)
 		cbs.scroll_lines(tid, descs[tid].lines_scrolled);
-	else {
-		/*
-		range.action = ACT_COPY;
-		range.val = 0;
-
-		range.leftbound = range.start.y = range.start.x = 0;
-
-		range.end.y = descs[tid].lines - descs[tid].lines_scrolled - 1;
-		range.rightbound = range.end.x = descs[tid].cols;
-
-		cb_update_range(tid, &range);*/
-
-		cb_refresh_screen(tid);
-	}
+	else
+		cb_update_screen(tid, ACT_SCROLL, descs[tid].lines_scrolled);
 }
 
 void cb_alert(int tid) {
