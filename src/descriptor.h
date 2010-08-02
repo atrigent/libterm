@@ -68,12 +68,8 @@ struct term_desc {
 
 	/* updates that happened to different parts
 	 * of the window screen during update propagation
-	 */
-	struct rangeset *win_ups;
-	uint win_nups;
-
-	/* this stuff has to do w/ updates that were
-	 * written directly to the window screen
+	 * and updates that were written directly to the
+	 * window screen
 	 */
 	struct rangeset set;
 

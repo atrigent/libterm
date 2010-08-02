@@ -270,13 +270,6 @@ int propagate_updates(int tid, struct update *up) {
 		if(translate_update(tid, up, curlink, &newup.set) == -1)
 			PASS_ERR(after_newup_set_alloc);
 
-		if(tosid == descs[tid].cur_screen && newup.set.nranges) {
-			descs[tid].win_ups = realloc(descs[tid].win_ups, ++descs[tid].win_nups * sizeof(struct rangeset));
-			if(!descs[tid].win_ups) SYS_ERR("realloc", NULL, after_newup_set_alloc);
-
-			memset(&descs[tid].win_ups[descs[tid].win_nups-1], 0, sizeof(struct rangeset));
-		}
-
 		for(i = 0; i < newup.set.nranges; i++) {
 			if(newup.set.ranges[i]->action == ACT_COPY)
 				if(screen_copy_range(tid, up->sid, tosid, newup.set.ranges[i], curlink) == -1)
@@ -425,13 +418,6 @@ int DLLEXPORT ltm_process_output(int tid) {
 		 * libterm to update stuff that has changed.
 		 */
 
-		for(i = 0; i < descs[tid].win_nups; i++) {
-			if(range_finish(&descs[tid].win_ups[i]) == -1)
-					PASS_ERR(after_lock);
-
-			cb_update_ranges(tid, descs[tid].win_ups[i].ranges);
-		}
-
 		if(descs[tid].lines_scrolled >= CUR_SCR(tid).lines) cb_clear_screen(tid);
 		else if(descs[tid].lines_scrolled) cb_scroll_lines(tid);
 
@@ -455,13 +441,6 @@ int DLLEXPORT ltm_process_output(int tid) {
 	free(descs[tid].scr_ups);
 	descs[tid].scr_ups = NULL;
 	descs[tid].scr_nups = 0;
-
-	for(i = 0; i < descs[tid].win_nups; i++)
-		range_free(&descs[tid].win_ups[i]);
-
-	free(descs[tid].win_ups);
-	descs[tid].win_ups = NULL;
-	descs[tid].win_nups = 0;
 
 	range_free(&descs[tid].set);
 	descs[tid].lines_scrolled = 0;

@@ -318,14 +318,10 @@ struct rangeset *record_update(int tid, int sid, enum updateactions opts) {
 	 * to go directly to the window ranges
 	 */
 	if(sid == descs[tid].old_cur_screen) {
-		if(descs[tid].win_nups)
-			ret = &descs[tid].win_ups[descs[tid].win_nups-1];
-		else {
-			ret = &descs[tid].set;
+		ret = &descs[tid].set;
 
-			if(opts & UPD_SCROLL)
-				descs[tid].lines_scrolled++;
-		}
+		if(opts & UPD_SCROLL)
+			descs[tid].lines_scrolled++;
 
 		/* the reason that we're un-dirtying the cursor when it is
 		 * hidden is that the app using libterm doesn't care
