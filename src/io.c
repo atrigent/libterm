@@ -86,7 +86,7 @@ error:
  * the linked region appears on the destination screen. It does do most of the work to
  * make this possible, however.
  */
-static int translate_update(int tid, struct update *up, struct link *curlink, struct rangeset *newset) {
+static int translate_update(int tid, int sid, struct update *up, struct link *curlink, struct rangeset *newset) {
 	ushort copy_fromline, copy_toline;
 	struct range *currange;
 	char need_copy = 0;
@@ -108,7 +108,7 @@ static int translate_update(int tid, struct update *up, struct link *curlink, st
 
 		TOPRANGE(newset)->leftbound = TOPRANGE(newset)->start.x = 0;
 		TOPRANGE(newset)->start.y = curlink->fromline;
-		TOPRANGE(newset)->rightbound = TOPRANGE(newset)->end.x = SCR(tid, up->sid).cols-1;
+		TOPRANGE(newset)->rightbound = TOPRANGE(newset)->end.x = SCR(tid, sid).cols-1;
 		TOPRANGE(newset)->end.y = curlink->toline;
 
 		/* The copy region is best described with a diagram:
@@ -144,15 +144,15 @@ static int translate_update(int tid, struct update *up, struct link *curlink, st
 		 * is after scrolling.
 		 */
 		if(
-			curlink->toline != SCR(tid, up->sid).lines-1 &&
-			curlink->fromline + up->lines_scrolled <= SCR(tid, up->sid).lines-1UL
+			curlink->toline != SCR(tid, sid).lines-1 &&
+			curlink->fromline + up->lines_scrolled <= SCR(tid, sid).lines-1UL
 		) {
 			copy_fromline = curlink->fromline + up->lines_scrolled < curlink->toline+1UL ?
 				curlink->toline+1 - up->lines_scrolled :
 				curlink->fromline;
 
-			copy_toline = curlink->toline + up->lines_scrolled > SCR(tid, up->sid).lines-1UL ?
-				SCR(tid, up->sid).lines-1 - up->lines_scrolled :
+			copy_toline = curlink->toline + up->lines_scrolled > SCR(tid, sid).lines-1UL ?
+				SCR(tid, sid).lines-1 - up->lines_scrolled :
 				curlink->toline;
 
 			need_copy = 1;
@@ -166,7 +166,7 @@ static int translate_update(int tid, struct update *up, struct link *curlink, st
 
 			TOPRANGE(newset)->leftbound = TOPRANGE(newset)->start.x = 0;
 			TOPRANGE(newset)->start.y = copy_fromline;
-			TOPRANGE(newset)->rightbound = TOPRANGE(newset)->end.x = SCR(tid, up->sid).cols-1;
+			TOPRANGE(newset)->rightbound = TOPRANGE(newset)->end.x = SCR(tid, sid).cols-1;
 			TOPRANGE(newset)->end.y = copy_toline;
 		}
 	}
@@ -252,7 +252,7 @@ static int translate_update(int tid, struct update *up, struct link *curlink, st
 	return 0;
 }
 
-int propagate_updates(int tid, struct update *up) {
+int propagate_updates(int tid, int sid, struct update *up) {
 	struct list_node *curnode;
 	struct update newup;
 	struct point newcurs;
@@ -263,16 +263,16 @@ int propagate_updates(int tid, struct update *up) {
 	newup.set.ranges = NULL;
 	newup.set.nranges = 0;
 
-	for(curnode = SCR(tid, up->sid).uplinks; curnode; curnode = curnode->next) {
+	for(curnode = SCR(tid, sid).uplinks; curnode; curnode = curnode->next) {
 		tosid = curnode->u.intkey;
 		curlink = curnode->data;
 
-		if(translate_update(tid, up, curlink, &newup.set) == -1)
+		if(translate_update(tid, sid, up, curlink, &newup.set) == -1)
 			PASS_ERR(after_newup_set_alloc);
 
 		for(i = 0; i < newup.set.nranges; i++) {
 			if(newup.set.ranges[i]->action == ACT_COPY)
-				if(screen_copy_range(tid, up->sid, tosid, newup.set.ranges[i], curlink) == -1)
+				if(screen_copy_range(tid, sid, tosid, newup.set.ranges[i], curlink) == -1)
 					PASS_ERR(after_newup_set_alloc);
 
 			newup.set.ranges[i]->leftbound += curlink->origin.x;
@@ -290,10 +290,10 @@ int propagate_updates(int tid, struct update *up) {
 		}
 
 		if(up->curs_changed) {
-			newcurs.y = SCR(tid, up->sid).cursor.y;
-			newcurs.x = SCR(tid, up->sid).cursor.x;
+			newcurs.y = SCR(tid, sid).cursor.y;
+			newcurs.x = SCR(tid, sid).cursor.x;
 
-			if(newcurs.y < curlink->fromline || newcurs.y > curlink->toline || SCR(tid, up->sid).curs_invisible) {
+			if(newcurs.y < curlink->fromline || newcurs.y > curlink->toline || SCR(tid, sid).curs_invisible) {
 				if(cursor_visibility(tid, tosid, 0) == -1) PASS_ERR(after_newup_set_alloc);
 			} else {
 				if(cursor_visibility(tid, tosid, 1) == -1) PASS_ERR(after_newup_set_alloc);
@@ -304,11 +304,10 @@ int propagate_updates(int tid, struct update *up) {
 			}
 		}
 
-		newup.sid = tosid;
 		newup.curs_changed = up->curs_changed;
 		newup.lines_scrolled = 0;
 
-		if(propagate_updates(tid, &newup) == -1)
+		if(propagate_updates(tid, tosid, &newup) == -1)
 			PASS_ERR(after_newup_set_alloc);
 
 after_newup_set_alloc:
@@ -321,7 +320,7 @@ after_newup_set_alloc:
 }
 
 int DLLEXPORT ltm_process_output(int tid) {
-	int ret = 0;
+	int sid, ret = 0;
 	uchar *buf;
 	uint i;
 
@@ -407,9 +406,15 @@ int DLLEXPORT ltm_process_output(int tid) {
 	} else /* nothing done, exit */
 		goto after_lock;
 
-	for(i = 0; i < descs[tid].scr_nups; i++)
-		if(propagate_updates(tid, &descs[tid].scr_ups[i]) == -1)
-			PASS_ERR(after_lock);
+	for(sid = 0; sid < descs[tid].next_sid; sid++)
+		if(SCR(tid, sid).allocated) {
+			if(propagate_updates(tid, sid, &SCR(tid, sid).up) == -1)
+				PASS_ERR(after_lock);
+
+			range_free(&SCR(tid, sid).up.set);
+			SCR(tid, sid).up.lines_scrolled = 0;
+			SCR(tid, sid).up.curs_changed = 0;
+		}
 
 	if(descs[tid].old_cur_screen == descs[tid].cur_screen) {
 		/* This is the case in which the screen that was the currently active screen
@@ -434,13 +439,6 @@ int DLLEXPORT ltm_process_output(int tid) {
 	}
 
 	cb_refresh(tid);
-
-	for(i = 0; i < descs[tid].scr_nups; i++)
-		range_free(&descs[tid].scr_ups[i].set);
-
-	free(descs[tid].scr_ups);
-	descs[tid].scr_ups = NULL;
-	descs[tid].scr_nups = 0;
 
 	range_free(&descs[tid].set);
 	descs[tid].lines_scrolled = 0;

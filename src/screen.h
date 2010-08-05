@@ -33,6 +33,12 @@ struct cell {
 	uint chr;
 };
 
+struct update {
+	struct rangeset set;
+	uint lines_scrolled;
+	char curs_changed;
+};
+
 struct screen {
 	char allocated;
 
@@ -49,6 +55,8 @@ struct screen {
 
 	struct list_node *downlinks;
 	struct list_node *uplinks;
+
+	struct update up;
 };
 
 extern struct rangeset *record_update(int, int, enum updateactions);

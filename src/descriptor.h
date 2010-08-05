@@ -34,13 +34,6 @@ struct range {
 	struct point end;
 };
 
-struct update {
-	int sid;
-	struct rangeset set;
-	uint lines_scrolled;
-	char curs_changed;
-};
-
 struct term_desc {
 	char allocated;
 
@@ -61,10 +54,6 @@ struct term_desc {
 
 	uchar *outputbuf;
 	uint buflen;
-
-	/* updates that happened in each screen */
-	struct update *scr_ups;
-	uint scr_nups; /* nups, heh */
 
 	/* updates that happened to different parts
 	 * of the window screen during update propagation

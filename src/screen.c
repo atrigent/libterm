@@ -302,7 +302,6 @@ error:
 
 struct rangeset *record_update(int tid, int sid, enum updateactions opts) {
 	struct rangeset *ret = NULL;
-	uint i;
 
 	/* nothing to do */
 	if(!opts) return NULL;
@@ -332,29 +331,16 @@ struct rangeset *record_update(int tid, int sid, enum updateactions opts) {
 		else if(opts & UPD_CURS_INVIS)
 			descs[tid].curs_changed = 0;
 	} else if(sid == descs[tid].cur_input_screen) {
-		for(i = 0; i < descs[tid].scr_nups; i++)
-			if(descs[tid].scr_ups[i].sid == sid) break;
-
-		if(i >= descs[tid].scr_nups) {
-			descs[tid].scr_ups = realloc(descs[tid].scr_ups, ++descs[tid].scr_nups * sizeof(struct update));
-			if(!descs[tid].scr_ups) SYS_ERR_PTR("realloc", NULL, error);
-
-			i = descs[tid].scr_nups-1;
-
-			memset(&descs[tid].scr_ups[i], 0, sizeof(struct update));
-			descs[tid].scr_ups[i].sid = sid;
-		}
-
-		ret = &descs[tid].scr_ups[i].set;
+		ret = &SCR(tid, sid).up.set;
 
 		if(opts & UPD_SCROLL)
-			descs[tid].scr_ups[i].lines_scrolled++;
+			SCR(tid, sid).up.lines_scrolled++;
 
 		/* we need to mark the cursor dirty even when it is being
 		 * hidden so that the change will be propagated
 		 */
 		if(opts & (UPD_CURS | UPD_CURS_INVIS))
-			descs[tid].scr_ups[i].curs_changed = 1;
+			SCR(tid, sid).up.curs_changed = 1;
 	}
 
 	if(!ret) LTM_ERR_PTR(ESRCH, NULL, error);
