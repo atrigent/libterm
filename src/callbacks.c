@@ -108,7 +108,7 @@ void cb_refresh_screen(int tid) {
 
 void cb_clear_screen(int tid) {
 	if(cbs.clear_screen)
-		cbs.clear_screen(tid, CUR_SCR(tid).matrix);
+		cbs.clear_screen(tid);
 	else
 		cb_update_screen(tid, ACT_CLEAR, 0);
 }

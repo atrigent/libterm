@@ -62,7 +62,7 @@ struct ltm_callbacks {
 
 	void (*scroll_lines)(int, ltm_uint);
 	void (*refresh_screen)(int, struct ltm_cell **);
-	void (*clear_screen)(int, struct ltm_cell **);
+	void (*clear_screen)(int);
 
 	void (*alert)(int);
 

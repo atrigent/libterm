@@ -9,7 +9,7 @@ struct callbacks {
 
 	void (*scroll_lines)(int, uint);
 	void (*refresh_screen)(int, struct cell **);
-	void (*clear_screen)(int, struct cell **);
+	void (*clear_screen)(int);
 
 	void (*alert)(int);
 
