@@ -343,9 +343,6 @@ struct rangeset *record_update(int tid, int sid, enum updateactions opts) {
 			SCR(tid, sid).up.curs_changed = 1;
 	}
 
-	if(!ret) LTM_ERR_PTR(ESRCH, NULL, error);
-
-error:
 	return ret;
 }
 
@@ -370,10 +367,7 @@ int screen_scroll(int tid, int sid) {
 	bitarr_shift_left(SCR(tid, sid).wrapped, SCR(tid, sid).lines, 1);
 
 	set = record_update(tid, sid, UPD_SCROLL | UPD_GET_SET);
-	if(!set) {
-		if(ltm_curerr.err_no == ESRCH) return 0;
-		else return -1;
-	}
+	if(!set) return 0;
 
 	range_shift(set);
 
@@ -408,10 +402,7 @@ int screen_set_point(int tid, int sid, enum action action, struct point *pt, uin
 	SCR(tid, sid).matrix[pt->y][pt->x].chr = chr;
 
 	curset = record_update(tid, sid, UPD_GET_SET);
-	if(!curset) {
-		if(ltm_curerr.err_no == ESRCH) return 0;
-		else return -1;
-	}
+	if(!curset) return 0;
 
 	if(curset->nranges && should_be_merged(TOPRANGE(curset), pt)) {
 		if(
@@ -447,10 +438,7 @@ int screen_inject_update(int tid, int sid, struct range *range) {
 	struct rangeset *curset;
 
 	curset = record_update(tid, sid, UPD_GET_SET);
-	if(!curset) {
-		if(ltm_curerr.err_no == ESRCH) return 0;
-		else return -1;
-	}
+	if(!curset) return 0;
 
 	if(range_add(curset) == -1) return -1;
 
