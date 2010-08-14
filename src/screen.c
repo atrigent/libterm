@@ -423,9 +423,11 @@ int screen_set_point(int tid, int sid, enum action action, struct point *pt, uin
 	if(SCR(tid, sid).matrix[pt->y][pt->x].chr == chr)
 		return 0;
 
+	SCR(tid, sid).matrix[pt->y][pt->x].chr = chr;
+
 	curset = record_update(tid, sid, UPD_GET_SET);
 	if(!curset) {
-		if(ltm_curerr.err_no == ESRCH) goto set_cell;
+		if(ltm_curerr.err_no == ESRCH) return 0;
 		else return -1;
 	}
 
@@ -455,9 +457,6 @@ int screen_set_point(int tid, int sid, enum action action, struct point *pt, uin
 		TOPRANGE(curset)->end.x = pt->x;
 		TOPRANGE(curset)->end.y = pt->y;
 	}
-
-set_cell:
-	SCR(tid, sid).matrix[pt->y][pt->x].chr = chr;
 
 	return 0;
 }
