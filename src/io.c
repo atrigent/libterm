@@ -452,8 +452,6 @@ int DLLEXPORT ltm_process_output(int tid) {
 		cb_refresh_screen(tid);
 	}
 
-	descs[tid].lines_scrolled = 0;
-
 	cb_refresh(tid);
 
 	for(i = 0; i < descs[tid].scr_nups; i++)
@@ -471,6 +469,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 	descs[tid].win_nups = 0;
 
 	range_free(&descs[tid].set);
+	descs[tid].lines_scrolled = 0;
 
 after_lock:
 	UNLOCK_BIG_MUTEX;
