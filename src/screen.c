@@ -409,7 +409,8 @@ static int should_be_merged(struct range *range, struct point *start) {
 		) ||
 		(
 			(range->end.y == start->y && range->end.x+1 == start->x && start->x <= range->rightbound) ||
-			(range->end.y+1 == start->y && start->x == range->leftbound)
+			(range->end.y+1 == start->y && start->x == range->leftbound &&
+									range->end.x == range->rightbound)
 		)
 	) return 1;
 
