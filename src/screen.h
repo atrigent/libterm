@@ -3,8 +3,10 @@
 
 #define SCR(tid, sid) (descs[tid].screens[sid])
 
-#define CUR_SCR(tid) SCR(tid, descs[tid].cur_screen)
-#define CUR_INP_SCR(tid) SCR(tid, descs[tid].cur_input_screen)
+#define SCR_FIELD(tid, field) SCR(tid, descs[tid].field)
+
+#define CUR_SCR(tid) SCR_FIELD(tid, cur_screen)
+#define CUR_INP_SCR(tid) SCR_FIELD(tid, cur_input_screen)
 
 enum updateactions {
 	UPD_CURS = 1,
