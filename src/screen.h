@@ -6,6 +6,7 @@
 #define SCR_FIELD(tid, field) SCR(tid, descs[tid].field)
 
 #define CUR_SCR(tid) SCR_FIELD(tid, cur_screen)
+#define OLD_CUR_SCR(tid) SCR_FIELD(tid, old_cur_screen)
 #define CUR_INP_SCR(tid) SCR_FIELD(tid, cur_input_screen)
 
 enum updateactions {
