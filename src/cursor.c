@@ -21,28 +21,33 @@ int cursor_visibility(int tid, int sid, char visibility) {
 
 int cursor_abs_move(int tid, int sid, enum axis axis, ushort num) {
 	int ret = 0;
+	uint old;
 
 	SCR(tid, sid).curs_prev_not_set = 0;
 
 	switch(axis) {
 		case X:
-			if(num == SCR(tid, sid).cursor.x)
-				return 0;
+			old = SCR(tid, sid).cursor.x;
 
 			if(num < SCR(tid, sid).cols)
 				SCR(tid, sid).cursor.x = num;
 			else
 				SCR(tid, sid).cursor.x = SCR(tid, sid).cols-1;
 
+			if(old == SCR(tid, sid).cursor.x)
+				return 0;
+
 			break;
 		case Y:
-			if(num == SCR(tid, sid).cursor.y)
-				return 0;
+			old = SCR(tid, sid).cursor.y;
 
 			if(num < SCR(tid, sid).lines)
 				SCR(tid, sid).cursor.y = num;
 			else
 				SCR(tid, sid).cursor.y = SCR(tid, sid).lines-1;
+
+			if(old == SCR(tid, sid).cursor.y)
+				return 0;
 
 			break;
 		default:
