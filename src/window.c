@@ -70,15 +70,18 @@ int DLLEXPORT ltm_set_window_dimensions(int tid, ushort lines, ushort cols) {
 	else
 		big_changes = 0;
 
-	if(!descs[tid].next_sid) {
-		/* for first-run case */
-		descs[tid].cur_screen = descs[tid].cur_input_screen = screen_alloc(tid, 1, lines, cols);
-		if(descs[tid].cur_screen == -1) PASS_ERR(after_lock);
-	} else
-		if(screen_set_dimensions(tid, descs[tid].cur_screen, lines, cols) == -1) PASS_ERR(after_lock);
-
 	descs[tid].lines = lines;
 	descs[tid].cols = cols;
+
+	if(descs[tid].next_sid) {
+		if(screen_set_dimensions(tid, descs[tid].cur_screen, lines, cols) == -1)
+			PASS_ERR(after_lock);
+	} else {
+		/* don't do anything else if the initial screens
+		 * haven't been set up yet
+		 */
+		goto after_lock;
+	}
 
 	/* only do this if the pty has been created and the shell has been started! */
 	/* checking if pid is set is a quick'n'dirty way or checking whether ltm_term_init finished */

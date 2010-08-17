@@ -208,10 +208,17 @@ FILE DLLEXPORT *ltm_term_init(int tid) {
 
 	if(!cbs.update_ranges) LTM_ERR_PTR(EPERM, "Terminal init cannot happen; callbacks haven't been set yet", after_lock);
 
-	if(!descs[tid].cols || !descs[tid].lines)
-		if(ltm_set_window_dimensions(tid, 24, 80) == -1) PASS_ERR_PTR(after_lock);
-
 	if(choose_pty_method(&descs[tid].pty) == -1) PASS_ERR_PTR(after_lock);
+
+	if(!descs[tid].cols || !descs[tid].lines) {
+		/* don't hardcode these in the future */
+		descs[tid].lines = 24;
+		descs[tid].cols = 80;
+	}
+
+	descs[tid].cur_screen = descs[tid].cur_input_screen =
+		screen_alloc(tid, 1, descs[tid].lines, descs[tid].cols);
+	if(descs[tid].cur_screen == -1) PASS_ERR_PTR(after_lock);
 
 	if(tcsetwinsz(tid) == -1) PASS_ERR_PTR(after_lock);
 
