@@ -16,7 +16,7 @@ error:
 }
 
 void range_shift(struct rangeset *set) {
-	uint n, i = 0;
+	uint i = 0;
 
 	while(i < set->nranges)
 		if(!set->ranges[i]->end.y) {
@@ -27,8 +27,8 @@ void range_shift(struct rangeset *set) {
 
 			--set->nranges;
 
-			for(n = i; n < set->nranges; n++)
-				set->ranges[n] = set->ranges[n+1];
+			memmove(&set->ranges[i], &set->ranges[i+1],
+					(set->nranges - i) * sizeof(struct range *));
 		} else {
 			/* move it down... */
 			if(set->ranges[i]->start.y)
