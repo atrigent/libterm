@@ -22,10 +22,12 @@ int cursor_visibility(int tid, int sid, char visibility) {
 int cursor_abs_move(int tid, int sid, enum axis axis, ushort num) {
 	int ret = 0;
 
+	SCR(tid, sid).curs_prev_not_set = 0;
+
 	switch(axis) {
 		case X:
 			if(num == SCR(tid, sid).cursor.x)
-				goto not_moved;
+				return 0;
 
 			if(num < SCR(tid, sid).cols)
 				SCR(tid, sid).cursor.x = num;
@@ -35,7 +37,7 @@ int cursor_abs_move(int tid, int sid, enum axis axis, ushort num) {
 			break;
 		case Y:
 			if(num == SCR(tid, sid).cursor.y)
-				goto not_moved;
+				return 0;
 
 			if(num < SCR(tid, sid).lines)
 				SCR(tid, sid).cursor.y = num;
@@ -51,9 +53,6 @@ int cursor_abs_move(int tid, int sid, enum axis axis, ushort num) {
 		if(ltm_curerr.err_no == ESRCH) return 0;
 		else return -1;
 	}
-
-not_moved:
-	SCR(tid, sid).curs_prev_not_set = 0;
 
 error:
 	return ret;
