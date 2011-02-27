@@ -89,7 +89,7 @@ void cb_update_screen(int tid, enum action act, int val) {
 void cb_refresh(int tid) {
 	struct point *curs;
 
-	if(descs[tid].curs_changed)
+	if(descs[tid].curs_changed && !CUR_SCR(tid).curs_invisible)
 		curs = &CUR_SCR(tid).cursor;
 	else
 		curs = NULL;

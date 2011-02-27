@@ -10,7 +10,7 @@ int cursor_visibility(int tid, int sid, char visibility) {
 	if(SCR(tid, sid).curs_invisible != !visibility) {
 		SCR(tid, sid).curs_invisible = !visibility;
 
-		record_update(tid, sid, visibility ? UPD_CURS : UPD_CURS_INVIS);
+		record_update(tid, sid, UPD_CURS);
 	}
 
 	return 0;

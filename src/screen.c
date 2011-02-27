@@ -306,12 +306,6 @@ struct rangeset *record_update(int tid, int sid, enum updateactions opts) {
 	/* nothing to do */
 	if(!opts) return NULL;
 
-	/* no reason to do anything in this case, the app using libterm
-	 * doesn't care where the hidden cursor has moved
-	 */
-	if(opts == UPD_CURS && SCR(tid, sid).curs_invisible)
-		return NULL;
-
 	/* check if it's the window screen first because if it's
 	 * both the window and the input screen we want stuff
 	 * to go directly to the window ranges
@@ -322,24 +316,15 @@ struct rangeset *record_update(int tid, int sid, enum updateactions opts) {
 		if(opts & UPD_SCROLL)
 			descs[tid].lines_scrolled++;
 
-		/* the reason that we're un-dirtying the cursor when it is
-		 * hidden is that the app using libterm doesn't care
-		 * about where the cursor is if it's hidden
-		 */
 		if(opts & UPD_CURS)
 			descs[tid].curs_changed = 1;
-		else if(opts & UPD_CURS_INVIS)
-			descs[tid].curs_changed = 0;
 	} else if(sid == descs[tid].cur_input_screen) {
 		ret = &SCR(tid, sid).up.set;
 
 		if(opts & UPD_SCROLL)
 			SCR(tid, sid).up.lines_scrolled++;
 
-		/* we need to mark the cursor dirty even when it is being
-		 * hidden so that the change will be propagated
-		 */
-		if(opts & (UPD_CURS | UPD_CURS_INVIS))
+		if(opts & UPD_CURS)
 			SCR(tid, sid).up.curs_changed = 1;
 	}
 

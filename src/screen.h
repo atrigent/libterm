@@ -11,9 +11,8 @@
 
 enum updateactions {
 	UPD_CURS = 1,
-	UPD_CURS_INVIS = 2,
-	UPD_SCROLL = 4,
-	UPD_GET_SET = 8
+	UPD_SCROLL = 2,
+	UPD_GET_SET = 4
 };
 
 #define TRANSLATE_PT(pt, link) \
