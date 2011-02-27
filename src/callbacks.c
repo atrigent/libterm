@@ -95,8 +95,6 @@ void cb_refresh(int tid) {
 		curs = NULL;
 
 	cbs.refresh(tid, !CUR_SCR(tid).curs_invisible, curs);
-
-	descs[tid].curs_changed = 0;
 }
 
 void cb_refresh_screen(int tid) {

@@ -442,6 +442,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 
 	range_free(&descs[tid].set);
 	descs[tid].lines_scrolled = 0;
+	descs[tid].curs_changed = 0;
 
 after_lock:
 	UNLOCK_BIG_MUTEX;
