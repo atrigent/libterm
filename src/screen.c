@@ -306,19 +306,7 @@ struct rangeset *record_update(int tid, int sid, enum updateactions opts) {
 	/* nothing to do */
 	if(!opts) return NULL;
 
-	/* check if it's the window screen first because if it's
-	 * both the window and the input screen we want stuff
-	 * to go directly to the window ranges
-	 */
-	if(sid == descs[tid].old_cur_screen) {
-		ret = &descs[tid].set;
-
-		if(opts & UPD_SCROLL)
-			descs[tid].lines_scrolled++;
-
-		if(opts & UPD_CURS)
-			descs[tid].curs_changed = 1;
-	} else if(sid == descs[tid].cur_input_screen) {
+	if(sid == descs[tid].old_cur_screen || sid == descs[tid].cur_input_screen) {
 		ret = &SCR(tid, sid).up.set;
 
 		if(opts & UPD_SCROLL)

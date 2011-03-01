@@ -411,9 +411,11 @@ int DLLEXPORT ltm_process_output(int tid) {
 			if(propagate_updates(tid, sid, &SCR(tid, sid).up) == -1)
 				PASS_ERR(after_lock);
 
-			range_free(&SCR(tid, sid).up.set);
-			SCR(tid, sid).up.lines_scrolled = 0;
-			SCR(tid, sid).up.curs_changed = 0;
+			if(sid != descs[tid].old_cur_screen) {
+				range_free(&SCR(tid, sid).up.set);
+				SCR(tid, sid).up.lines_scrolled = 0;
+				SCR(tid, sid).up.curs_changed = 0;
+			}
 		}
 
 	if(descs[tid].old_cur_screen == descs[tid].cur_screen) {
@@ -423,12 +425,12 @@ int DLLEXPORT ltm_process_output(int tid) {
 		 * libterm to update stuff that has changed.
 		 */
 
-		if(descs[tid].lines_scrolled >= CUR_SCR(tid).lines) cb_clear_screen(tid);
-		else if(descs[tid].lines_scrolled) cb_scroll_lines(tid);
+		if(CUR_SCR(tid).up.lines_scrolled >= CUR_SCR(tid).lines) cb_clear_screen(tid);
+		else if(CUR_SCR(tid).up.lines_scrolled) cb_scroll_lines(tid);
 
-		if(descs[tid].set.nranges) {
-			if(range_finish(&descs[tid].set) == -1) PASS_ERR(after_lock);
-			cb_update_ranges(tid, descs[tid].set.ranges);
+		if(CUR_SCR(tid).up.set.nranges) {
+			if(range_finish(&CUR_SCR(tid).up.set) == -1) PASS_ERR(after_lock);
+			cb_update_ranges(tid, CUR_SCR(tid).up.set.ranges);
 		}
 	} else {
 		/* This is the case in which the currently active screen has changed since
@@ -440,9 +442,9 @@ int DLLEXPORT ltm_process_output(int tid) {
 
 	cb_refresh(tid);
 
-	range_free(&descs[tid].set);
-	descs[tid].lines_scrolled = 0;
-	descs[tid].curs_changed = 0;
+	range_free(&OLD_CUR_SCR(tid).up.set);
+	OLD_CUR_SCR(tid).up.lines_scrolled = 0;
+	OLD_CUR_SCR(tid).up.curs_changed = 0;
 
 after_lock:
 	UNLOCK_BIG_MUTEX;

@@ -54,20 +54,6 @@ struct term_desc {
 
 	uchar *outputbuf;
 	uint buflen;
-
-	/* updates that happened to different parts
-	 * of the window screen during update propagation
-	 * and updates that were written directly to the
-	 * window screen
-	 */
-	struct rangeset set;
-
-	uint lines_scrolled;
-
-	/* whether the cursor changed, because there's only one cursor
-	 * on the window screen
-	 */
-	char curs_changed;
 };
 
 extern struct term_desc *descs;

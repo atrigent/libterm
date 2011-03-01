@@ -90,7 +90,7 @@ void cb_refresh(int tid) {
 	struct point *curs;
 
 	if((descs[tid].old_cur_screen != descs[tid].cur_screen ||
-			descs[tid].curs_changed) &&
+			OLD_CUR_SCR(tid).up.curs_changed) &&
 			!CUR_SCR(tid).curs_invisible)
 		curs = &CUR_SCR(tid).cursor;
 	else
@@ -115,9 +115,9 @@ void cb_clear_screen(int tid) {
 
 void cb_scroll_lines(int tid) {
 	if(cbs.scroll_lines)
-		cbs.scroll_lines(tid, descs[tid].lines_scrolled);
+		cbs.scroll_lines(tid, CUR_SCR(tid).up.lines_scrolled);
 	else
-		cb_update_screen(tid, ACT_SCROLL, descs[tid].lines_scrolled);
+		cb_update_screen(tid, ACT_SCROLL, CUR_SCR(tid).up.lines_scrolled);
 }
 
 void cb_alert(int tid) {
