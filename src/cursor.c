@@ -10,7 +10,8 @@ int cursor_visibility(int tid, int sid, char visibility) {
 	if(SCR(tid, sid).curs_invisible != !visibility) {
 		SCR(tid, sid).curs_invisible = !visibility;
 
-		record_update(tid, sid, UPD_CURS);
+		if(SHOULD_UPDATE(tid, sid))
+			SCR(tid, sid).up.curs_changed = 1;
 	}
 
 	return 0;
@@ -51,7 +52,8 @@ int cursor_abs_move(int tid, int sid, enum axis axis, ushort num) {
 			LTM_ERR(EINVAL, "Invalid axis", error);
 	}
 
-	record_update(tid, sid, UPD_CURS);
+	if(SHOULD_UPDATE(tid, sid))
+		SCR(tid, sid).up.curs_changed = 1;
 
 error:
 	return ret;

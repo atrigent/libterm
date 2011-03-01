@@ -9,11 +9,9 @@
 #define OLD_CUR_SCR(tid) SCR_FIELD(tid, old_cur_screen)
 #define CUR_INP_SCR(tid) SCR_FIELD(tid, cur_input_screen)
 
-enum updateactions {
-	UPD_CURS = 1,
-	UPD_SCROLL = 2,
-	UPD_GET_SET = 4
-};
+#define SHOULD_UPDATE(tid, sid) \
+		((sid) == descs[tid].old_cur_screen || \
+		 (sid) == descs[tid].cur_input_screen)
 
 #define TRANSLATE_PT(pt, link) \
 	do { \
@@ -57,8 +55,6 @@ struct screen {
 
 	struct update up;
 };
-
-extern struct rangeset *record_update(int, int, enum updateactions);
 
 extern int screen_set_dimensions(int, int, ushort, ushort);
 extern int screen_alloc(int, char, ushort, ushort);
