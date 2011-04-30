@@ -426,7 +426,7 @@ int DLLEXPORT ltm_process_output(int tid) {
 		 */
 
 		if(CUR_SCR(tid).up.lines_scrolled >= CUR_SCR(tid).lines) cb_clear_screen(tid);
-		else if(CUR_SCR(tid).up.lines_scrolled) cb_scroll_lines(tid);
+		else if(CUR_SCR(tid).up.lines_scrolled) cb_scroll_screen(tid);
 
 		if(CUR_SCR(tid).up.set.nranges) {
 			if(range_finish(&CUR_SCR(tid).up.set) == -1) PASS_ERR(after_lock);

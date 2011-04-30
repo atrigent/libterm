@@ -19,8 +19,8 @@ int check_callbacks(struct callbacks *callbacks) {
 	if(!callbacks->clear_screen)
 		fprintf(DUMP_DEST, "Warning: The clear_screen callback was not supplied. It will be emulated with update_ranges\n");
 
-	if(!callbacks->scroll_lines)
-		fprintf(DUMP_DEST, "Warning: The scroll_lines callback was not supplied. It will be emulated with update_ranges\n");
+	if(!callbacks->scroll_screen)
+		fprintf(DUMP_DEST, "Warning: The scroll_screen callback was not supplied. It will be emulated with update_ranges\n");
 
 	if(!callbacks->alert)
 		fprintf(DUMP_DEST, "Warning: The alert callback was not supplied. The ASCII bell character will be ignored\n");
@@ -113,9 +113,9 @@ void cb_clear_screen(int tid) {
 		cb_update_screen(tid, ACT_CLEAR, 0);
 }
 
-void cb_scroll_lines(int tid) {
-	if(cbs.scroll_lines)
-		cbs.scroll_lines(tid, CUR_SCR(tid).up.lines_scrolled);
+void cb_scroll_screen(int tid) {
+	if(cbs.scroll_screen)
+		cbs.scroll_screen(tid, CUR_SCR(tid).up.lines_scrolled);
 	else
 		cb_update_screen(tid, ACT_SCROLL, CUR_SCR(tid).up.lines_scrolled);
 }

@@ -60,7 +60,7 @@ struct ltm_callbacks {
 	void (*update_ranges)(int, struct ltm_cell **, struct ltm_range **);
 	void (*refresh)(int, char, struct ltm_point *);
 
-	void (*scroll_lines)(int, ltm_uint);
+	void (*scroll_screen)(int, ltm_uint);
 	void (*refresh_screen)(int, struct ltm_cell **);
 	void (*clear_screen)(int);
 
