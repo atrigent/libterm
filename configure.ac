@@ -42,7 +42,6 @@ if test $ac_cv_header_stdc = no; then
 	AC_MSG_ERROR([Cannot find the standard ANSI C headers! Please install them or upgrade your system.])
 fi
 
-AC_HEADER_MAJOR
 dnl Is it fair to assume that the other ioctl macros will be in the same place as TIOCGWINSZ?
 AC_HEADER_TIOCGWINSZ
 AC_CHECK_HEADERS(
