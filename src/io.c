@@ -29,7 +29,7 @@ before_anything:
 	return ret;
 }
 
-int DLLEXPORT ltm_simulate_output(int tid, char *input, uint n) {
+int DLLEXPORT ltm_simulate_output(int tid, char *output, uint n) {
 	int ret = 0;
 
 	CHECK_INITED;
@@ -38,8 +38,8 @@ int DLLEXPORT ltm_simulate_output(int tid, char *input, uint n) {
 
 	DIE_ON_INVAL_TID(tid);
 
-	if(fwrite(input, 1, n, descs[tid].pty.slave) < n)
-		SYS_ERR("fwrite", input, after_lock);
+	if(fwrite(output, 1, n, descs[tid].pty.slave) < n)
+		SYS_ERR("fwrite", output, after_lock);
 
 after_lock:
 	UNLOCK_BIG_MUTEX;
