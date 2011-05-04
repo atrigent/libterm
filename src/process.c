@@ -1,5 +1,5 @@
+#include <sys/ioctl.h>
 #include <sys/types.h>
-#include <termios.h>
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
@@ -7,8 +7,8 @@
 
 #include "libterm.h"
 
-#ifdef GWINSZ_IN_SYS_IOCTL
-# include <sys/ioctl.h>
+#ifndef GWINSZ_IN_SYS_IOCTL
+# include <termios.h>
 #endif
 
 struct sigaction oldaction;
