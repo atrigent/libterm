@@ -1,6 +1,4 @@
 #include <sys/ioctl.h>
-#include <signal.h>
-#include <unistd.h>
 
 #ifndef GWINSZ_IN_SYS_IOCTL
 # include <termios.h>
@@ -49,7 +47,6 @@ error:
 
 int DLLEXPORT ltm_set_window_dimensions(int tid, ushort lines, ushort cols) {
 	char big_changes;
-	pid_t pgrp;
 	int ret = 0;
 
 	CHECK_INITED;
@@ -87,20 +84,6 @@ int DLLEXPORT ltm_set_window_dimensions(int tid, ushort lines, ushort cols) {
 	/* checking if pid is set is a quick'n'dirty way or checking whether ltm_term_init finished */
 	if(descs[tid].pid) {
 		if(tcsetwinsz(tid) == -1) PASS_ERR(after_lock);
-
-		/* only do this stuff if there is actually a shell to signal */
-		if(descs[tid].pid > 0) {
-			pgrp = tcgetpgrp(fileno(descs[tid].pty.master));
-			if(pgrp == -1) SYS_ERR("tcgetpgrp", NULL, after_lock);
-
-			/* not caring whether this fails or not
-			 * it can do so if there's currently no
-			 * foreground process group or if we don't
-			 * have permission to signal some processes
-			 * in the process group
-			 */
-			killpg(pgrp, SIGWINCH);
-		}
 
 		/* don't do this before ltm_term_init since the callbacks
 		 * aren't guaranteed to be set (and there isn't much point
