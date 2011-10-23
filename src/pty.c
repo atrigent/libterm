@@ -36,7 +36,7 @@ int choose_pty_method(struct ptydev *pty) {
 		result = (*pty_func_prior[i])(pty);
 
 		if(result == 0 || result == -1) continue;
-		
+
 		break;
 	}
 
@@ -44,7 +44,7 @@ int choose_pty_method(struct ptydev *pty) {
 
 	setbuf(pty->master, NULL);
 	setbuf(pty->slave, NULL);
-	
+
 error:
 	return ret;
 }

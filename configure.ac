@@ -86,7 +86,7 @@ if test $gcc_visibility = yes; then
 fi
 
 dnl Checks for library functions
-AC_CHECK_LIB([pthread], [pthread_create], 
+AC_CHECK_LIB([pthread], [pthread_create],
 		[AC_DEFINE([HAVE_LIBPTHREAD], [1], [Define to 1 if you have the 'pthread' library (-lpthread).])],
 		[AC_MSG_WARN([The pthread library was not found; libterm will be built without threading support.])])
 

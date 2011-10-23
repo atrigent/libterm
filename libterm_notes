@@ -136,7 +136,7 @@ in order to communicate to the code using libterm what the attributes (bold, bgc
 		Cons: Probably pretty slow as it would require a lot of function calls and returns
 	2. Have the various update callbacks pass an array of attribute data with location data relative to the start of the part of the screen that will be updated (ones that only update a single line will always have the row number as 0, for example - this would allow you to simply add to the current location)
 
-I'm thinking that all stuff will namespaced by beginning with ltm_ for LibTerM 
+I'm thinking that all stuff will namespaced by beginning with ltm_ for LibTerM
 
 general functions:
 ltm_init()
@@ -166,7 +166,7 @@ ltm_buffer_use_file_descriptor(mkstemp("tmp-XXXXXX"))
 	store the buffer in a pre-opened file stream
 ltm_buffer_use_file_pointer(fopen(...))
 	store the buffer in a pre-opened FILE *
-ltm_buffer_use_memory()	
+ltm_buffer_use_memory()
 	store the buffer in memory (fast but very limited in terms of space)
 ltm_buffer_set_size(0 /* or 50 or whatever */)
 	set max number of lines to store in buffer, 0 would be unlimited. it would probably be problematic to say how many lines because lines are variable-length. I'm thinking you couldn't do unlimited when it's set to "memory" because memory would run out too fast.
@@ -174,7 +174,7 @@ ltm_buffer_set_size(0 /* or 50 or whatever */)
 libterm could (no questions asked) store all of the lines that are on the screen currently in memory (lines * cols bytes?) this would make it easy (err...) to do full-screen stuff
 
 I/O
-libterm would have a pipe(?) going with the shell or whatever is running under it. I don't know how it would work when a child process is in front... I guess child processes inherit FDs... :-/. 
+libterm would have a pipe(?) going with the shell or whatever is running under it. I don't know how it would work when a child process is in front... I guess child processes inherit FDs... :-/.
 The program would (for example with X) respond to KeyPress events and call ltm_user_input_feed_to_program() and libterm would possibly buffer(?) characters (depending on if ICANON is set?) and output it to the program through the pipe when appropriate. libterm will call the line updating callback if ECHO is set. when a program outputs something, libterm will read it. libc's output buffering will already have happened. taking into account terminal driver buffering (again depending on ICANON?) there may be more buffering, then it will be printed to screen or something similar. No, I don't think ICANON does output buffering; just input.
 Side note - from linux kernel devices.txt file (all character devices):
 	Major 2 - old-style PTY master devices (use Unix98 ones, though I may implement support for these)

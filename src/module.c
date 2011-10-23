@@ -46,7 +46,7 @@ int module_load(enum moduleclass class, char *basename) {
 			modules[ret].refcount++;
 			goto before_anything;
 		}
-	
+
 	path = malloc(strlen(ltm_classes[class]) + 1 + strlen(basename) + 1);
 	if(!path) SYS_ERR("malloc", NULL, before_anything);
 

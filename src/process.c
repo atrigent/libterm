@@ -289,7 +289,7 @@ int set_handler_struct(int sig, void (*callback)(int, siginfo_t *, void *), stru
  *
  * sigemptyset(&mask);
  * sigaddset(&mask, SIGCHLD);
- * 
+ *
  * sigprocmask(SIG_BLOCK, &mask, NULL);
  *
  * j_random_function_that_changes_the_sigchld_handler(blaz, blitz, blargh);

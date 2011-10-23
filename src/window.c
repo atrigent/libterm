@@ -40,7 +40,7 @@ int tcsetwinsz(int tid) {
 	size.ws_xpixel = size.ws_ypixel = 0; /* necessary? */
 
 	if(ioctl(mfd, TIOCSWINSZ, &size) == -1) SYS_ERR("ioctl", "TIOCSWINSZ", error);
-	
+
 error:
 	return ret;
 }
