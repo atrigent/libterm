@@ -39,8 +39,6 @@ struct term_desc {
 
 	struct ptydev pty;
 
-	char shell_disabled;
-	char *shell;
 	pid_t pid;
 
 	ushort lines;

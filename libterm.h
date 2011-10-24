@@ -83,7 +83,6 @@ extern int ltm_uninit();
 extern int ltm_feed_input_to_program(int, char *, ltm_uint);
 extern int ltm_simulate_output(int, char *, ltm_uint);
 extern int ltm_set_window_dimensions(int, ltm_ushort, ltm_ushort);
-extern int ltm_set_shell(int, char *);
 extern int ltm_set_callbacks(struct ltm_callbacks *);
 extern int ltm_set_threading(char);
 

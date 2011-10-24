@@ -199,6 +199,8 @@ FILE DLLEXPORT *ltm_term_init(int tid) {
 #ifdef HAVE_LIBPTHREAD
 	enum threadaction code;
 #endif
+	int shell_bool;
+	char *shell;
 
 	CHECK_INITED_PTR;
 
@@ -222,20 +224,18 @@ FILE DLLEXPORT *ltm_term_init(int tid) {
 
 	if(tcsetwinsz(tid) == -1) PASS_ERR_PTR(after_lock);
 
-	if(!descs[tid].shell_disabled) {
-		if(descs[tid].shell) {
-			pid = spawn(descs[tid].shell, descs[tid].pty.slave);
+	shell = config_get_entry(LIBTERM, NULL, "shell", "true");
+	shell_bool = config_interpret_boolean(shell);
 
-			free(descs[tid].shell);
-			descs[tid].shell = 0;
-		} /*else if(config.shell)
-			pid = spawn(config.shell, descs[tid].pty.slave);*/
-		else {
+	if(shell_bool != 0) {
+		if(shell_bool == 1) {
 			pwd_entry = getpwuid(getuid());
 			if(!pwd_entry) SYS_ERR_PTR("getpwuid", NULL, after_lock);
 
-			pid = spawn(pwd_entry->pw_shell, descs[tid].pty.slave);
+			shell = pwd_entry->pw_shell;
 		}
+
+		pid = spawn(shell, descs[tid].pty.slave);
 
 		if(pid == -1) PASS_ERR_PTR(after_lock);
 	}
@@ -290,27 +290,6 @@ int DLLEXPORT ltm_close(int tid) {
 
 	if(IDARR_ID_DEALLOC(descs, next_tid, tid) == -1)
 		PASS_ERR(after_lock);
-
-after_lock:
-	UNLOCK_BIG_MUTEX;
-before_anything:
-	return ret;
-}
-
-int DLLEXPORT ltm_set_shell(int tid, char *shell) {
-	int ret = 0;
-
-	CHECK_INITED;
-
-	LOCK_BIG_MUTEX;
-
-	DIE_ON_INVAL_TID(tid);
-
-	if(!shell) descs[tid].shell_disabled = 1;
-	else {
-		descs[tid].shell = strdup(shell);
-		if(!descs[tid].shell) SYS_ERR("strdup", shell, after_lock);
-	}
 
 after_lock:
 	UNLOCK_BIG_MUTEX;
