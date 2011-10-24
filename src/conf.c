@@ -212,9 +212,10 @@ int config_init() {
 	if(module_load(CONF, DEFAULT_CONF_MODULE) == -1)
 		return -1;
 
+	memset(conf, 0, sizeof(conf));
+
 	conf_init_done = 1;
 
-	memset(conf, 0, sizeof(conf));
 	if(config_process() == -1) return -1;
 
 	return 0;
