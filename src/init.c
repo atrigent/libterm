@@ -194,6 +194,7 @@ before_anything:
  */
 FILE DLLEXPORT *ltm_term_init(int tid) {
 	struct passwd *pwd_entry;
+	sigset_t chldset;
 	pid_t pid = -1;
 	FILE *ret;
 #ifdef HAVE_LIBPTHREAD
@@ -235,24 +236,36 @@ FILE DLLEXPORT *ltm_term_init(int tid) {
 			shell = pwd_entry->pw_shell;
 		}
 
+		if(sigemptyset(&chldset) == -1)
+			SYS_ERR_PTR("sigemptyset", NULL, after_lock);
+		if(sigaddset(&chldset, SIGCHLD) == -1)
+			SYS_ERR_PTR("sigaddset", "SIGCHLD", after_lock);
+
+		if(sigprocmask(SIG_BLOCK, &chldset, NULL) == -1)
+			SYS_ERR_PTR("sigprocmask", "block SIGCHLD", after_lock);
+
 		pid = spawn(shell, descs[tid].pty.slave);
 
-		if(pid == -1) PASS_ERR_PTR(after_lock);
+		if(pid == -1) PASS_ERR_PTR(after_block);
 	}
 
 #ifdef HAVE_LIBPTHREAD
 	if(threading) {
 		code = NEW_TERM;
 		if(fwrite(&code, 1, sizeof(enum threadaction), pipefiles[1]) < sizeof(enum threadaction))
-			SYS_ERR_PTR("fwrite", NULL, after_lock);
+			SYS_ERR_PTR("fwrite", NULL, after_block);
 
 		if(fwrite(&tid, 1, sizeof(int), pipefiles[1]) < sizeof(int))
-			SYS_ERR_PTR("fwrite", NULL, after_lock);
+			SYS_ERR_PTR("fwrite", NULL, after_block);
 	}
 #endif
 
 	descs[tid].pid = pid;
 	ret = descs[tid].pty.master;
+
+after_block:
+	if(shell_bool != 0 && sigprocmask(SIG_UNBLOCK, &chldset, NULL) == -1)
+		SYS_ERR_PTR("sigprocmask", "unblock SIGCHLD", after_lock);
 after_lock:
 	UNLOCK_BIG_MUTEX_PTR;
 before_anything:
