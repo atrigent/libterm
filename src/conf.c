@@ -89,6 +89,10 @@ before_anything:
 	return ret;
 }
 
+int DLLEXPORT ltm_config_mod_set_entry(enum moduleclass class, char *module, char *name, char *val) {
+	return config_set_entry(class, module, name, val);
+}
+
 int DLLEXPORT ltm_config_set_entry(enum moduleclass class, char *module, char *name, char *val) {
 	int ret = 0;
 

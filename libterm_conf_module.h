@@ -7,7 +7,7 @@
 
 #include <libterm_module.h>
 
-extern int ltm_config_set_entry(enum ltm_moduleclass, char *, char *, char *);
+extern int ltm_config_mod_set_entry(enum ltm_moduleclass, char *, char *, char *);
 
 #ifdef WIN32
 #  undef extern

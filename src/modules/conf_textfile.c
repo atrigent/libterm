@@ -128,7 +128,7 @@ static int parse_config_text(char *buf, char *filename) {
 			goto after_val_alloc;
 		}
 
-		if(ltm_config_set_entry(classnum, module, name, val) == -1)
+		if(ltm_config_mod_set_entry(classnum, module, name, val) == -1)
 			PASS_ERR(after_val_alloc);
 
 after_val_alloc:
