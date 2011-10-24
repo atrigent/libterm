@@ -96,7 +96,7 @@ extern FILE *ltm_get_notifier();
 
 extern int ltm_set_error_dest(FILE *);
 
-extern int ltm_set_config_entry(enum ltm_moduleclass, char *, char *, char *);
+extern int ltm_config_set_entry(enum ltm_moduleclass, char *, char *, char *);
 
 extern int ltm_is_line_wrapped(int, ltm_uint);
 

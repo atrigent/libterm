@@ -68,7 +68,7 @@ char *config_get_module_entry(char *name, char *def) {
 	return cur_mid == -1 ? NULL : config_get_mid_entry(cur_mid, name, def);
 }
 
-static int set_config_entry(enum moduleclass class, char *module, char *name, char *val) {
+static int config_set_entry(enum moduleclass class, char *module, char *name, char *val) {
 	char *hashname;
 	int ret = 0;
 
@@ -89,14 +89,14 @@ before_anything:
 	return ret;
 }
 
-int DLLEXPORT ltm_set_config_entry(enum moduleclass class, char *module, char *name, char *val) {
+int DLLEXPORT ltm_config_set_entry(enum moduleclass class, char *module, char *name, char *val) {
 	int ret = 0;
 
 	CHECK_INITED;
 
 	LOCK_BIG_MUTEX;
 
-	if(set_config_entry(class, module, name, val) == -1) PASS_ERR(after_lock);
+	if(config_set_entry(class, module, name, val) == -1) PASS_ERR(after_lock);
 
 after_lock:
 	UNLOCK_BIG_MUTEX;
@@ -109,7 +109,7 @@ int config_set_mid_entry(int mid, char *name, char *val) {
 
 	DIE_ON_INVAL_MID(mid);
 
-	ret = set_config_entry(modules[mid].class, modules[mid].name, name, val);
+	ret = config_set_entry(modules[mid].class, modules[mid].name, name, val);
 
 error:
 	return ret;
